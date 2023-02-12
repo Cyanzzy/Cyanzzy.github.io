@@ -21,7 +21,7 @@
       <link href="/2023/02/12/Fsharp-01-Values/"/>
       <url>/2023/02/12/Fsharp-01-Values/</url>
       
-        <content type="html"><![CDATA[]]></content>
+        <content type="html"><![CDATA[<blockquote><p>大纲：int、string、float、float32、decimal、tuple</p></blockquote><h1 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h1><blockquote><p>补充：</p><ul><li><p>F#一般使用<code>let</code>声明变量和定义函数</p></li><li><p>F#自动推断类型、无需显式声明变量类型</p></li><li><p>使用<code>typeof&lt;xxx&gt;</code>查看类型</p></li><li><p>数据类型转换</p><ul><li><code>float(1.4m)</code></li><li><code>int(1.4m)</code></li><li><code>int(1.4)</code></li><li><code>int &quot;1&quot;</code></li></ul></li><li><p>关于格式字符补充</p><ul><li><code>A</code> ：</li></ul></li></ul> <figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// %A 的使用 All</span></span><br><span class="line"><span class="comment">// 假设var与var2已经定义</span></span><br><span class="line"><span class="keyword">let</span> temp <span class="operator">=</span> <span class="string">$&quot;First lecture, var = %A<span class="subst">&#123;var&#125;</span>, var1 = %A<span class="subst">&#123;var1&#125;</span>&quot;</span></span><br></pre></td></tr></table></figure><ul><li><code>@</code>：</li></ul> <figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// @ 的使用 </span></span><br><span class="line"><span class="keyword">let</span> temp <span class="operator">=</span> <span class="string">@&quot;D:\test\test\test&quot;</span></span><br><span class="line"></span><br><span class="line">D<span class="operator">:</span>\test\test\test</span><br><span class="line"></span><br><span class="line"><span class="comment">// 不使用`@`，则变为转义字符`\t`</span></span><br><span class="line"><span class="keyword">let</span> temp <span class="operator">=</span> <span class="string">&quot;D:\test\test\test&quot;</span></span><br><span class="line"></span><br><span class="line">D<span class="operator">:</span>estestest</span><br></pre></td></tr></table></figure><ul><li><code>&quot;&quot;&quot;...&quot;&quot;&quot;</code>:</li></ul> <figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> temp <span class="operator">=</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    test is good</span></span><br><span class="line"><span class="string">    \test\test\test</span></span><br><span class="line"><span class="string">    go go good@@@@</span></span><br><span class="line"><span class="string">    &quot;&quot;</span></span><br><span class="line"><span class="string">    &#x27;&#x27;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    </span><br><span class="line">test is good</span><br><span class="line">\test\test\test</span><br><span class="line">go go good<span class="operator">@@@@</span></span><br><span class="line"><span class="string">&quot;&quot;</span></span><br><span class="line">&#x27;&#x27;    </span><br></pre></td></tr></table></figure></blockquote><h2 id="整型-int"><a href="#整型-int" class="headerlink" title="整型 int"></a>整型 int</h2><ul><li><p>隐式定义 <code>let var = 10</code></p></li><li><p>显示定义 <code>let var:int = 10</code></p></li></ul><h2 id="浮点型-float"><a href="#浮点型-float" class="headerlink" title="浮点型 float"></a>浮点型 float</h2><ul><li><p>双精度浮点类型数据定义<code>let var = 10.90</code></p></li><li><p>单精度浮点类型数据定义<code>let var = 4.5f</code></p></li></ul><h2 id="定点型-decimal"><a href="#定点型-decimal" class="headerlink" title="定点型 decimal"></a>定点型 decimal</h2><ul><li><p>浮点数小数点会变化</p></li><li><p>定点数小数点是不变的</p></li><li><p>定义decimal类型数据<code>let var = 1.0m</code></p></li></ul><blockquote><p>浮点数与定点数区别演示</p></blockquote><figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dividend <span class="operator">=</span> <span class="number">1.0</span>m</span><br><span class="line">dividend</span><br><span class="line"><span class="keyword">let</span> divisor <span class="operator">=</span> <span class="number">3</span></span><br><span class="line">(dividend<span class="operator">/</span>decimal(divisor) <span class="operator">*</span> decimal(divisor))</span><br><span class="line"></span><br><span class="line"><span class="number">0.9999999999999999999999999999</span></span><br></pre></td></tr></table></figure><figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> dividend <span class="operator">=</span> <span class="number">1.0</span></span><br><span class="line"><span class="keyword">let</span> divisor <span class="operator">=</span> <span class="number">3</span></span><br><span class="line">(dividend<span class="operator">/</span>float(divisor) <span class="operator">*</span> float(divisor))</span><br><span class="line"></span><br><span class="line"><span class="number">1</span></span><br></pre></td></tr></table></figure><h2 id="字符串型-string"><a href="#字符串型-string" class="headerlink" title="字符串型 string"></a>字符串型 string</h2><ul><li>定义字符串数据类型数据<code>let var = &quot;Cyan Chau&quot;</code></li></ul><h2 id="元组型-tuple"><a href="#元组型-tuple" class="headerlink" title="元组型 tuple"></a>元组型 tuple</h2><ul><li>元组数据类型数据定义<code>let var = (&quot;Cyan Chau&quot;, 20, 1000M)</code></li></ul><p><strong>定义元组</strong></p><figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> var <span class="operator">=</span> (<span class="string">&quot;Cyan Chau&quot;</span>, <span class="number">20</span>, <span class="number">1000</span>M)</span><br></pre></td></tr></table></figure><table><thead><tr><th>Item1</th><th>Item2</th><th>Item3</th></tr></thead><tbody><tr><td><code>Cyan Chau</code></td><td><code>20</code></td><td><code>1000</code></td></tr></tbody></table><p><strong>访问元组</strong></p><figure class="highlight fsharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 访问元组</span></span><br><span class="line"><span class="keyword">let</span> name, age, money <span class="operator">=</span> var</span><br><span class="line">name</span><br><span class="line"></span><br><span class="line">Cyan Chau</span><br></pre></td></tr></table></figure>]]></content>
       
       
       
@@ -68,6 +68,17 @@
     
     
     <entry>
+      <title>电影</title>
+      <link href="/movies/index.html"/>
+      <url>/movies/index.html</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>音乐</title>
       <link href="/music/index.html"/>
       <url>/music/index.html</url>
@@ -82,17 +93,6 @@
       <title>tags</title>
       <link href="/tags/index.html"/>
       <url>/tags/index.html</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>电影</title>
-      <link href="/movies/index.html"/>
-      <url>/movies/index.html</url>
       
         <content type="html"><![CDATA[]]></content>
       

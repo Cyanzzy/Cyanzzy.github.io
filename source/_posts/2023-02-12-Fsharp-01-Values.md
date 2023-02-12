@@ -1,7 +1,12 @@
 ---
 title: Fsharp-01-Values
-date: 2023-02-12 11:37:01
-tags:
+date: 2023-02-12 10:02:00
+update: 2023-02-12 10:02:00
+tags: 
+  - Other
+categories: 
+  - Java
+swiper_index: 1
 ---
 
 > 大纲：int、string、float、float32、decimal、tuple

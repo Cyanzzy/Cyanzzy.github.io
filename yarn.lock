@@ -1584,10 +1584,36 @@
     "mv" "~2"
     "safe-json-stringify" "~1"
 
+"hexo-butterfly-article-double-row@^1.0.2":
+  "integrity" "sha512-rKFj4uUrjerTzmZvagTI2orsoxmmMj9Runfdht/4SxKY7ARfpYBd6CAmc14Pi9IE1T+5n6VKMA+WW4g86ZZeFA=="
+  "resolved" "https://registry.npmmirror.com/hexo-butterfly-article-double-row/-/hexo-butterfly-article-double-row-1.0.2.tgz"
+  "version" "1.0.2"
+
+"hexo-butterfly-categories-card@^1.0.0":
+  "integrity" "sha512-fyZrtxPwAv4CofTCNy57Rs6UzdnR2+gnmOeKaf+Ti8BH5kHGmX6Cdi+6lgSW3fPmR6BS4+XKtflGdRoKQpBxfw=="
+  "resolved" "https://registry.npmmirror.com/hexo-butterfly-categories-card/-/hexo-butterfly-categories-card-1.0.0.tgz"
+  "version" "1.0.0"
+  dependencies:
+    "pug" "^3.0.0"
+
 "hexo-butterfly-envelope@^1.0.15":
   "integrity" "sha512-Z12iYDhrrJkARSvCIYTVRPrlipLE9o5Zeh2kozj/MbLz5tcQmfr62w+qu+hOJh2XiZucAyyoUyZq5faKP4YD4A=="
   "resolved" "https://registry.npmmirror.com/hexo-butterfly-envelope/-/hexo-butterfly-envelope-1.0.15.tgz"
   "version" "1.0.15"
+  dependencies:
+    "pug" "^3.0.0"
+
+"hexo-butterfly-footer-beautify@^1.0.6":
+  "integrity" "sha512-zGA0b1BgL0CTmh3mKOvSh5TY6o3HW8tt/Xnhr+8g+I0MrzDcaBUXx9Ci2jyZRIctgFHS/0pcWd/Ro0Db2py42w=="
+  "resolved" "https://registry.npmmirror.com/hexo-butterfly-footer-beautify/-/hexo-butterfly-footer-beautify-1.0.6.tgz"
+  "version" "1.0.6"
+  dependencies:
+    "pug" "^3.0.0"
+
+"hexo-butterfly-swiper@^1.0.12":
+  "integrity" "sha512-2gdp6/rlWIbTQH6/HALodc6QXiO7RV2cNbN6LTJJPj+nFZ9/WQnset9u5KEo8+5G8VR/FAJ4kojvu0+nbvZVxA=="
+  "resolved" "https://registry.npmmirror.com/hexo-butterfly-swiper/-/hexo-butterfly-swiper-1.0.12.tgz"
+  "version" "1.0.12"
   dependencies:
     "pug" "^3.0.0"
 
@@ -1618,6 +1644,13 @@
     "luxon" "^3.0.4"
     "nunjucks" "^3.2.3"
     "picocolors" "^1.0.0"
+
+"hexo-filter-gitcalendar@^1.0.11":
+  "integrity" "sha512-lMglEPY9oA4NsTZFWFU9ul3M7axZChbhcB9SWJ0IAmxDImjfeS+jqehB6wTdqnyQUsXqL1KlVa9W2YEfzoY4gw=="
+  "resolved" "https://registry.npmmirror.com/hexo-filter-gitcalendar/-/hexo-filter-gitcalendar-1.0.11.tgz"
+  "version" "1.0.11"
+  dependencies:
+    "pug" "^3.0.0"
 
 "hexo-front-matter@^3.0.0":
   "integrity" "sha512-hSQTPUmB/BCe1BFYmXRkPyLk8rqbBqHCQq+rjwwOJuEfOADrFaVK2VPZb90tJzPyXE1xSxpgCxE/AZq0CyTVwg=="
@@ -1735,6 +1768,11 @@
   "version" "3.2.0"
   dependencies:
     "picocolors" "^1.0.0"
+
+"hexo-magnet@^1.0.9":
+  "integrity" "sha512-1bh6ZxwcZ4LgM8CkjRqimgke3yKsk2Jb49LBJ3Hc5RtPEzgxle1UHCNLOm7q80FDGRS33Zn6As2t39N8onFnnw=="
+  "resolved" "https://registry.npmmirror.com/hexo-magnet/-/hexo-magnet-1.0.9.tgz"
+  "version" "1.0.9"
 
 "hexo-pagination@3.0.0":
   "integrity" "sha512-8oo1iozloZo7TojPVYg4IxL3SJKCBdSJ908fTlIxIK7TWJIKdYnQlW31+12DBJ0NhVZA/lZisPObGF08wT8fKw=="

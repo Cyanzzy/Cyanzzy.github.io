@@ -188,13 +188,14 @@ footer_beautify:
     - link: https://butterfly.js.orgl
       shields: https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&logo=bitdefender
       message: 主题版本Butterfly_v4.3.1
-    - link: https://vercel.com/
-      shields: https://img.shields.io/badge/Hosted-Vercel-brightgreen?style=flat&logo=Vercel
-      message: 本站采用多线部署，主线路托管于Vercel
-    - link: https://dashboard.4everland.org/
-        # https: / /img.shields.io/badge/Hosted-4EVERLAND-3FE2C1?style=flat&logo=IPFS
-      shields: https://img.shields.io/badge/Hosted-4EVERLAND-22DDDD?style=flat&logo=IPFS
-      message: 本站采用多线部署，备用线路托管于4EVERLAND
+  # 以下拥有域名再处理
+    # - link: https://vercel.com/
+    #   shields: https://img.shields.io/badge/Hosted-Vercel-brightgreen?style=flat&logo=Vercel
+    #   message: 本站采用多线部署，主线路托管于Vercel
+    # - link: https://dashboard.4everland.org/
+    #     # https: / /img.shields.io/badge/Hosted-4EVERLAND-3FE2C1?style=flat&logo=IPFS
+    #   shields: https://img.shields.io/badge/Hosted-4EVERLAND-22DDDD?style=flat&logo=IPFS
+    #   message: 本站采用多线部署，备用线路托管于4EVERLAND
     - link: https://github.com/
       shields: https://img.shields.io/badge/Source-Github-d021d6?style=flat&logo=GitHub
       message: 本站项目由Github托管
@@ -218,13 +219,13 @@ categoryBar:
   column: odd # odd：3列 | even：4列
   row: 1 #显示行数，默认两行，超过行数切换为滚动显示
   message:
-    - descr: Java
+    - descr: # Language
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png
-    - descr: FSharp
+    - descr: # Technology
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png
-    - descr: Paper
+    - descr: # Science
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png
-    - descr: Python
+    - descr: # Algorithm
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png
   custom_css: https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css
 
@@ -235,18 +236,18 @@ magnet:
   type: categories
   devide: 2
   display:
-    - name: Java
-      display_name: Java教程
-      icon: ♥
-    - name: FSharp
-      display_name: FSharp教程
-      icon: 🌂  
-    - name: Paper
-      display_name: Paper教程
-      icon: ⭐
-    - name: Python
-      display_name: Python教程
-      icon: ⛄
+    - name: Language
+      display_name: 编程语言
+      icon: ❤
+    - name: Technology
+      display_name: 技术架构
+      icon: 🧡  
+    - name: Science
+      display_name: 科学研究
+      icon: 💛
+    - name: Algorithm
+      display_name: 编程算法
+      icon: 💚
   color_setting:
     text_color: black
     text_hover_color: white

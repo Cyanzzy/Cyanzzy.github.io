@@ -3,10 +3,10 @@ title: Fsharp-01-Values
 date: 2023-02-12 10:02:00
 update: 2023-02-12 10:02:00
 tags: 
-  - Other
+  - FSharp
 categories: 
-  - Java
-swiper_index: 1
+  - Language
+swiper_index:  
 ---
 
 > 大纲：int、string、float、float32、decimal、tuple

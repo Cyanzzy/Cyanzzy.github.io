@@ -82,7 +82,8 @@ katex:
 # --------------------------------------
 
 # Favicon（網站圖標）
-favicon: /img/favicon.png
+# /img/favicon.png
+favicon: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon.jpg
 
 # Avatar (頭像)
 avatar:
@@ -582,12 +583,12 @@ activate_power_mode:
 # Mouse click effects: fireworks (鼠標點擊效果: 煙火特效)
 fireworks:
   enable: false
-  zIndex: 9999 # -1 or 9999
+  zIndex: 999 # -1 or 9999
   mobile: false
 
 # Mouse click effects: Heart symbol (鼠標點擊效果: 愛心)
 click_heart:
-  enable: false
+  enable: true
   mobile: false
 
 # Mouse click effects: words (鼠標點擊效果: 文字)
@@ -641,7 +642,7 @@ subtitle:
   # https://github.com/mattboldt/typed.js/#customization
   typed_option:
   # source 調用第三方服務
-  # source: false 關閉調用
+  # source: false  關閉調用
   # source: 1  調用一言網的一句話（簡體） https://hitokoto.cn/
   # source: 2  調用一句網（簡體） https://yijuzhan.com/
   # source: 3  調用今日詩詞（簡體） https://www.jinrishici.com/
@@ -762,7 +763,7 @@ darkmode:
   # autoChangeMode: 1  Following System Settings, if the system doesn't support dark mode, it will switch dark mode between 6 pm to 6 am
   # autoChangeMode: 2  Switch dark mode between 6 pm to 6 am
   # autoChangeMode: false
-  autoChangeMode: false
+  autoChangeMode: 2
 
 # show scroll percent in scroll-to-top button
 rightside_scroll_percent: false
@@ -793,7 +794,7 @@ fancybox: true
 # mermaid
 # see https://github.com/mermaid-js/mermaid
 mermaid:
-  enable: false
+  enable: true
   # built-in themes: default/forest/dark/neutral
   theme:
     light: default

@@ -85,9 +85,9 @@ katex:
 # /img/favicon.png
 favicon: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon.jpg
 
-# Avatar (頭像)
-avatar:
-  img: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/head.jpg
+# Avatar (頭像) https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/head.jpg
+avatar: 
+  img: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg
   effect: false
 
 # Disable all banner image

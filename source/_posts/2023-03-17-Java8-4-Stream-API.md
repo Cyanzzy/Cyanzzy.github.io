@@ -16,8 +16,8 @@ Stream API 提供了一种高效且易于使用的处理数据的方式， Java8
 
 Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列。  
 
-*  Stream 自己不会存储元素。 
-*  Stream 不会改变源对象。相反，他们会返回一个持有结果的新Stream 
+*  Stream 自己**不会存储元素**。 
+*  Stream **不会改变源对象**。相反，他们会返回一个持有结果的新Stream 
 *  Stream 操作是延迟执行的。这意味着他们会等到需要结果的时候才执行 
 
 # 操作 
@@ -35,7 +35,7 @@ Stream 是数据渠道，用于操作数据源（集合、数组等）所生成�
 
 > 数组创建流
 
- Java8 中的 Arrays 的静态方法 stream() 可 以获取数组流 
+ Java8 中的 Arrays 的静态方法 stream() 可以获取数组流 
 
 | 方法                                   | 说明       |
 | -------------------------------------- | ---------- |
@@ -68,7 +68,7 @@ Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
 
 >  值创建流 
 
- 使用静态方法 Stream.of(), 通过显示值 创建一个流。它可以接收任意数量的参数。 
+ 使用静态方法 Stream.of(), 通过显示值创建一个流。它可以接收任意数量的参数。 
 
 | 方法                                       | 说明       |
 | ------------------------------------------ | ---------- |
@@ -85,7 +85,7 @@ Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
 
 ## 中间操作 
 
- 一个中间操作链，对数据源的数据进行处理 。 多个中间操作可以连接起来形成一个流水线，除非流水 线上触发终止操作，否则中间操作不会执行任何的处理！而在终止操作时一次性全部处理，称为“惰性求值” 
+ 一个中间操作链，对数据源的数据进行处理 。 多个中间操作可以连接起来形成一个流水线，除非流水线上触发终止操作，否则中间操作不会执行任何的处理！而在终止操作时一次性全部处理，称为“惰性求值” 
 
 > 筛选与切片 
 
@@ -94,7 +94,7 @@ Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
 | filter(Predicate p) | 接收 Lambda ， 从流中**排除**某些元素。                      |
 | distinct()          | 筛选，通过流所生成元素的 hashCode() 和 equals() **去除重复**元素 |
 | limit(long maxSize) | **截断**流，使其元素不超过给定数量。                         |
-| skip(long n)        | **跳过**元素，返回一个扔掉了前 n 个元素的流。若流中元素 不足 n 个，则返回一个空流。与 limit(n) 互补 |
+| skip(long n)        | **跳过**元素，返回一个扔掉了前 n 个元素的流。若流中元素不足 n 个，则返回一个空流。与 limit(n) 互补 |
 
 ### filter
 
@@ -104,18 +104,19 @@ Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
 // 匿名内部类写法
 authors.stream().
        .filter(new Predicate<Author> {
-           public boolean test(Author author) {
-               return author.getName().length() > 1;
-           }
-       })
+            public boolean test(Author author) {
+                return author.getName().length() > 1;}
+        })
        .forEach(new Consumer<Author>() {
-           public void accept(Author author) {
-               System.out.println(author.getName());
-           }
-       });
+            public void accept(Author author) {
+                System.out.println(author.getName());
+            }
+        });
 
 // lambda表达式写法
-authors.stream().filter(author->author.getName().length>1).forEach(author->System.out.println(author.getName()));
+authors.stream()
+     .filter(author->author.getName().length>1)
+     .forEach(author->System.out.println(author.getName()));
 ```
 
 ### distinct
@@ -123,7 +124,9 @@ authors.stream().filter(author->author.getName().length>1).forEach(author->Syste
  流中去重`[distinct是依赖Object的equals方法判断是否是相同对象的，要重写equals方法，lombok中使用@EqualsAndHashCode注解重写]` 
 
 ```java
-authors.stream().distinct().forEach(author->System.out.println(author.getName()));
+authors.stream()
+       .distinct()
+       .forEach(author->System.out.println(author.getName()));
 ```
 
 ### limit
@@ -131,7 +134,11 @@ authors.stream().distinct().forEach(author->System.out.println(author.getName())
  设置流的最大长度，超出的部分将被抛弃 
 
 ```java
-authors.stream().distinct().sorted().limit(2).forEach(author->System.out.println(author.getName()));
+authors.stream()
+       .distinct()
+       .sorted()
+       .limit(2)
+       .forEach(author->System.out.println(author.getName()));
 ```
 
 ### skip
@@ -139,7 +146,10 @@ authors.stream().distinct().sorted().limit(2).forEach(author->System.out.println
  跳过流中前n个元素，返回剩下的元素 
 
 ```java
-authors.stream().distinct().sorted.skip(1).forEach(author->System.out.println(author.getName()));
+authors.stream()
+       .distinct()
+       .sorted.skip(1)
+       .forEach(author->System.out.println(author.getName()));
 ```
 
 > 映射
@@ -147,10 +157,10 @@ authors.stream().distinct().sorted.skip(1).forEach(author->System.out.println(au
 | 方法                            | 说明                                                         |
 | ------------------------------- | ------------------------------------------------------------ |
 | map(Function f)                 | **接收一个函数**作为参数，该函数会被应用到每个元素上，并将其映射成一个新的元素。 |
-| mapToDouble(ToDoubleFunction f) | 接收一个函数作为参数，该函数会被应用到每个元 素上，产生一个新的 DoubleStream。 |
-| mapToInt(ToIntFunction f)       | 接收一个函数作为参数，该函数会被应用到每个元 素上，产生一个新的 IntStream。 |
-| mapToLong(ToLongFunction f)     | 接收一个函数作为参数，该函数会被应用到每个元 素上，产生一个新的 LongStream。 |
-| flatMap(Function f)             | 接收一个函数作为参数，将流中的每个值都换成另 一个流，然后把所有流连接成一个流 |
+| mapToDouble(ToDoubleFunction f) | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 DoubleStream。 |
+| mapToInt(ToIntFunction f)       | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 IntStream。 |
+| mapToLong(ToLongFunction f)     | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 LongStream。 |
+| flatMap(Function f)             | 接收一个函数作为参数，**将流中的每个值都换成另一个流，然后把所有流连接成一个流** |
 
 ### map
 
@@ -171,12 +181,14 @@ authors.stream().
        });
 
 // lambda表达式写法
-authors.stream().map(author->author.getName()).forEach(s->System.out.println(s));
+authors.stream()
+       .map(author->author.getName())
+       .forEach(s->System.out.println(s));
 ```
 
 ### flatMap
 
- `map`只能只能把一个对象转换成另一个对象来作为流中的元素，而`flatMap`可以把一个对象转换成多个对象作为流中的元素。 
+ `map`只能只能把一个对象转换成另一个对象来作为流中的元素，而`flatMap`可以**把一个对象转换成多个对象作为流中的元素**。 
 
 ```java
 public class Author implements Comparable<Author> {
@@ -204,11 +216,19 @@ authors.stream()
            }
        });
 
-authors.stream().flatMap(author->author.getBooks().stream()).distinct().forEach(book->System.out.println(book.getName()));
+authors.stream()
+       .flatMap(author->author.getBooks().stream())
+       .distinct()
+       .forEach(book->System.out.println(book.getName()));
 
 
 //  打印所有数据的分类，对分类进行去重
-authos.stream().flatMap(author->author.getName().stream()).distinct().flatMap(book->Arrays.stream(book.getCategory().split(","))).distinct().forEach(category->System.out.println(category));
+authors.stream()
+       .flatMap(author->author.getName().stream())
+       .distinct()
+       .flatMap(book->Arrays.stream(book.getCategory().split(",")))
+       .distinct()
+       .forEach(category->System.out.println(category));
 ```
 
 > 排序
@@ -232,18 +252,24 @@ public class Author implements Comparable<Author> {
     }
 }
 
-authors.stream().distinct().sort().forEach(author->System.out.println(author.getAge()));
+authors.stream()
+       .distinct()
+       .sort()
+       .forEach(author->System.out.println(author.getAge()));
 ```
 
  2.调用有参`sorted`方法 
 
 ```java
-authors.stream().distinct().sort((o1,o2)->o1.getAge()-o2.getAge()).forEach(author->System.out.println(author.getAge()));
+authors.stream()
+       .distinct()
+       .sort((o1,o2)->o1.getAge()-o2.getAge())
+       .forEach(author->System.out.println(author.getAge()));
 ```
 
 ## 终止操作
 
- 一个终止操作，执行中间操作链，并产生结果， 终端操作会从流的流水线生成结果。其结果可以是任何不是流的 值，例如：List、Integer，甚至是 void 。  
+ 一个终止操作，执行中间操作链，并产生结果， 终端操作会从流的流水线生成结果。其结果可以是任何不是流的值，例如：List、Integer，甚至是 void 。  
 
 > 查找与匹配
 
@@ -257,14 +283,17 @@ authors.stream().distinct().sort((o1,o2)->o1.getAge()-o2.getAge()).forEach(autho
 | count()                | 返回流中元素总数                                             |
 | max(Comparator c)      | 返回流中最大值                                               |
 | min(Comparator c)      | 返回流中最小值                                               |
-| forEach(Consumer c)    | 内部迭代(使用 Collection 接口需要用户去做迭 代，称为外部迭代。相反，Stream API 使用内部 迭代——它帮你把迭代做了) |
+| forEach(Consumer c)    | 内部迭代(使用 Collection 接口需要用户去做迭代，称为外部迭代。相反，Stream API 使用内部 迭代——它帮你把迭代做了) |
 
 ### forEach
 
  对流中的元素进行遍历操作，通过传入的参数去指定对遍历到的元素进行具体操作 
 
 ```java
-authors.stream().map(author->author.getName()).distinct().forEach(name->System.out.print(name));
+authors.stream()
+       .map(author->author.getName())
+       .distinct()
+       .forEach(name->System.out.print(name));
 ```
 
 ### count
@@ -272,7 +301,10 @@ authors.stream().map(author->author.getName()).distinct().forEach(name->System.o
  可以获取当前流中元素的个数 
 
 ```java
-long cnt = authors.stream().flatMap(author->getBooks().stream()).distinct().count();
+long cnt = authors.stream()
+                  .flatMap(author->getBooks().stream())
+                  .distinct()
+                  .count();
 ```
 
 ### max&min
@@ -280,9 +312,15 @@ long cnt = authors.stream().flatMap(author->getBooks().stream()).distinct().coun
  统计流中的最值 
 
 ```java
-Optional<Integer> max=authors.stream().flatMap(author->author.Books()).map(book->book.getScore()).max((score1-score2)->score1-score2);
+Optional<Integer> max=authors.stream()
+                             .flatMap(author->author.Books())
+                             .map(book->book.getScore())
+                             .max((score1-score2)->score1-score2);
 
-Optional<Integer> min=authors.stream().flatMap(author->author.Books()).map(book->book.getScore()).min((score1-score2)->score1-score2);
+Optional<Integer> min=authors.stream()
+                             .flatMap(author->author.Books())
+                             .map(book->book.getScore())
+                             .min((score1-score2)->score1-score2);
 ```
 
 ### AnyMatch
@@ -290,7 +328,8 @@ Optional<Integer> min=authors.stream().flatMap(author->author.Books()).map(book-
 判断是否有任意符合匹配条件的元素，结果为boolean类型
 
 ```java
-authors.stream().AnyMatch(author->author.getAge()>29);
+authors.stream()
+       .AnyMatch(author->author.getAge()>29);
 ```
 
 ### allMatch
@@ -298,7 +337,8 @@ authors.stream().AnyMatch(author->author.getAge()>29);
 判断是否都符合匹配条件，结果为boolean类型
 
 ```java
-authors.stream().allMatch(author->author.getAge()>29)
+authors.stream()
+       .allMatch(author->author.getAge()>29)
 ```
 
 ### noneMatch
@@ -306,7 +346,8 @@ authors.stream().allMatch(author->author.getAge()>29)
 判断留着元素都不符合匹配条件的，结果为boolean类型
 
 ```java
-authors.stream().noneMatch(author->author.getAge()>29)
+authors.stream()
+       .noneMatch(author->author.getAge()>29)
 ```
 
 ### findAny
@@ -314,7 +355,9 @@ authors.stream().noneMatch(author->author.getAge()>29)
  获取流中任意一个元素[保证不了是否为第一个元素] 
 
 ```java
-Optional<Author> author = authors.stream().filter(author->author.getAge()>52).findAny();
+Optional<Author> author = authors.stream()
+                                 .filter(author->author.getAge()>52)
+                                 .findAny();
 author.ifPresent(author->System.out.print(author.getName()));
 ```
 
@@ -323,7 +366,9 @@ author.ifPresent(author->System.out.print(author.getName()));
 获取流中第一个元素
 
 ```java
-Optional<Author> first = authors.stream().sorted((o1,o2)->o1.getAge()-o2.getAge()).findFirst();
+Optional<Author> first = authors.stream()
+                                .sorted((o1,o2)->o1.getAge()-o2.getAge())
+                                .findFirst();
 first.ifPresent(author->System.out.print(author.getName()));
 ```
 
@@ -333,7 +378,7 @@ first.ifPresent(author->System.out.print(author.getName()));
 | -------------------------------- | ------------------------------------------------------------ |
 | reduce(T iden, BinaryOperator b) | 可以将流中元素反复结合起来，得到一个值。 返回 T              |
 | reduce(BinaryOperator b)         | 可以将流中元素反复结合起来，得到一个值。 返回 Optional<T>    |
-| collect(Collector c)             | 将流转换为其他形式。接收一个 Collector接口的 实现，用于给Stream中元素做汇总的方法 |
+| collect(Collector c)             | 将流转换为其他形式。接收一个 Collector接口的实现，用于给Stream中元素做汇总的方法 |
 
 Collector 接口中方法的实现决定了如何对流执行收集操作(如收 集到 List、Set、Map)。但是 Collectors 实用类提供了很多静态方法，可以方便地创建常见收集器实例
 
@@ -385,7 +430,9 @@ list.stream().reduce(0,Integer::sum);
 
 ```java
 // 单参数
-data.stream().map(emp->emp.getSalary()).reduce((salary1, salary2)-> salary1 + salary2);
+data.stream()
+    .map(emp->emp.getSalary())
+    .reduce((salary1, salary2)-> salary1 + salary2);
 ```
 
 **使用reduce对年龄求和**
@@ -399,7 +446,10 @@ authors.stream()
            }
        });
 
-Integer sum = authors.stream().map(author->author.getAge()).reduce((result,element) ->result + element); 
+Integer sum = authors.stream()
+                     .map(author->author
+                     .getAge())
+                     .reduce((result,element) ->result + element); 
 ```
 
 **使用reduce求年龄最大值**
@@ -412,7 +462,9 @@ authors.stream().map(author->author.getAge())
                     }
                 })
 
-Integer max = authors.stream().map(author->author.getAge()).reduce(Integer.MIN_VALUE,(result,element)->result < element ? element : result);
+Integer max = authors.stream()
+                     .map(author->author.getAge())
+                     .reduce(Integer.MIN_VALUE,(result,element)->result < element ? element : result);
 ```
 
  **使用reduce求年龄最小值** 
@@ -426,15 +478,18 @@ authors.stream().map(author->author.getAge())
                     }
                 })
 
-authors.stream().map(author->author.getAge()).reduce(Integer.MAX_VALUE,(result, element)->result > element ? element : result);
+authors.stream()
+       .map(author->author.getAge())
+       .reduce(Integer.MAX_VALUE,(result, element)->result > element ? element : result);
 
 // 单个参数的重载实现
-Optional<Integer> min = authors.stream().map(author->author.getAge())
-                .reduce(new BinaryOperator<Integer>() {
-                    public Integer apply(Integer result, Integer element) {
-                        return result > element ? element : result;
-                    }
-                });
+Optional<Integer> min = authors.stream()
+                               .map(author->author.getAge())
+                               .reduce(new BinaryOperator<Integer>() {
+                                    public Integer apply(Integer result, Integer element) {
+                                        return result > element ? element : result;
+                                    }
+                               });
 min.ifPresent(age->System.out.println(age))
 ```
 
@@ -444,10 +499,14 @@ min.ifPresent(age->System.out.println(age))
 
 ```java
 // List
-List<String> list = authors.stream().map(author->author.getName()).collect(Collectors.toList());
+List<String> list = authors.stream()
+                           .map(author->author.getName())
+                           .collect(Collectors.toList());
 
 // Set
-Set<Book> books = authors.stream().flatMap(author->author.getBooks.stream()),collect(Collectors.toSet());
+Set<Book> books = authors.stream()
+                         .flatMap(author->author.getBooks.stream())
+                         .collect(Collectors.toSet());
 
 // Map
 authors.stream()
@@ -461,26 +520,10 @@ authors.stream()
            }
        }));
 
-authors.stream().distinct().collect(Collectors.toMap(author->author.getName(),author.getBooks()));	
+authors.stream()
+       .distinct()
+       .collect(Collectors.toMap(author->author.getName(),author.getBooks()));	
 ```
-
-| 方法              | 返回类型             | 示例                                                         | 作用                                                         |
-| ----------------- | -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| toList            | List<T>              | List emps= list.stream().collect(Collectors.toList());       | 把流中元素收集到List,,                                       |
-| toSet             | Set<T>               | Set emps= list.stream().collect(Collectors.toSet());         | 把流中元素收集到Set                                          |
-| toCollection      | Collection<T>        | Collectionemps=list.stream().collect(Collectors.toCollection(ArrayList::new)); | 把流中元素收集到创建的集合                                   |
-| counting          | Long                 | long count = list.stream().collect(Collectors.counting());   | 计算流中元素的个数                                           |
-| summingInt        | Integer              | inttotal=list.stream().collect(Collectors.summingInt(Employee::getSalary)); | 对流中元素的整数属性求和                                     |
-| averagingInt      | Double               | doubleavg= list.stream().collect(Collectors.averagingInt(Employee::getSalary)); | 计算流中元素Integer属性的平均 值                             |
-| summarizingInt    | IntSummaryStatistics | IntSummaryStatisticsiss= list.stream().collect(Collectors.summarizingInt(Employee::getSalary)); | 收集流中Integer属性的统计值。 如：平均值                     |
-| joining           | joining              | String str= list.stream().map(Employee::getName).collect(Collectors.joining()); | 连接流中每个字符串                                           |
-| maxBy             | Optional<T>          | Optionalmax= list.stream().collect(Collectors.maxBy(comparingInt(Employee::getSalary))); | 根据比较器选择最大值                                         |
-| minBy             | Optional<T>          | Optional min = list.stream().collect(Collectors.minBy(comparingInt(Employee::getSalary))); | 根据比较器选择最小值                                         |
-| reducing          | 归约产生的类型       | inttotal=list.stream().collect(Collectors.reducing(0, Employee::getSalar, Integer::sum)); | 从一个作为累加器的初始值 开始，利用BinaryOperator与 流中元素逐个结合，从而归 约成单个值 |
-| collectingAndThen | 转换函数返回的类型   | inthow= list.stream().collect(Collectors.collectingAndThen(Collectors.toList(), List::size)); | 包裹另一个收集器，对其结 果转换函数                          |
-| groupingBy        | Map<K,List<T>>       | Map> map= list.stream() .collect(Collectors.groupingBy(Employee::getStatus)); | 根据某属性值对流分组，属 性为K，结果为V                      |
-| partitioningBy    | Map<Boolean,List<T>> | Map>vd= list.stream().collect(Collectors.partitioningBy(Employee::getManage)) | 根据true或false进行分区                                      |
-
 > 注意事项
 
 - 没有终结操作，中间操作是不会执行的

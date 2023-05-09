@@ -2,7 +2,7 @@
 title: 企业开发基础-5-Mybatis-Plus
 date: 2023-03-25 17:59:52
 tags: 
-  - MyBatis-Plus
+  - MyBatis
 categories: 
   - Technology
 swiper_index: 

@@ -98,7 +98,7 @@ int var = calculateNum((int left, int right)->{
 });
 
 // 进一步省略
-int var = calculateNum((left, right)->eft + right);
+int var = calculateNum((left, right)->left + right);
 ```
 
 > 案例4
@@ -151,15 +151,14 @@ Integer res = typeConver(new Function<String, Integer> {
 // Lambda表达式实现
 Integer res = typeConver((String s)->{
       return Integer.valueOf(s);  
-    });
-
+});
 ```
 
 > 案例6
 
 ```java
 public static void foreachArr(IntConsumer consumer) {
-	int[] arr = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int[] arr = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     for (int i : arr) {
         consumer.accept(i);
     }

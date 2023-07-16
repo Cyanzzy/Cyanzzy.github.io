@@ -83,7 +83,9 @@ katex:
 
 # Favicon（網站圖標）
 # /img/favicon.png
-favicon: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon.jpg
+# https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon.jpg
+favicon: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png
+
 
 # Avatar (頭像) https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/head.jpg
 avatar: 

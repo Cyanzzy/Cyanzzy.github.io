@@ -369,3 +369,384 @@ POST /_analyze
 }
 ```
 
+## 小结
+
+> 分词器作用
+
+- 创建倒排索引时对文档分词
+- 用户搜索时，对输入的内容分词
+
+> IK分词器模式
+
+- ik_smart：智能切分，粗粒度
+- ik_max_word：最细切分，细粒度
+
+> IK分词器拓展词库
+
+要拓展ik分词器的词库，只需要修改一个ik分词器目录中的config目录中的IkAnalyzer.cfg.xml文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+        <comment>IK Analyzer 扩展配置</comment>
+        <!--用户可以在这里配置自己的扩展字典 *** 添加扩展词典-->
+        <entry key="ext_dict">ext.dic</entry>
+</properties>
+```
+
+然后在名为ext.dic的文件中，添加想要拓展的词语即可 
+
+> IK分词器停用词库
+
+要禁用某些敏感词条，只需要修改一个ik分词器目录中的config目录中的IkAnalyzer.cfg.xml文件  
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+        <comment>IK Analyzer 扩展配置</comment>
+        <!--用户可以在这里配置自己的扩展字典-->
+        <entry key="ext_dict">ext.dic</entry>
+         <!--用户可以在这里配置自己的扩展停止词字典  *** 添加停用词词典-->
+        <entry key="ext_stopwords">stopword.dic</entry>
+</properties>
+```
+
+然后在名为stopword.dic的文件中，添加想要拓展的词语即可  
+
+# 索引库操作
+
+## mapping映射属性
+
+索引库就类似数据库表，mapping映射就类似表的结构，要向es中存储数据，必须先创建“库”和“表”。
+
+**mapping是对索引库中文档的约束**，常见的mapping属性包括：
+
+- type：字段数据类型，常见的简单类型有：
+  - 字符串：text（可分词的文本）、keyword（精确值，例如：品牌、国家、ip地址）
+  - 数值：long、integer、short、byte、double、float、
+  - 布尔：boolean
+  - 日期：date
+  - 对象：object
+- index：是否创建索引，默认为true
+- analyzer：使用哪种分词器
+- properties：该字段的子字段
+
+> example
+
+```json
+{
+    "age": 21,
+    "weight": 52.1,
+    "isMarried": false,
+    "info": "黑马程序员Java讲师",
+    "email": "zy@itcast.cn",
+    "score": [99.1, 99.5, 98.9],
+    "name": {
+        "firstName": "云",
+        "lastName": "赵"
+    }
+}
+```
+
+对应的每个字段映射（mapping）：
+
+- age：类型为 integer；参与搜索，因此需要index为true；无需分词器
+- weight：类型为float；参与搜索，因此需要index为true；无需分词器
+- isMarried：类型为boolean；参与搜索，因此需要index为true；无需分词器
+- info：类型为字符串，需要分词，因此是text；参与搜索，因此需要index为true；分词器可以用ik_smart
+- email：类型为字符串，但是不需要分词，因此是keyword；不参与搜索，因此需要index为false；无需分词器
+- score：虽然是数组，但是我们只看元素的类型，类型为float；参与搜索，因此需要index为true；无需分词器
+- name：类型为object，需要定义多个子属性
+  - name.firstName；类型为字符串，但是不需要分词，因此是keyword；参与搜索，因此需要index为true；无需分词器
+  - name.lastName；类型为字符串，但是不需要分词，因此是keyword；参与搜索，因此需要index为true；无需分词器
+
+## 索引库操作
+
+
+
+### 创建索引库和映射
+
+> 基本语法：
+
+- 请求方式：PUT
+- 请求路径：/索引库名，可以自定义
+- 请求参数：mapping映射
+
+> 格式：
+
+```json
+PUT /索引库名称
+{
+  "mappings": {
+    "properties": {
+      "字段名":{
+        "type": "text",
+        "analyzer": "ik_smart"
+      },
+      "字段名2":{
+        "type": "keyword",
+        "index": "false"
+      },
+      "字段名3":{
+        "properties": {
+          "子字段": {
+            "type": "keyword"
+          }
+        }
+      },
+      // ...略
+    }
+  }
+}
+```
+
+> 示例：
+
+```sh
+PUT /indexfile
+{
+  "mappings": {
+    "properties": {
+      "info":{
+        "type": "text",
+        "analyzer": "ik_smart"
+      },
+      "email":{
+        "type": "keyword",
+        "index": "falsae"
+      },
+      "name":{
+        "properties": {
+          "firstName": {
+            "type": "keyword"
+          }
+        }
+      },
+      // ... 略
+    }
+  }
+}
+```
+
+### 查询索引库
+
+> 基本语法
+
+- 请求方式：GET
+
+- 请求路径：/索引库名
+
+- 请求参数：无
+
+> 格式 
+
+```
+GET /索引库名
+```
+
+> 示例
+
+```json
+GET /indexfile
+```
+
+### 修改索引库
+
+倒排索引结构虽然不复杂，但是一旦数据结构改变（比如改变了分词器），就需要重新创建倒排索引。因此索引库**一旦创建，无法修改mapping**。
+
+虽然无法修改mapping中已有的字段，但是**却允许添加新的字段到mapping中**，因为不会对倒排索引产生影响。
+
+> 语法说明 
+
+```json
+PUT /索引库名/_mapping
+{
+  "properties": {
+    "新字段名":{
+      "type": "integer"
+    }
+  }
+}
+```
+
+> 示例 
+
+```	json
+PUT /indexfile/_mapping
+{
+  "properties": {
+    "age":{
+      "type": "integer"
+    }
+  }
+}
+```
+
+
+
+### 删除索引库
+
+> 语法 
+
+- 请求方式：DELETE
+
+- 请求路径：/索引库名
+
+- 请求参数：无
+
+> 格式 
+
+```
+DELETE /索引库名
+```
+
+### 小结
+
+- 创建索引库：PUT /索引库名
+- 查询索引库：GET /索引库名
+- 删除索引库：DELETE /索引库名
+- 添加字段：PUT /索引库名/_mapping3.文档操作
+
+# 文档操作
+
+## 新增文档
+
+> 语法
+
+```json
+POST /索引库名/_doc/文档id
+{
+    "字段1": "值1",
+    "字段2": "值2",
+    "字段3": {
+        "子属性1": "值3",
+        "子属性2": "值4"
+    },
+    // ...
+}
+```
+
+> 示例 
+
+```json
+POST /heima/_doc/1
+{
+    "info": "黑马程序员Java讲师",
+    "email": "zy@itcast.cn",
+    "name": {
+        "firstName": "云",
+        "lastName": "赵"
+    }
+}
+```
+
+
+
+## 查询文档
+
+> 语法 
+
+```json
+GET /{索引库名称}/_doc/{id}
+```
+
+> 示例
+
+```js
+GET /heima/_doc/1
+```
+
+
+
+## 删除文档
+
+> 语法 
+
+```js
+DELETE /{索引库名}/_doc/id值
+```
+
+> 示例 
+
+```json
+# 根据id删除数据
+DELETE /heima/_doc/1
+```
+
+## 修改文档
+
+修改有两种方式：
+
+- 全量修改：直接覆盖原来的文档
+- 增量修改：修改文档中的部分字段
+
+### 全量修改
+
+全量修改是覆盖原来的文档，其本质是：
+
+- **根据指定的id删除文档**
+- **新增一个相同id的文档**
+
+**注意**：如果根据id删除时，id不存在，第二步的新增也会执行，也就从修改变成了新增操作了。
+
+> 语法
+
+```json
+PUT /{索引库名}/_doc/文档id
+{
+    "字段1": "值1",
+    "字段2": "值2",
+    // ... 略
+}
+```
+
+> 示例
+
+```json
+PUT /heima/_doc/1
+{
+    "info": "黑马程序员高级Java讲师",
+    "email": "zy@itcast.cn",
+    "name": {
+        "firstName": "云",
+        "lastName": "赵"
+    }
+}
+```
+
+### 增量修改
+
+**增量修改是只修改指定id匹配的文档中的部分字段。**
+
+> 语法 
+
+```json
+POST /{索引库名}/_update/文档id
+{
+    "doc": {
+         "字段名": "新的值",
+    }
+}
+```
+
+> 示例
+
+```json
+POST /heima/_update/1
+{
+  "doc": {
+    "email": "ZhaoYun@itcast.cn"
+  }
+}
+```
+
+## 小总结
+
+- 创建文档：POST /{索引库名}/_doc/文档id   { json文档 }
+- 查询文档：GET /{索引库名}/_doc/文档id
+- 删除文档：DELETE /{索引库名}/_doc/文档id
+- 修改文档：
+  - 全量修改：PUT /{索引库名}/_doc/文档id { json文档 }
+  - 增量修改：POST /{索引库名}/_update/文档id { "doc": {字段}}

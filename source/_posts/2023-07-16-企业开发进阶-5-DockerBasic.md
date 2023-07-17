@@ -289,3 +289,316 @@ Docker运行的基本流程：
 仓库名、标签都是<none>的镜像，俗称虚悬镜像dangling image
 
 ## 容器命令
+
+> 新建+启动容器
+
+```bash
+# 帮助命令
+docker run --help
+
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+```
+
+ OPTIONS说明（常用）：
+
+| 选项                  | 说明                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| `--name="容器新名字"` | 为容器指定一个名称                                           |
+| `-d`                  | 后台运行容器并返回容器ID，也即启动守护式容器(后台运行)       |
+| `-i`                  | 以交互模式运行容器，通常与 -t 同时使用；                     |
+| `-t`                  | 为容器重新分配一个伪输入终端，通常与 -i 同时使用；<br/>也即启动交互式容器(前台有伪终端，等待交互) |
+| `-P`                  | 随机端口映射，大写P                                          |
+| `-p`                  | 指定端口映射，小写p                                          |
+
+| 参数                          | 说明                               |
+| ----------------------------- | ---------------------------------- |
+| -p hostPort:containerPort     | 端口映射 -p 8080:80                |
+| -p ip:hostPort:containerPort  | 配置监听地址 -p 10.0.0.100:8080:80 |
+| -p ip::containerPort          | 随机分配端口 -p 10.0.0.100::80     |
+| -p hostPort:containerPort:udp | 指定协议 -p 8080:80:tcp            |
+| -p 81:80 -p 443:443           | 指定多个                           |
+
+
+
+```bash
+# 使用镜像centos:latest以交互模式启动一个容器,在容器内执行/bin/bash命令。
+docker run -it centos /bin/bash 
+```
+
+参数说明：
+
+* -i: 交互式操作
+* -t: 终端
+* centos : centos 镜像
+* /bin/bash：放在镜像名后的是命令，这里我们希望有个交互式 Shell，因此用的是 /bin/bash。要退出终端，直接输入 exit:
+
+> 列出当前所有正在运行的容器
+
+```bash
+docker ps [OPTIONS]
+```
+
+OPTIONS说明（常用）：
+
+| 选项 | 说明                                      |
+| ---- | ----------------------------------------- |
+| -a   | 列出当前所有正在运行的容器+历史上运行过的 |
+| -l   | 显示最近创建的容器                        |
+| -n   | 显示最近n个创建的容器。                   |
+| -q   | 静默模式，只显示容器编号                  |
+
+> 退出容器
+
+| 命令     | 说明                                  |
+| -------- | ------------------------------------- |
+| exit     | run进去容器，exit退出，容器停止       |
+| ctrl+p+q | run进去容器，ctrl+p+q退出，容器不停止 |
+
+> 启动已停止运行的容器
+
+| 命令                          | 说明                 |
+| ----------------------------- | -------------------- |
+| docker start 容器ID或者容器名 | 启动已停止运行的容器 |
+
+> 重启容器
+
+| 命令                            | 说明     |
+| ------------------------------- | -------- |
+| docker restart 容器ID或者容器名 | 重启容器 |
+
+> 停止容器
+
+| 命令                         | 说明         |
+| ---------------------------- | ------------ |
+| docker stop 容器ID或者容器名 | 停止容器     |
+| docker kill 容器ID或容器名   | 强制停止容器 |
+
+> 删除已停止的容器
+
+| 命令             | 说明             |
+| ---------------- | ---------------- |
+| docker rm 容器ID | 删除已停止的容器 |
+
+```bash
+# 一次性删除多个容器示例
+docker rm -f $(docker ps -a -q)
+
+docker ps -a -q | xargs docker rm
+```
+
+> 有镜像才能创建容器（根本前提）
+
+> 启动守护式容器（后台服务器）
+
+* 在大部分的场景下，我们希望 docker 的服务是在后台运行的，我们可以过 `-d`指定容器的后台运行模式
+* docker run -d 容器名
+* **Docker容器后台运行,就必须有一个前台进程。容器运行的命令如果不是那些一直挂起的命令（比如运行top，tail），就是会自动退出的**，最佳的解决方案是将要运行的程序以前台进程的形式运行，常见就是命令行模式，表示还有交互操作，别中断
+
+> 查看容器日志：
+
+```bash
+docker logs 容器ID
+```
+
+> 查看容器内运行的进程：
+
+```bash
+docker top 容器ID
+```
+
+>查看容器内部细节：
+
+```bash
+docker inspect 容器ID
+```
+
+> 进入正在运行的容器并以命令行交互
+
+```bash
+docker exec -it 容器ID bashShell
+```
+
+```bash
+重新进入docker attach 容器ID
+```
+
+* attach 直接进入容器启动命令的终端，不会启动新的进程
+  用exit退出，会导致容器的停止
+* exec 是在容器中打开新的终端，并且可以启动新的进程
+  **用exit退出，不会导致容器的停止**
+
+```bash
+# example
+进入redis服务
+
+docker exec -it 容器ID /bin/bash
+
+docker exec -it 容器ID redis-cli
+
+一般用-d后台启动的程序，再用exec进入对应容器实例
+```
+
+> 从容器内拷贝文件到主机上
+
+```bash
+docker cp  容器ID:容器内路径 目的主机路径
+```
+
+> 导入和导出容器
+
+| 命令   | 说明                                                        |
+| ------ | ----------------------------------------------------------- |
+| export | 导出容器的内容留作为一个tar归档文件[对应import命令]         |
+| import | 从tar包中的内容创建一个新的文件系统再导入为镜像[对应export] |
+
+```bash
+# example
+docker export ContrainerId > 文件名.tar
+cat 文件名.tar | docker import - 镜像用户/镜像名:镜像版本号
+```
+
+## 总结
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-12.png)
+
+| 命令    | 英文解释                                                     | 中文解释                                                     |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| attach  | Attach to a running container                                | 当前 shell 下 attach 连接指定运行镜像                        |
+| build   | Build an image from a Dockerfile                             | 通过 Dockerfile 定制镜像                                     |
+| commit  | Create a new image from a container changes                  | 提交当前容器为新的镜像                                       |
+| cp      | Copy files/folders from the containers filesystem to the host path | 从容器中拷贝指定文件或者目录到宿主机中                       |
+| create  | Create a new container                                       | 创建一个新的容器，同 run，但不启动容器                       |
+| diff    | Inspect changes on a container's filesystem                  | 查看 docker 容器变化                                         |
+| events  | Get real time events from the server                         | 从docker 服务获取容器实时事件                                |
+| exec    | Run a command in an existing container                       | 在已存在的容器上运行命令                                     |
+| export  | Stream the contents of a container as a tar archive          | 导出容器的内容流作为一个 tar 归档文件[对应 import ]          |
+| import  | Create a new filesystem image from the contents of a tarball | 从tar包中的内容创建一个新的文件系统映像[对应export]          |
+| history | Show the history of an image                                 | 展示一个镜像形成历史                                         |
+| images  | List images                                                  | 列出系统当前镜像                                             |
+| info    | Display system-wide information                              | 显示系统相关信息                                             |
+| inspect | Return low-level information on a container                  | 查看容器详细信息                                             |
+| kill    | Kill a running container                                     | kill 指定 docker 容器                                        |
+| load    | Load an image from a tar archive                             | 从一个 tar 包中加载一个镜像[对应 save]                       |
+| login   | Register or Login to the docker registry server              | 注册或者登陆一个 docker 源服务器                             |
+| logout  | Log out from a Docker registry server                        | 从当前 Docker registry 退出                                  |
+| logs    | Fetch the logs of a container                                | 输出当前容器日志信息                                         |
+| port    | Lookup the public-facing port which is NAT-ed to PRIVATE_PORT | 查看映射端口对应的容器内部源端口                             |
+| pause   | Pause all processes within a container                       | 暂停容器                                                     |
+| ps      | List containers                                              | 列出容器列表                                                 |
+| pull    | Pull an image or a repository from the docker registry server | 从docker镜像源服务器拉取指定镜像或者库镜像                   |
+| push    | Push an image or a repository to the docker registry server  | 推送指定镜像或者库镜像至docker源服务器                       |
+| restart | Restart a running container                                  | 重启运行的容器                                               |
+| rm      | Remove one or more containers                                | 移除一个或者多个容器                                         |
+| rmi     | Remove one or more images                                    | 移除一个或多个镜像[无容器使用该镜像才可删除，否则需删除相关容器才可继续或 -f 强制删除] |
+| run     | Run a command in a new container                             | 创建一个新的容器并运行一个命令                               |
+| save    | Save an image to a tar archive                               | 保存一个镜像为一个 tar 包[对应 load]                         |
+| search  | Search for an image on the Docker Hub                        | 在 docker hub 中搜索镜像                                     |
+| start   | Start a stopped containers                                   | 启动容器                                                     |
+| stop    | Stop a running containers                                    | 停止容器                                                     |
+| tag     | Tag an image into a repository                               | 给源中镜像打标签                                             |
+| top     | Lookup the running processes of a container                  | 查看容器中运行的进程信息                                     |
+| unpause | Unpause a paused container                                   | 取消暂停容器                                                 |
+| version | Show the docker version information                          | 查看 docker 版本号                                           |
+| wait    | Block until a container stops, then print its exit code      | 截取容器停止时的退出状态值                                   |
+
+# Docker 镜像
+
+## 镜像概念
+
+镜像是一种轻量级、可执行的独立软件包，它包含运行某个软件所需的所有内容，我们把应用程序和配置依赖打包好形成一个可交付的运行环境(包括代码、运行时需要的库、环境变量和配置文件等)，这个打包好的运行环境就是image镜像文件。只有通过这个镜像文件才能生成Docker容器实例。
+
+## UnionFS
+
+> UnionFS（联合文件系统）：
+
+Union文件系统（UnionFS）是一种分层、轻量级并且高性能的文件系统，它支持对文件系统的修改作为一次提交来一层层的叠加，同时可以将不同目录挂载到同一个虚拟文件系统下。Union 文件系统是 Docker 镜像的基础。镜像可以通过分层来进行继承，基于基础镜像（没有父镜像），可以制作各种具体的应用镜像。
+
+特性：一次同时加载多个文件系统，但从外面看起来，只能看到一个文件系统，联合加载会把各层文件系统叠加起来，这样最终的文件系统会包含所有底层的文件和目录
+
+##  Docker 镜像加载原理
+
+Docker的镜像实际上由一层一层的文件系统组成，这种层级的文件系统UnionFS。bootfs(boot file system)主要包含bootloader和kernel，bootloader主要是引导加载kernel，Linux刚启动时会加载bootfs文件系统，在Docker镜像的最底层是引导文件系统bootfs。这一层与我们典型的Linux/Unix系统是一样的，包含boot加载器和内核。当boot加载完成之后整个内核就都在内存中了，此时内存的使用权已由bootfs转交给内核，此时系统也会卸载bootfs。
+
+rootfs (root file system) ，在bootfs之上。包含的就是典型 Linux 系统中的 /dev, /proc, /bin, /etc 等标准目录和文件。rootfs就是各种不同的操作系统发行版，比如Ubuntu，Centos等等。 
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-28.png)
+
+> 平时我们安装进虚拟机的CentOS都是好几个G，为什么docker这里才200M？
+
+对于一个精简的OS，rootfs可以很小，只需要包括最基本的命令、工具和程序库就可以了，因为底层直接用Host的kernel，自己只需要提供 rootfs 就行了。由此可见对于不同的linux发行版, bootfs基本是一致的, rootfs会有差别, 因此不同的发行版可以公用bootfs。
+
+> 为什么Docker镜像采用分层结构
+
+镜像分层最大的一个好处就是共享资源，方便复制迁移，就是为了复用。
+
+比如说有多个镜像都从相同的 base 镜像构建而来，那么 Docker Host 只需在磁盘上保存一份 base 镜像；
+同时内存中也只需加载一份 base 镜像，就可以为所有容器服务了。而且镜像的每一层都可以被共享。
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-29.png)
+
+Docker镜像层都是只读的，容器层是可写的。当容器启动时，一个新的可写层被加载到镜像的顶部。
+这一层通常被称作“容器层”，“容器层”之下的都叫“镜像层”。
+
+## commit
+
+| 命令                                                         | 说明                                          |
+| ------------------------------------------------------------ | --------------------------------------------- |
+| docker commit -m="提交的描述信息" -a="作者" 容器ID 要创建的目标镜像名:[标签名] | docker commit提交容器副本使之成为一个新的镜像 |
+
+
+
+1. 从Hub上下载ubuntu镜像到本地并成功运行
+
+2. 原始的默认Ubuntu镜像是不带着vim命令的
+
+3. 外网连通的情况下，安装vim
+
+   ```bash
+   # docker容器内执行上述两条命令：
+   apt-get update
+   apt-get -y install vim
+   ```
+
+4. 安装完成后，commit我们自己的新镜像
+
+5. 启动我们的新镜像并和原来的对比
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-30.png)
+
+## 镜像发布
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-31.png)
+
+> 发布到阿里云
+
+1. 创建镜像仓库
+2. 将镜像推送到阿里云registry
+3. 将阿里云镜像下载到本地
+
+> 发布到Docker Hub（私服）
+
+# Docker 容器数据卷
+
+> Docker挂载主机目录访问如果出现cannot open directory .: Permission denied
+
+解决办法：在挂载目录后多加一个`--privileged=true`参数即可
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-32.png)
+
+卷就是目录或文件，存在于一个或多个容器中，由docker挂载到容器，但不属于联合文件系统，因此能够绕过Union File System提供一些用于持续存储或共享数据的特性。卷的设计目的就是数据的持久化，完全独立于容器的生存周期，因此Docker不会在容器删除时删除其挂载的数据卷。一句话，将docker容器内的数据保存进宿主机的磁盘中
+
+> 运行一个带有容器卷存储功能的容器实例
+
+```bash
+docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录      镜像名
+```
+
+> 容器数据卷作用
+
+将运用与运行的环境打包镜像，run后形成容器实例运行 ，但是我们对数据的要求希望是持久化的。Docker容器产生的数据，如果不备份，那么当容器实例删除后，容器内的数据自然也就没有了。
+为了能保存数据在docker中我们使用卷。
+
+* 数据卷可在容器之间共享或重用数据
+* 卷中的更改可以直接实时生效 
+* 数据卷中的更改不会包含在镜像的更新中
+* 数据卷的生命周期一直持续到没有容器使用它为止
+

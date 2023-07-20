@@ -10,9 +10,7 @@ swiper_index:
 
 # Docker 简介
 
-[docker官网（官方文档）](http://www.docker.com)
-
-[Docker Hub官网（镜像仓库）](https://hub.docker.com/)
+[Docker官网（官方文档）](http://www.docker.com)   [Docker Hub官网（镜像仓库）](https://hub.docker.com/)
 
 ## Docker概念
 
@@ -601,4 +599,57 @@ docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目�
 * 卷中的更改可以直接实时生效 
 * 数据卷中的更改不会包含在镜像的更新中
 * 数据卷的生命周期一直持续到没有容器使用它为止
+
+## 容器卷和主机互通互联
+
+```bash
+docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录 镜像名
+
+# 查看数据卷是否挂载成功
+docker inspect 容器ID
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-33.png)
+
+```bash
+docker run -it --name myu3 --privileged=true -v /tmp/myHostData:/tmp/myDockerData ubuntu /bin/bash
+```
+
+> 容器和宿主机之间数据共享
+
+```bash
+1  docker修改，主机同步获得 
+2 主机修改，docker同步获得
+3 docker容器stop，主机修改，docker容器重启看数据是否同步。
+```
+
+## 读写规则映射添加说明
+
+> 读写(默认)
+
+```bash
+docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:rw 镜像名
+```
+
+> 只读
+>
+> 容器实例内部被限制，只能读取不能写，此时如果宿主机写入内容，可以同步给容器内，容器可以读取到。
+
+```bash
+ docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录:ro 镜像名
+```
+
+## 卷的继承和共享
+
+> 容器1完成和宿主机的映射
+
+```bash
+ docker run -it  --privileged=true -v /mydocker/u:/tmp --name u1 ubuntu
+```
+
+> 容器2继承容器1的卷规则
+
+```bash
+docker run -it  --privileged=true --volumes-from 父类  --name u2 ubuntu
+```
 

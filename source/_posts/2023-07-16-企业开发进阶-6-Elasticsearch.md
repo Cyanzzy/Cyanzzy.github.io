@@ -2331,5 +2331,946 @@ private void handleResponse(SearchResponse response) {
 }
 ```
 
+# 酒店案例
+
+## 搜索分页
+
+> 实现黑马旅游的酒店搜索功能，完成关键字搜索和分页
+
+在项目的首页，有一个大大的搜索框，还有分页按钮：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-50.png)
+
+点击搜索按钮，可以看到浏览器控制台发出了请求：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-51.png)
+
+请求参数如下：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-52.png)
+
+### 需求分析
+
+- 请求方式：POST
+- 请求路径：/hotel/list
+- 请求参数：JSON对象，包含4个字段：
+  - key：搜索关键字
+  - page：页码
+  - size：每页大小
+  - sortBy：排序，目前暂不实现
+- 返回值：分页查询，需要返回分页结果PageResult，包含两个属性：
+  - `total`：总条数
+  - `List<HotelDoc>`：当前页的数据
+
+> 业务流程
+
+- 步骤一：定义实体类，接收请求参数的JSON对象
+- 步骤二：编写controller，接收页面的请求
+- 步骤三：编写业务实现，利用RestHighLevelClient实现搜索、分页
+
+### 定义实体类
+
+实体类有两个，一个是前端的请求参数实体，一个是服务端应该返回的响应结果实体。
+
+> 请求参数
+
+前端请求的json结构如下：
+
+```json
+{
+    "key": "搜索关键字",
+    "page": 1,
+    "size": 3,
+    "sortBy": "default"
+}
+```
+
+```java
+@Data
+public class RequestParams {
+    private String key;
+    private Integer page;
+    private Integer size;
+    private String sortBy;
+}
+```
+
+> 响应结果
+
+分页查询，需要返回分页结果PageResult，包含两个属性：
+
+- `total`：总条数
+- `List<HotelDoc>`：当前页的数据
+
+```java
+@Data
+public class PageResult {
+    private Long total;
+    private List<HotelDoc> hotels;
+
+    public PageResult() {
+    }
+
+    public PageResult(Long total, List<HotelDoc> hotels) {
+        this.total = total;
+        this.hotels = hotels;
+    }
+}
+```
+
+
+
+### 定义Controller
+
+定义一个HotelController，声明查询接口，满足下列要求：
+
+- 请求方式：Post
+- 请求路径：/hotel/list
+- 请求参数：对象，类型为RequestParam
+- 返回值：PageResult，包含两个属性
+  - `Long total`：总条数
+  - `List<HotelDoc> hotels`：酒店数据
+
+```java
+@RestController
+@RequestMapping("/hotel")
+public class HotelController {
+
+    @Autowired
+    private IHotelService hotelService;
+	// 搜索酒店数据
+    @PostMapping("/list")
+    public PageResult search(@RequestBody RequestParams params){
+        return hotelService.search(params);
+    }
+}
+```
+
+### 实现搜索业务
+
+在controller调用了IHotelService，并没有实现该方法，因此下面我们就在IHotelService中定义方法，并且去实现业务逻辑。
+
+```java
+/**
+ * 根据关键字搜索酒店信息
+ * @param params 请求参数对象，包含用户输入的关键字 
+ * @return 酒店文档列表
+ */
+PageResult search(RequestParams params);
+```
+
+实现搜索业务，肯定离不开RestHighLevelClient，**我们需要把它注册到Spring中作为一个Bean**
+
+```java
+@Bean
+public RestHighLevelClient client(){
+    return  new RestHighLevelClient(RestClient.builder(
+        HttpHost.create("http://192.168.150.101:9200")
+    ));
+}
+```
+
+
+
+```java
+@Override
+public PageResult search(RequestParams params) {
+    try {
+        // 1.准备Request
+        SearchRequest request = new SearchRequest("hotel");
+        // 2.准备DSL
+        // 2.1.query
+        String key = params.getKey();
+        if (key == null || "".equals(key)) {
+            boolQuery.must(QueryBuilders.matchAllQuery());
+        } else {
+            boolQuery.must(QueryBuilders.matchQuery("all", key));
+        }
+
+        // 2.2.分页
+        int page = params.getPage();
+        int size = params.getSize();
+        request.source().from((page - 1) * size).size(size);
+
+        // 3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        // 4.解析响应
+        return handleResponse(response);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
+
+// 结果解析
+private PageResult handleResponse(SearchResponse response) {
+    // 4.解析响应
+    SearchHits searchHits = response.getHits();
+    // 4.1.获取总条数
+    long total = searchHits.getTotalHits().value;
+    // 4.2.文档数组
+    SearchHit[] hits = searchHits.getHits();
+    // 4.3.遍历
+    List<HotelDoc> hotels = new ArrayList<>();
+    for (SearchHit hit : hits) {
+        // 获取文档source
+        String json = hit.getSourceAsString();
+        // 反序列化
+        HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
+		// 放入集合
+        hotels.add(hotelDoc);
+    }
+    // 4.4.封装返回
+    return new PageResult(total, hotels);
+}
+```
+
+
+
+## 酒店结果过滤
+
+### 需求分析
+
+需求：添加品牌、城市、星级、价格等过滤功能
+
+在页面搜索框下面，会有一些过滤项：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-53.png)
+
+传递的参数如图：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-54.png) 
+
+包含的过滤条件有：
+
+- brand：品牌值
+- city：城市
+- minPrice~maxPrice：价格范围
+- starName：星级
+
+我们需要做两件事情：
+
+- 修改请求参数的对象RequestParams，接收上述参数
+- 修改业务逻辑，在搜索条件之外，添加一些过滤条件
+
+### 修改实体类
+
+```java
+@Data
+public class RequestParams {
+    private String key;
+    private Integer page;
+    private Integer size;
+    private String sortBy;
+    // 下面是新增的过滤条件参数
+    private String city;
+    private String brand;
+    private String starName;
+    private Integer minPrice;
+    private Integer maxPrice;
+}
+```
+
+### 修改搜索业务
+
+在HotelService的search方法中，只有一个地方需要修改：requet.source().query( ... )其中的查询条件。
+
+在之前的业务中，只有match查询，根据关键字搜索，现在要添加条件过滤，包括：
+
+- 品牌过滤：是keyword类型，用term查询
+- 星级过滤：是keyword类型，用term查询
+- 价格过滤：是数值类型，用range查询
+- 城市过滤：是keyword类型，用term查询
+
+多个查询条件组合，肯定是boolean查询来组合：
+
+- 关键字搜索放到must中，参与算分
+- 其它过滤条件放到filter中，不参与算分
+
+因为条件构建的逻辑比较复杂，这里先封装为一个函数：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-55.png)
+
+
+
+buildBasicQuery的代码如下：
+
+```java
+private void buildBasicQuery(RequestParams params, SearchRequest request) {
+    // 1.构建BooleanQuery
+    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    // 2.关键字搜索
+    String key = params.getKey();
+    if (key == null || "".equals(key)) {
+        boolQuery.must(QueryBuilders.matchAllQuery());
+    } else {
+        boolQuery.must(QueryBuilders.matchQuery("all", key));
+    }
+    // 3.城市条件
+    if (params.getCity() != null && !params.getCity().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("city", params.getCity()));
+    }
+    // 4.品牌条件
+    if (params.getBrand() != null && !params.getBrand().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("brand", params.getBrand()));
+    }
+    // 5.星级条件
+    if (params.getStarName() != null && !params.getStarName().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("starName", params.getStarName()));
+    }
+	// 6.价格
+    if (params.getMinPrice() != null && params.getMaxPrice() != null) {
+        boolQuery.filter(QueryBuilders
+                         .rangeQuery("price")
+                         .gte(params.getMinPrice())
+                         .lte(params.getMaxPrice())
+                        );
+    }
+	// 7.放入source
+    request.source().query(boolQuery);
+}
+```
+
+
+
+## 周边酒店
+
+### 需求分析
+
+在酒店列表页的右侧，有一个小地图，点击地图的定位按钮，地图会找到你所在的位置：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-56.png) 
+
+并且，在前端会发起查询请求，将你的坐标发送到服务端：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-57.png) 
+
+要做的事情就是基于这个location坐标，然后按照距离对周围酒店排序。实现思路如下：
+
+- 修改RequestParams参数，接收location字段
+- 修改search方法业务逻辑，如果location有值，添加根据geo_distance排序的功能
+
+### 修改实体类
+
+```java
+@Data
+public class RequestParams {
+    private String key;
+    private Integer page;
+    private Integer size;
+    private String sortBy;
+    private String city;
+    private String brand;
+    private String starName;
+    private Integer minPrice;
+    private Integer maxPrice;
+    // 我当前的地理坐标
+    private String location;
+}
+```
+
+### 距离排序API
+
+> 排序功能包括两种：
+
+- 普通字段排序
+- 地理坐标排序
+
+地理坐标排序DSL语法如下：
+
+```json
+GET /indexName/_search
+{
+  "query": {
+    "match_all": {}
+  },
+  "sort": [
+    {
+      "price": "asc"  
+    },
+    {
+      "_geo_distance" : {
+          "FIELD" : "纬度，经度",
+          "order" : "asc",
+          "unit" : "km"
+      }
+    }
+  ]
+}
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-58.png)
+
+### 添加距离排序
+
+
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-59.png)
+
+
+
+
+
+### 排序距离显示
+
+重启服务后，测试我的酒店功能：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-60.png)
+
+
+
+发现确实可以实现对我附近酒店的排序，不过并没有看到酒店到底距离我多远，这该怎么办？
+
+
+
+排序完成后，页面还要获取我附近每个酒店的具体**距离**值，这个值在响应结果中是独立的：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-61.png)
+
+因此，我们在结果解析阶段，除了解析source部分以外，还要得到sort部分，也就是排序的距离，然后放到响应结果中。
+
+- 修改HotelDoc，添加排序距离字段，用于页面显示
+- 修改HotelService类中的handleResponse方法，添加对sort值的获取
+
+修改HotelDoc类，添加距离字段
+
+```java
+@Data
+@NoArgsConstructor
+public class HotelDoc {
+    private Long id;
+    private String name;
+    private String address;
+    private Integer price;
+    private Integer score;
+    private String brand;
+    private String city;
+    private String starName;
+    private String business;
+    private String location;
+    private String pic;
+    // 排序时的 距离值
+    private Object distance;
+
+    public HotelDoc(Hotel hotel) {
+        this.id = hotel.getId();
+        this.name = hotel.getName();
+        this.address = hotel.getAddress();
+        this.price = hotel.getPrice();
+        this.score = hotel.getScore();
+        this.brand = hotel.getBrand();
+        this.city = hotel.getCity();
+        this.starName = hotel.getStarName();
+        this.business = hotel.getBusiness();
+        this.location = hotel.getLatitude() + ", " + hotel.getLongitude();
+        this.pic = hotel.getPic();
+    }
+}
+
+```
+
+
+
+修改HotelService中的handleResponse方法
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-62.png)
+
+
+
+重启后测试，发现页面能成功显示距离了：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-63.png)
+
+
+
+
+
+## 酒店竞价排名
+
+### 需求分析
+
+要让指定酒店在搜索结果中排名置顶，效果如图：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-64.png)
+
+页面会给指定的酒店添加**广告**标记。
+
+
+
+> 让指定的酒店排名置顶 
+
+function_score包含3个要素：
+
+- 过滤条件：哪些文档要加分
+- 算分函数：如何计算function score
+- 加权方式：function score 与 query score如何运算
+
+
+
+让**指定酒店**排名靠前。因此我们需要给这些酒店添加一个标记，这样在过滤条件中就可以**根据这个标记来判断，是否要提高算分**。
+
+比如，我们给酒店添加一个字段：isAD，Boolean类型：
+
+- true：是广告
+- false：不是广告
+
+这样function_score包含3个要素就很好确定了：
+
+- 过滤条件：判断isAD 是否为true
+- 算分函数：我们可以用最简单暴力的weight，固定加权值
+- 加权方式：可以用默认的相乘，大大提高算分
+
+> 业务实现
+
+1. 给HotelDoc类添加isAD字段，Boolean类型
+
+2. 挑选几个你喜欢的酒店，给它的文档数据添加isAD字段，值为true
+
+3. 修改search方法，添加function score功能，给isAD值为true的酒店增加权重
+
+
+
+### 修改HotelDoc实体
+
+```java
+@Data
+@NoArgsConstructor
+public class HotelDoc {
+    private Long id;
+    private String name;
+    private String address;
+    private Integer price;
+    private Integer score;
+    private String brand;
+    private String city;
+    private String starName;
+    private String business;
+    private String location;
+    private String pic;
+
+    // 排序时的 距离值
+    private Object distance;
+    // 酒店竞价标记
+    private Boolean isAD;
+    ...
+}
+```
+
+
+
+### 添加广告标记
+
+> 挑几个酒店，添加isAD字段，设置为true：
+
+```json
+POST /hotel/_update/1902197537
+{
+    "doc": {
+        "isAD": true
+    }
+}
+POST /hotel/_update/2056126831
+{
+    "doc": {
+        "isAD": true
+    }
+}
+POST /hotel/_update/1989806195
+{
+    "doc": {
+        "isAD": true
+    }
+}
+POST /hotel/_update/2056105938
+{
+    "doc": {
+        "isAD": true
+    }
+}
+```
+
+### 添加算分函数查询
+
+接下来我们就要修改查询条件了。之前是用的boolean 查询，现在要改成function_socre查询。
+
+
+
+function_score查询结构如下：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-65.png)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-66.png)
+
+
+
+我们可以将之前写的boolean查询作为**原始查询**条件放到query中，接下来就是添加**过滤条件**、**算分函数**、**加权模式**了。所以原来的代码依然可以沿用。
+
+
+
+修改`HotelService`类中的`buildBasicQuery`方法，添加算分函数查询：
+
+```java
+private void buildBasicQuery(RequestParams params, SearchRequest request) {
+    // 1.构建BooleanQuery
+    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    // 关键字搜索
+    String key = params.getKey();
+    if (key == null || "".equals(key)) {
+        boolQuery.must(QueryBuilders.matchAllQuery());
+    } else {
+        boolQuery.must(QueryBuilders.matchQuery("all", key));
+    }
+    // 城市条件
+    if (params.getCity() != null && !params.getCity().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("city", params.getCity()));
+    }
+    // 品牌条件
+    if (params.getBrand() != null && !params.getBrand().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("brand", params.getBrand()));
+    }
+    // 星级条件
+    if (params.getStarName() != null && !params.getStarName().equals("")) {
+        boolQuery.filter(QueryBuilders.termQuery("starName", params.getStarName()));
+    }
+    // 价格
+    if (params.getMinPrice() != null && params.getMaxPrice() != null) {
+        boolQuery.filter(QueryBuilders
+                         .rangeQuery("price")
+                         .gte(params.getMinPrice())
+                         .lte(params.getMaxPrice())
+                        );
+    }
+
+    // 2.算分控制
+    FunctionScoreQueryBuilder functionScoreQuery =
+        QueryBuilders.functionScoreQuery(
+        // 原始查询，相关性算分的查询
+        boolQuery,
+        // function score的数组
+        new FunctionScoreQueryBuilder.FilterFunctionBuilder[]{
+            // 其中的一个function score 元素
+            new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                // 过滤条件
+                QueryBuilders.termQuery("isAD", true),
+                // 算分函数
+                ScoreFunctionBuilders.weightFactorFunction(10)
+            )
+        });
+    request.source().query(functionScoreQuery);
+}
+```
+
+
+
+# 数据聚合
+
+**[聚合（](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html)[aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html)[）](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html)**可以让我们极其方便的实现对数据的统计、分析、运算。例如：
+
+- 什么品牌的手机最受欢迎？
+- 这些手机的平均价格、最高价格、最低价格？
+- 这些手机每月的销售情况如何？
+
+实现这些统计功能的比数据库的sql要方便的多，而且查询速度非常快，可以实现近实时搜索效果。
+
+##  聚合的种类
+
+聚合常见的有三类：
+
+- **桶（Bucket）**聚合：用来对文档做分组
+  - TermAggregation：按照文档字段值分组，例如按照品牌值分组、按照国家分组
+  - Date Histogram：按照日期阶梯分组，例如一周为一组，或者一月为一组
+
+- **度量（Metric）**聚合：用以计算一些值，比如：最大值、最小值、平均值等
+  - Avg：求平均值
+  - Max：求最大值
+  - Min：求最小值
+  - Stats：同时求max、min、avg、sum等
+- **管道（pipeline）**聚合：其它聚合的结果为基础做聚合
+
+
+
+**注意：**参加聚合的字段必须是keyword、日期、数值、布尔类型
+
+## DSL实现聚合
+
+要统计所有数据中的酒店品牌有几种，其实就是按照品牌对数据分组。此时可以根据酒店品牌的名称做聚合，也就是Bucket聚合。
+
+### Bucket聚合语法
+
+```json
+GET /hotel/_search
+{
+  "size": 0,  // 设置size为0，结果中不包含文档，只包含聚合结果
+  "aggs": { // 定义聚合
+    "brandAgg": { //给聚合起个名字
+      "terms": { // 聚合的类型，按照品牌值聚合，所以选择term
+        "field": "brand", // 参与聚合的字段
+        "size": 20 // 希望获取的聚合结果数量
+      }
+    }
+  }
+}
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-67.png)
+
+
+
+### 聚合结果排序
+
+默认情况下，Bucket聚合会统计Bucket内的文档数量，记为`_count`，并且按照`_count`降序排序。
+
+我们可以指定order属性，自定义聚合的排序方式：
+
+```json
+GET /hotel/_search
+{
+  "size": 0, 
+  "aggs": {
+    "brandAgg": {
+      "terms": {
+        "field": "brand",
+        "order": {
+          "_count": "asc" // 按照_count升序排列
+        },
+        "size": 20
+      }
+    }
+  }
+}
+```
+
+### 限定聚合范围
+
+默认情况下，Bucket聚合是对索引库的所有文档做聚合，但真实场景下，用户会输入搜索条件，因此聚合必须是对搜索结果聚合。那么聚合必须添加限定条件。
+
+可以限定要聚合的文档范围，只要添加query条件即可：
+
+```json
+GET /hotel/_search
+{
+  "query": {
+    "range": {
+      "price": {
+        "lte": 200 // 只对200元以下的文档聚合
+      }
+    }
+  }, 
+  "size": 0, 
+  "aggs": {
+    "brandAgg": {
+      "terms": {
+        "field": "brand",
+        "size": 20
+      }
+    }
+  }
+}
+```
+
+### Metric聚合语法
+
+对酒店按照品牌分组，形成了一个个桶。现在我们需要对桶内的酒店做运算，获取每个品牌的用户评分的min、max、avg等值。
+
+这就要用到Metric聚合了，例如stat聚合：就可以获取min、max、avg等结果。
+
+```json
+GET /hotel/_search
+{
+  "size": 0, 
+  "aggs": {
+    "brandAgg": { 
+      "terms": { 
+        "field": "brand", 
+        "size": 20
+      },
+      "aggs": { // 是brands聚合的子聚合，也就是分组后对每组分别计算
+        "score_stats": { // 聚合名称
+          "stats": { // 聚合类型，这里stats可以计算min、max、avg等
+            "field": "score" // 聚合字段，这里是score
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+这次的score_stats聚合是在brandAgg的聚合内部嵌套的子聚合。因为我们需要在每个桶分别计算。
+
+另外，我们还可以给聚合结果做个排序，例如按照每个桶的酒店平均分做排序：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-68.png)
+
+### 小结
+
+aggs代表聚合，与query同级，此时query的作用是限定聚合的的文档范围
+
+> 聚合必须的三要素：
+
+- 聚合名称
+- 聚合类型
+- 聚合字段
+
+> 聚合可配置属性有：
+
+- size：指定聚合结果数量
+- order：指定聚合结果排序方式
+- field：指定聚合字段
+
+
+
+## RestAPI实现聚合
+
+### API语法
+
+聚合条件与query条件同级别，因此需要使用request.source()来指定聚合条件。
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-69.png)
+
+聚合的结果也与查询结果不同，API也比较特殊。不过同样是JSON逐层解析：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-70.png)
+
+
+
+### 业务需求
+
+需求：搜索页面的品牌、城市等信息不应该是在页面写死，而是通过聚合索引库中的酒店数据得来的：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-71.png)
+
+> 分析：
+
+目前，页面的城市列表、星级列表、品牌列表都是写死的，并不会随着搜索结果的变化而变化。但是用户搜索条件改变时，搜索结果会跟着变化。例如：用户搜索“东方明珠”，那搜索的酒店肯定是在上海东方明珠附近，因此，城市只能是上海，此时城市列表中就不应该显示北京、深圳、杭州这些信息了。也就是说，搜索结果中包含哪些城市，页面就应该列出哪些城市；搜索结果中包含哪些品牌，页面就应该列出哪些品牌。
+
+> 如何得知搜索结果中包含哪些品牌？如何得知搜索结果中包含哪些城市？
+
+使用聚合功能，利用Bucket聚合，对搜索结果中的文档基于品牌分组、基于城市分组，就能得知包含哪些品牌、哪些城
+
+因为是对搜索结果聚合，因此聚合是**限定范围的聚合**，也就是说聚合的限定条件跟搜索文档的条件一致。
+
+查看浏览器可以发现，前端其实已经发出了这样的一个请求：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-72.png)
+
+请求**参数与搜索文档的参数完全一致**。
+
+返回值类型就是页面要展示的最终结果：
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-73.png)
+
+结果是一个Map结构：
+
+- key是字符串，城市、星级、品牌、价格
+- value是集合，例如多个城市的名称
+
+### 业务实现
+
+在包的`HotelController`中添加一个方法，遵循下面的要求：
+
+- 请求方式：`POST`
+- 请求路径：`/hotel/filters`
+- 请求参数：`RequestParams`，与搜索文档的参数一致
+- 返回值类型：`Map<String, List<String>>`
+
+```java
+@PostMapping("/filters")
+public Map<String, List<String>> getFilters(@RequestBody RequestParams params){
+    return hotelService.getFilters(params);
+}
+```
+
+在`IHotelService`中定义新方法：
+
+```java
+Map<String, List<String>> filters(RequestParams params);
+```
+
+在`HotelServiceImpl`中实现该方法：
+
+```java
+@Override
+public Map<String, List<String>> filters(RequestParams params) {
+    try {
+        // 1.准备Request
+        SearchRequest request = new SearchRequest("hotel");
+        // 2.准备DSL
+        // 2.1.query
+        buildBasicQuery(params, request);
+        // 2.2.设置size
+        request.source().size(0);
+        // 2.3.聚合
+        buildAggregation(request);
+        // 3.发出请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        // 4.解析结果
+        Map<String, List<String>> result = new HashMap<>();
+        Aggregations aggregations = response.getAggregations();
+        // 4.1.根据品牌名称，获取品牌结果
+        List<String> brandList = getAggByName(aggregations, "brandAgg");
+        result.put("品牌", brandList);
+        // 4.2.根据品牌名称，获取品牌结果
+        List<String> cityList = getAggByName(aggregations, "cityAgg");
+        result.put("城市", cityList);
+        // 4.3.根据品牌名称，获取品牌结果
+        List<String> starList = getAggByName(aggregations, "starAgg");
+        result.put("星级", starList);
+
+        return result;
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+}
+
+private void buildAggregation(SearchRequest request) {
+    request.source().aggregation(AggregationBuilders
+                                 .terms("brandAgg")
+                                 .field("brand")
+                                 .size(100)
+                                );
+    request.source().aggregation(AggregationBuilders
+                                 .terms("cityAgg")
+                                 .field("city")
+                                 .size(100)
+                                );
+    request.source().aggregation(AggregationBuilders
+                                 .terms("starAgg")
+                                 .field("starName")
+                                 .size(100)
+                                );
+}
+
+private List<String> getAggByName(Aggregations aggregations, String aggName) {
+    // 4.1.根据聚合名称获取聚合结果
+    Terms brandTerms = aggregations.get(aggName);
+    // 4.2.获取buckets
+    List<? extends Terms.Bucket> buckets = brandTerms.getBuckets();
+    // 4.3.遍历
+    List<String> brandList = new ArrayList<>();
+    for (Terms.Bucket bucket : buckets) {
+        // 4.4.获取key
+        String key = bucket.getKeyAsString();
+        brandList.add(key);
+    }
+    return brandList;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

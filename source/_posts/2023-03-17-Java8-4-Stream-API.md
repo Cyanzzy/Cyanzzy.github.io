@@ -2,7 +2,7 @@
 title: Java8-4-Stream API
 date: 2023-03-17 21:14:32
 tags: 
-  - Java8
+  - Java
 categories: 
   - Language
 swiper_index: 

@@ -2,7 +2,7 @@
 title: JavaBasic-9-IO
 date: 2023-03-16 19:14:30
 tags: 
-  - JavaBasic
+  - Java
 categories: 
   - Language
 swiper_index: 

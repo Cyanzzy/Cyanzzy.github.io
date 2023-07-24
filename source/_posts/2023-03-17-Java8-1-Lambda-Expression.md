@@ -2,7 +2,7 @@
 title: Java8-1-Lambda Expression
 date: 2023-03-17 21:04:06
 tags: 
-  - Java8
+  - Java
 categories: 
   - Language
 swiper_index: 

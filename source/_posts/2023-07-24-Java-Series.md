@@ -36,9 +36,11 @@ swiper_index:
 
 > JUC
 
-[JUC-0-Java并发编程零基础入门]()
+[JUC-0-Java并发编程零基础入门](https://cyanzzy.github.io/2023/08/01/JUC-0-Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E9%9B%B6%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/)
 
 
 > JVM
 
-[Java虚拟机零基础入门]()
+[JVM-1-内存与垃圾回收]()
+
+

@@ -41,6 +41,6 @@ swiper_index:
 
 > JVM
 
-[JVM-1-内存与垃圾回收]()
+[JVM-1-内存与垃圾回收](https://cyanzzy.github.io/2023/08/03/JVM-1-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/)
 
 

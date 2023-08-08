@@ -1292,3 +1292,272 @@ public class ReceiveLogsTopic02 {
     }
 }
 ```
+#  死信队列
+
+##  死信概念
+
+死信是无法被消费的消息，一般来说producer 将消息投递到 queue 里，consumer 从 queue 取出消息进行消费，但某些时候由于特定的原因导致 queue 中的某些消息无法被消费，这样的消息没有后续的处理就成为死信。
+
+应用：为了防止订单业务的消息数据丢失，需要使用 RabbitMQ 的死信队列机制，当消息消费发生异常时，将消息投入死信队列中
+
+##  死信来源
+
+* 消息 TTL 过期 
+
+* 队列达到最大长度（队列满，无法再添加数据到 mq 中）
+
+* 消息被拒绝（basic.reject 或 basic.nack）并且 requeue=false. 
+
+##  案例演示
+
+> 架构
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-38.png)
+
+### 消息 TTL 过期
+
+> **生产者** 
+
+```java
+public class Producer {
+
+    // 交换机名称
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+
+    public static void main(String[] argv) throws Exception {
+
+        try (Channel channel = RabbitMQUtils.getChannel()) {
+            // 声明交换机
+            channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+            // 设置消息的 TTL 时间
+            AMQP.BasicProperties properties = new AMQP.BasicProperties()
+                    .builder()
+                    .expiration("10000")
+                    .build();
+
+            // 演示队列个数限制
+            for (int i = 1; i < 11; i++) {
+                String message = "info" + i;
+                channel.basicPublish(NORMAL_EXCHANGE, "zhangsan", properties, message.getBytes());
+                System.out.println("生产者发送消息:" + message);
+            }
+        }
+    }
+}
+```
+
+> **消费者 C1** (启动之后关闭该消费者 模拟其**接收不到消息**) 
+
+```java
+public class Consumer01 {
+    // 普通交换机名称
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+
+    // 死信交换机名称
+    private static final String DEAD_EXCHANGE = "dead_exchange";
+
+    public static void main(String[] argv) throws Exception {
+        Channel channel = RabbitMQUtils.getChannel();
+
+        // 声明死信和普通交换机 类型为 direct
+        channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+        // 声明死信队列
+        String deadQueue = "dead-queue";
+        channel.queueDeclare(deadQueue, false, false, false, null);
+
+        // 死信队列绑定死信交换机与 routing key
+        channel.queueBind(deadQueue, DEAD_EXCHANGE, "lisi");
+
+        // 正常队列绑定死信队列信息
+        Map<String, Object> params = new HashMap<>();
+        // 正常队列设置死信交换机 参数 key 是固定值
+        params.put("x-dead-letter-exchange", DEAD_EXCHANGE);
+        // 正常队列设置死信 routing-key 参数 key 是固定值
+        params.put("x-dead-letter-routing-key", "lisi");
+
+        // 声明正常队列
+        String normalQueue = "normal-queue";
+        channel.queueDeclare(normalQueue, false, false, false, params);
+        channel.queueBind(normalQueue, NORMAL_EXCHANGE, "zhangsan");
+
+        System.out.println("等待接收消息.....");
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            System.out.println("Consumer01 接收到消息" + message);
+        };
+
+        channel.basicConsume(normalQueue, true, deliverCallback, consumerTag -> {
+        });
+    }
+}
+```
+
+**生产者未发送消息**
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-39.png)
+
+**生产者发送10条消息（此时正常消息队列有10条未消费消息）**
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-40.png)
+
+**时间过去10秒（正常队列里的消息由于没有消费，消息进入死信队列）**
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-41.png)
+
+> **消费者 C2**  (以上步骤完成后 启动 C2 消费者 它消费死信队列里面的消息) 
+
+```java
+public class Consumer02 {
+
+    // 交换机名称
+    private static final String DEAD_EXCHANGE = "dead_exchange";
+
+    public static void main(String[] argv) throws Exception {
+
+        // 创建信道
+        Channel channel = RabbitMQUtils.getChannel();
+
+        // 声明交换机
+        channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+        // 声明队列
+        String deadQueue = "dead-queue";
+        channel.queueDeclare(deadQueue, false, false, false, null);
+        // 绑定队列
+        channel.queueBind(deadQueue, DEAD_EXCHANGE, "lisi");
+
+        System.out.println("等待接收死信队列消息.....");
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            System.out.println("Consumer02 接收死信队列的消息" + message);
+        };
+
+        channel.basicConsume(deadQueue, true, deliverCallback, consumerTag -> {
+        });
+    }
+}
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-42.png)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-43.png)
+
+### 队列达到最大长度
+
+> **消息生产者代码去掉 TTL 属性**
+
+```java
+public class Producer {
+
+    // 交换机名称
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+
+    public static void main(String[] argv) throws Exception {
+
+        try (Channel channel = RabbitMQUtils.getChannel()) {
+
+            // 声明交换机
+            channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+            // 该信息是用作演示队列个数限制
+            for (int i = 1; i < 11; i++) {
+                String message = "info" + i;
+                channel.basicPublish(NORMAL_EXCHANGE, "zhangsan", null, message.getBytes());
+                System.out.println("生产者发送消息: " + message);
+            }
+        }
+    }
+}
+```
+
+> **C1 消费者修改以下代码**(启动之后关闭该消费者 模拟其**接收不到消息**) 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-44.png)
+
+<font color="red">**注意此时需要把原先队列删除 因为参数改变** </font>
+
+> **C2 消费者代码不变**(启动 C2 消费者)  
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-45.png)
+
+### 消息被拒
+
+> **消息生产者**代码同上生产者一致 
+
+> **C1 消费者代码**(启动之后关闭该消费者 模拟其接收不到消息)  
+
+```java
+public class Consumer01 {
+
+    // 普通交换机名称
+    private static final String NORMAL_EXCHANGE = "normal_exchange";
+
+    // 死信交换机名称
+    private static final String DEAD_EXCHANGE = "dead_exchange";
+
+    public static void main(String[] argv) throws Exception {
+
+        // 创建信道
+        Channel channel = RabbitMQUtils.getChannel();
+
+        // 声明死信和普通交换机 类型为 direct
+        channel.exchangeDeclare(NORMAL_EXCHANGE, BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare(DEAD_EXCHANGE, BuiltinExchangeType.DIRECT);
+
+        // 声明死信队列
+        String deadQueue = "dead-queue";
+        channel.queueDeclare(deadQueue, false, false, false, null);
+
+        // 死信队列绑定死信交换机与 routingkey
+        channel.queueBind(deadQueue, DEAD_EXCHANGE, "lisi");
+
+        // 正常队列绑定死信队列信息
+        Map<String, Object> params = new HashMap<>();
+        // 正常队列设置死信交换机 参数 key 是固定值
+        params.put("x-dead-letter-exchange", DEAD_EXCHANGE);
+        // 正常队列设置死信 routing-key 参数 key 是固定值
+        params.put("x-dead-letter-routing-key", "lisi");
+
+        // 声明正常队列
+        String normalQueue = "normal-queue";
+        channel.queueDeclare(normalQueue, false, false, false, params);
+        channel.queueBind(normalQueue, NORMAL_EXCHANGE, "zhangsan");
+
+        System.out.println("等待接收消息.....");
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            if (message.equals("info5")) {
+                System.out.println("Consumer01 接收到消息" + message + "并拒绝签收该消息");
+                // requeue 设置为 false 代表拒绝重新入队 该队列如果配置了死信交换机将发送到死信队列中
+                channel.basicReject(delivery.getEnvelope().getDeliveryTag(), false);
+            } else {
+                System.out.println("Consumer01 接收到消息" + message);
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            }
+        };
+        boolean autoAck = false;
+        channel.basicConsume(normalQueue, autoAck, deliverCallback, consumerTag -> {
+        });
+    }
+}
+```
+
+**生产者发送消息后**
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-46.png)
+
+> C2 消费者代码不变 
+
+**启动消费者 1 然后再启动消费者 2**  
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-47.png)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-48.png)
+
+

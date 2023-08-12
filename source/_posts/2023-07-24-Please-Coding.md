@@ -2,19 +2,28 @@
 title: Please Coding
 date: 2023-07-24 18:16:40
 tags: 
-
+  - Code
 categories: 
   - Technology
 swiper_index: 
 ---
 
+> Base Code
 
-[1 Deep Learning（深度学习入门项目）](https://gitee.com/cyanzzy/deep-learning)
-[2 Algorithm（算法入门项目）](https://gitee.com/cyanzzy/algorithm-learning)
-[3 员工管理系统（SSM 框架入门项目）](https://gitee.com/cyanzzy/ems)
-[4 用户管理系统（SpringBoot 入门项目）](https://gitee.com/cyanzzy/user-center)
-[5 瑞吉外卖平台（SpringBoot 入门项目）](https://gitee.com/cyanzzy/reggie)
-[6 黑马点评平台（Redis实战篇 学习项目）](https://gitee.com/cyanzzy/hmdp)
-[7 在线教育系统（SpringCloud 入门项目）](https://gitee.com/cyanzzy/online-education)
-[8 酒店管理系统（Elasticsearch 学习项目）](https://gitee.com/cyanzzy/hotel)
-[9 ItemService（Redis高级篇 学习项目）]()
+[code-learning](https://gitee.com/cyanzzy/code-learning)
+[spring-amqp-learning](https://gitee.com/cyanzzy/spring-amqp-learning)
+[deep-learning](https://gitee.com/cyanzzy/deep-learning)
+[reggie](https://gitee.com/cyanzzy/reggie)
+[hmdp](https://gitee.com/cyanzzy/hmdp)
+[item-service](https://gitee.com/cyanzzy/item-service)
+[hotel](https://gitee.com/cyanzzy/hotel)
+[algorithm-learning](https://gitee.com/cyanzzy/algorithm-learning)
+
+
+
+> Advance Code
+
+[ems](https://gitee.com/cyanzzy/)
+[user-center](https://gitee.com/cyanzzy/user-center)
+[online-education](https://gitee.com/cyanzzy/online-education)
+

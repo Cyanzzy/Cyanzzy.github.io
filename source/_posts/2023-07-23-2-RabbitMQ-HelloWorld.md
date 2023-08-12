@@ -186,3 +186,128 @@ rabbitmqctl.bat list_queues
 
 
 
+#  Spring AMQP
+
+我们将使用 Spring Boot 来引导和配置 Spring AMQP 项目，[代码仓库链接](https://gitee.com/cyanzzy/spring-amqp-learning)
+
+创建父工程和子工程`HelloWorld`，创建MQ配置类`RabbitMQConfig`
+
+```yml
+spring:
+  rabbitmq:
+    port: 5672
+    host: localhost
+    username: guest
+    password: guest
+logging:
+  level:
+    org: ERROR
+server:
+  port: 8080
+```
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-logging</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-amqp</artifactId>
+    </dependency>
+</dependencies>
+```
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean
+    public Queue hello() { // 创建队列对象
+        return new Queue("hello");
+    }
+
+}
+```
+
+> 发送消息
+
+```java
+public interface HelloWorldSenderService {
+
+    /**
+     * 发送消息
+     *
+     * @param message 消息
+     */
+    void send(String message);
+}
+
+@Service
+public class HelloWorldSenderServiceImpl implements HelloWorldSenderService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private Queue queue; // 注入构造的队列
+
+    @Override
+    public void send(String message) { // 使用RabbitTemplate向队列发送消息
+        rabbitTemplate.convertAndSend(queue.getName(), message);
+        System.out.println(" ********************* [x] Sent '" + message + "'");
+    }
+}
+```
+
+```java
+@RestController
+@RequestMapping("/amqp")
+public class HelloWorldSenderController {
+
+    @Autowired
+    private HelloWorldSenderService senderService;
+
+    @GetMapping("/send")
+    public String send(@RequestParam String message) {
+        senderService.send(message);
+
+        return "Send Success";
+    }
+}
+```
+
+> 接收消息
+
+```java
+@Component
+public class HelloWorldReceiver {
+
+    @RabbitListener(queues = "hello")
+    public void receive(String in) {
+        System.out.println(" *************** [x] Received '" + in + "'");
+    }
+}
+```
+
+> 使用http client发送请求
+
+```json
+# HelloWorld 测试
+GET {{hello_world_host}}/amqp/send?message=helloworld1111
+```
+
+
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-67.png)

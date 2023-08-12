@@ -841,6 +841,342 @@ public static void publishMessageAsync() throws Exception {
 
 最佳性能和资源使用，在出现错误的情况下可以很好地控制，但是实现起来稍微难些 
 
+
+
+## Springboot 整合
+
+> 确认机制
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-58.png)
+
+> 配置文件
+
+在配置文件当中需要添加
+
+```properties
+spring.rabbitmq.publisher-confirm-type=correlated 
+```
+
+* `NONE ` ：禁用发布确认模式，是默认值
+* `CORRELATED`：发布消息成功到交换器后会触发回调方法
+* `SIMPLE `： 
+  1. 和 CORRELATED 值一样会触发回调方法
+  2. 在发布消息成功后使用 rabbitTemplate 调用 waitForConfirms 或 waitForConfirmsOrDie 方法 等待 broker 节点返回发送结果，根据返回结果来判定下一步的逻辑  **要注意的点是 waitForConfirmsOrDie 方法如果返回 false 则会关闭 channel，则接下来无法发送消息到 broker**
+
+```properties
+spring.rabbitmq.host=xxxxx
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=xxxx
+spring.rabbitmq.password=xxx
+spring.rabbitmq.publisher-confirm-type=correlated
+```
+
+> 配置类
+
+```java
+@Configuration
+public class ConfirmConfig {
+    public static final String CONFIRM_EXCHANGE_NAME = "confirm.exchange";
+    public static final String CONFIRM_QUEUE_NAME = "confirm.queue";
+
+    // 声明业务 Exchange
+    @Bean("confirmExchange")
+    public DirectExchange confirmExchange(){
+    	return new DirectExchange(CONFIRM_EXCHANGE_NAME);
+    }
+    
+    // 声明确认队列
+    @Bean("confirmQueue")
+    public Queue confirmQueue(){
+    	return QueueBuilder.durable(CONFIRM_QUEUE_NAME).build();
+    }
+    
+    // 声明确认队列绑定关系
+    @Bean
+    public Binding queueBinding(@Qualifier("confirmQueue") Queue queue,
+    @Qualifier("confirmExchange") DirectExchange exchange){
+    	return BindingBuilder.bind(queue).to(exchange).with("key1");
+    }
+}
+```
+
+> 消息生产者
+
+```java
+@RestController
+@RequestMapping("/confirm")
+@Slf4j
+public class Producer {
+public static final String CONFIRM_EXCHANGE_NAME = "confirm.exchange";
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private MyCallBack myCallBack;
+    
+    // 依赖注入 rabbitTemplate 之后再设置它的回调对象
+    @PostConstruct
+    public void init(){
+    rabbitTemplate.setConfirmCallback(myCallBack);
+    }
+    
+    @GetMapping("sendMessage/{message}")
+    public void sendMessage(@PathVariable String message){
+     // 指定消息 id 为 1
+    CorrelationData correlationData1=new CorrelationData("1");
+    String routingKey = "key1";
+     	rabbitTemplate.convertAndSend(CONFIRM_EXCHANGE_NAME,routingKey,message+routingKey,correlationData1);
+    CorrelationData correlationData2=new CorrelationData("2");
+    routingKey="key2";
+    rabbitTemplate.convertAndSend(CONFIRM_EXCHANGE_NAME,routingKey,message+routingKey,correlationData2);
+    log.info("发送消息内容:{}",message);
+    }
+}
+```
+
+> 回调接口
+
+```java
+@Component
+@Slf4j
+public class MyCallBack implements RabbitTemplate.ConfirmCallback {
+    /**
+    * 交换机不管是否收到消息的一个回调方法
+    * CorrelationData
+    * 消息相关数据
+    * ack
+    * 交换机是否收到消息
+    */
+    @Override
+    public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+        String id=correlationData!=null?correlationData.getId():"";
+        if(ack){
+        	log.info("交换机已经收到 id 为:{}的消息",id);
+        } else {
+        	log.info("交换机还未收到 id 为:{}消息,由于原因:{}",id,cause);
+        }
+    }
+}
+```
+
+> 消息消费者
+
+```java
+@Component
+@Slf4j
+public class ConfirmConsumer {
+    public static final String CONFIRM_QUEUE_NAME = "confirm.queue";
+    
+    @RabbitListener(queues =CONFIRM_QUEUE_NAME)
+    public void receiveMsg(Message message){
+        String msg=new String(message.getBody());
+        log.info("接受到队列 confirm.queue 消息:{}",msg);
+    }
+}
+```
+
+> 结果分析
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-59.png)
+
+发送两条消息，第一条消息的 RoutingKey 为 "key1"，第二条消息的 RoutingKey 为 "key2"，两条消息都成功被交换机接收，也收到了交换机的确认回调，但消费者只收到了一条消息，因为 第二条消息的 RoutingKey 与队列的 BindingKey 不一致，也没有其它队列能接收这个消息，所有第二条 消息被直接丢弃了 
+
+##  回退消息
+
+>  Mandatory 参数  
+
+在**仅开启生产者确认机制**的情况下，交换机接收到消息后，会直接给消息生产者发送确认消息，如果发现该消息**不可路由**，那么消息会被**直接丢弃**，此时生产者是不知道消息被丢弃的
+
+但通过设置 mandatory 参数可以在**当消息传递过程中不可达目的地时将消息返回给生产者**。 
+
+> 消息生产者
+
+```java
+@Slf4j
+@Component
+public class MessageProducer implements RabbitTemplate.ConfirmCallback ,
+RabbitTemplate.ReturnCallback {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    
+	// rabbitTemplate 注入之后就设置该值
+    @PostConstruct
+    private void init() {
+        rabbitTemplate.setConfirmCallback(this);
+        /**
+        * true：
+        * 交换机无法将消息进行路由时，会将该消息返回给生产者
+        * false：
+        * 如果发现消息无法进行路由，则直接丢弃
+        */
+        rabbitTemplate.setMandatory(true);
+        //设置回退消息交给谁处理
+        rabbitTemplate.setReturnCallback(this);
+    }
+    
+    @GetMapping("sendMessage")
+    public void sendMessage(String message){
+        //让消息绑定一个 id 值
+        CorrelationData correlationData1 = new CorrelationData(UUID.randomUUID().toString());
+        rabbitTemplate.convertAndSend("confirm.exchange","key1",message+"key1",correlationData1)
+        ;
+        log.info("发送消息 id 为:{}内容为{}",correlationData1.getId(),message+"key1");
+        CorrelationData correlationData2 = new CorrelationData(UUID.randomUUID().toString());
+
+        rabbitTemplate.convertAndSend("confirm.exchange","key2",message+"key2",correlationData2);
+        log.info("发送消息 id 为:{}内容为{}",correlationData2.getId(),message+"key2");
+    }
+    
+    @Override
+    public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+    	String id = correlationData != null ? correlationData.getId() : "";
+        if (ack) {
+        	log.info("交换机收到消息确认成功, id:{}", id);
+        } else {
+        	log.error("消息 id:{}未成功投递到交换机,原因是:{}", id, cause);
+        }
+    }
+    
+    @Override
+    public void returnedMessage(Message message, int replyCode, String replyText, String
+    exchange, String routingKey) {
+        log.info("消息:{}被服务器退回，退回原因:{}, 交换机是:{}, 路由 key:{}",
+        new String(message.getBody()),replyText, exchange, routingKey);
+    }
+}
+```
+
+> 回调接口
+
+```java
+@Component
+@Slf4j
+public class MyCallBack implements
+RabbitTemplate.ConfirmCallback,RabbitTemplate.ReturnCallback {
+    /**
+    * 交换机不管是否收到消息的一个回调方法
+    * CorrelationData
+    * 消息相关数据
+    * ack
+    * 交换机是否收到消息
+    */
+    @Override
+    public void confirm(CorrelationData correlationData, boolean ack, String cause) {
+        String id=correlationData!=null?correlationData.getId():"";
+        if(ack){
+        	log.info("交换机已经收到 id 为:{}的消息",id);
+        }else{
+        	log.info("交换机还未收到 id 为:{}消息,由于原因:{}",id,cause);
+        }
+    }
+    
+	// 当消息无法路由的时候的回调方法
+    @Override
+    public void returnedMessage(Message message, int replyCode, String replyText, String
+    exchange, String routingKey) {
+    	log.error(" 消 息 {}, 被交换机 {} 退回，退回原因 :{}, 路 由 key:{}",new
+    	String(message.getBody()),exchange,replyText,routingKey);
+    }
+}
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-60.png)
+
+##  备份交换机
+
+在RabbitMQ中，我们并不知道该如何处理这些无法路由的消息，最多打个日志，然后触发报警，再来手动处理。而通过日志来处理这些无法路由的消息很不优雅，特别是所在的服务器有多台机器的时候。所以这里就可以使用**备份交换机**来把这些**无法路由的消息全部放到备份交换机的备份队列里面**。 
+
+> 架构
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-61.png)
+
+> 配置类
+
+```java
+@Configuration
+public class ConfirmConfig {
+    public static final String CONFIRM_EXCHANGE_NAME = "confirm.exchange";
+    public static final String CONFIRM_QUEUE_NAME = "confirm.queue";
+    public static final String BACKUP_EXCHANGE_NAME = "backup.exchange";
+    public static final String BACKUP_QUEUE_NAME = "backup.queue";
+    public static final String WARNING_QUEUE_NAME = "warning.queue";
+    
+    // 声明确认队列
+    @Bean("confirmQueue")
+    public Queue confirmQueue(){
+    	return QueueBuilder.durable(CONFIRM_QUEUE_NAME).build();
+    }
+    
+    // 声明确认队列绑定关系
+    @Bean
+    public Binding queueBinding(@Qualifier("confirmQueue") Queue queue,
+    @Qualifier("confirmExchange") DirectExchange exchange){
+    	return BindingBuilder.bind(queue).to(exchange).with("key1");
+    }
+    
+    // 声明备份 Exchange
+    @Bean("backupExchange")
+    public FanoutExchange backupExchange(){
+    	return new FanoutExchange(BACKUP_EXCHANGE_NAME);
+    }
+    // 声明确认 Exchange 交换机的备份交换机
+    @Bean("confirmExchange")
+    public DirectExchange confirmExchange(){
+        ExchangeBuilder exchangeBuilder =
+        ExchangeBuilder.directExchange(CONFIRM_EXCHANGE_NAME)
+        .durable(true)
+        // 设置该交换机的备份交换机
+        .withArgument("alternate-exchange", BACKUP_EXCHANGE_NAME);
+        return (DirectExchange)exchangeBuilder.build();
+    }
+    
+    // 声明警告队列
+    @Bean("warningQueue")
+    public Queue warningQueue(){
+    	return QueueBuilder.durable(WARNING_QUEUE_NAME).build();
+    }
+    // 声明报警队列绑定关系
+    @Bean
+    public Binding warningBinding(@Qualifier("warningQueue") Queue queue,
+    @Qualifier("backupExchange") FanoutExchange
+    backupExchange){
+    	return BindingBuilder.bind(queue).to(backupExchange);
+    }
+    
+    // 声明备份队列
+    @Bean("backQueue")
+    public Queue backQueue(){
+    	return QueueBuilder.durable(BACKUP_QUEUE_NAME).build();
+    }
+    
+    // 声明备份队列绑定关系
+    @Bean
+    public Binding backupBinding(@Qualifier("backQueue") Queue queue,
+    @Qualifier("backupExchange") FanoutExchange backupExchange){
+    	return BindingBuilder.bind(queue).to(backupExchange);
+    }
+}
+```
+
+> 报警消费者 用独立的消费者来进行监测和报警。  
+
+```java
+@Component
+@Slf4j
+public class WarningConsumer {
+    public static final String WARNING_QUEUE_NAME = "warning.queue";
+    
+    @RabbitListener(queues = WARNING_QUEUE_NAME)
+    public void receiveWarningMsg(Message message) {
+        String msg = new String(message.getBody());
+        log.error("报警发现不可路由消息：{}", msg);
+    }
+}
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-62.png)
+
+
+
 # 交换机
 
 ## 交换机
@@ -1292,6 +1628,7 @@ public class ReceiveLogsTopic02 {
     }
 }
 ```
+
 #  死信队列
 
 ##  死信概念
@@ -1559,5 +1896,567 @@ public class Consumer01 {
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-47.png)
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-48.png)
+
+
+
+
+
+
+
+#   延迟队列
+
+## 延迟队列介绍
+
+> 概念
+
+延时队列就是用来存放需要**在指定时间被处理**的元素的队列
+
+> 使用场景
+
+* 订单在十分钟之内未支付则自动取消
+* 新创建的店铺，如果在十天内都没有上传过商品，则自动发送消息提醒
+* 用户注册成功后，如果三天内没有登陆则进行短信提醒
+* 用户发起退款，如果三天内没有得到处理则通知相关运营人员 
+* 预定会议后，需要在预定的时间点前十分钟通知各个与会人员参加会议 
+
+> 使用场景特点
+
+需要在某个事件发生之后或者之前的**指定时间点完成某一项任务** 
+
+> 使用原因
+
+对于**数据量比较大，并且时效性较强的场景**
+
+如：“订单十 分钟内未支付则关闭“，短期内未支付的订单数据可能会有很多，活动期间甚至会达到百万甚至千万 级别，对这么庞大的数据量**仍旧使用轮询的方式是不可取的**，很可能在一秒内无法完成所有订单的检查，同时会给数据库带来很大压力，无法满足业务要求而且性能低下
+
+> TTL概念
+
+* TTL 是 RabbitMQ 中一个消息或者队列的属性，表明一条消息或者该队列中的所有消息的**最大存活时间** ，TTL单位是毫秒
+
+* 如果一条消息设置了 TTL 属性或者进入了设置 TTL 属性的队列，那么这条消息如果在 TTL 设置的时间内没有被消费，则会成为"死信"
+* 如果同时配置了队列的 TTL 和消息的 TTL，那么较小的那个值将会被使用 
+
+> 消息设置TTL
+
+ 针对每条消息设置 TTL 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-49.png)
+
+> 队列设置TTL
+
+ 创建队列的时候设置队列的“x-message-ttl”属性 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-50.png)
+
+> **注意**
+
+* 消息设置TTL： 消息即使过期，不一定会被马上丢弃，因为消息是否过期是在即将投递到消费者 之前判定的，如果当前队列有严重的消息积压情况，则已过期的消息也许还能存活较长时间
+* 队列设置TTL：旦消息过期，就会被队列丢弃(如果配置死信队列被丢到死信队列中) 
+* 如果不设置 TTL，表示消息永远不会过期
+* 如果将 TTL 设置为 0，则表示除非此时可以直接投递该消息到消费者，否则该消息将会被丢弃 
+
+## 案例演示
+
+> 引入依赖
+
+```xml
+<!--RabbitMQ 依赖-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-amqp</artifactId>
+</dependency>
+
+ <!--RabbitMQ 测试依赖-->
+<dependency>
+    <groupId>org.springframework.amqp</groupId>
+    <artifactId>spring-rabbit-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+```xml
+<!--swagger-->
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger2</artifactId>
+    <version>2.9.2</version>
+</dependency>
+
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-swagger-ui</artifactId>
+    <version>2.9.2</version>
+</dependency>
+```
+
+> 修改配置文件
+
+```properties
+spring.rabbitmq.host=xxxx
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=xxxx
+spring.rabbitmq.password=xxxx
+```
+
+> 添加Swagger配置类
+
+```java
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+    @Bean
+    public Docket webApiConfig(){
+        return new Docket(DocumentationType.SWAGGER_2)
+        .groupName("webApi")
+        .apiInfo(webApiInfo())
+        .select()
+          .build();
+    }
+    private ApiInfo webApiInfo(){
+        return new ApiInfoBuilder()
+        .title("rabbitmq 接口文档")
+        .description("本文档描述了 rabbitmq 微服务接口定义")
+        .version("1.0")
+        .contact(new Contact("enjoy6288", "http://atguigu.com",
+        "1551388580@qq.com"))
+        .build();
+    }
+}
+```
+
+> 架构图
+
+创建队列 QA 和 QB，队列 TTL 分别设置为 10S 和 40S，然后创建一个交换机 X 和死信交换机 Y，类型都是 direct，创建死信队列 QD 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-51.png)
+
+> 配置类
+
+```java
+@Configuration
+public class TtlQueueConfig {
+    // 交换机X
+    public static final String X_EXCHANGE = "X";
+    // 队列QA
+    public static final String QUEUE_A = "QA";
+    // 队列QB
+    public static final String QUEUE_B = "QB";
+    // 死信交换机Y
+    public static final String Y_DEAD_LETTER_EXCHANGE = "Y";
+    // 死信队列QD
+    public static final String DEAD_LETTER_QUEUE = "QD";
+    
+	// 声明 xExchange
+    @Bean("xExchange")
+    public DirectExchange xExchange(){
+    	return new DirectExchange(X_EXCHANGE);
+    } 
+     
+    // 声明 yExchange
+    @Bean("yExchange")
+    public DirectExchange yExchange(){
+    	return new DirectExchange(Y_DEAD_LETTER_EXCHANGE);
+    }
+    
+    // 声明队列 QA TTL 为 10s 并绑定到对应的死信交换机Y
+    @Bean("queueA")
+    public Queue queueA(){
+        Map<String, Object> args = new HashMap<>(3);
+    	// 声明当前队列绑定的死信交换机
+    	args.put("x-dead-letter-exchange", Y_DEAD_LETTER_EXCHANGE);
+    	// 声明当前队列的死信路由 key
+    	args.put("x-dead-letter-routing-key", "YD");
+    	// 声明队列的 TTL
+    	args.put("x-message-ttl", 10000);
+    	return QueueBuilder.durable(QUEUE_A).withArguments(args).build();
+    }
+    
+    // 声明队列 A 绑定 X 交换机
+    @Bean
+    public Binding queueaBindingX(@Qualifier("queueA") Queue queueA,
+        @Qualifier("xExchange") DirectExchange xExchange){
+        return BindingBuilder.bind(queueA).to(xExchange).with("XA");
+    }
+    
+    // 声明队列 QB TTL 为 40s 并绑定到对应的死信交换机
+    @Bean("queueB")
+    public Queue queueB(){
+        Map<String, Object> args = new HashMap<>(3);
+        // 声明当前队列绑定的死信交换机
+        args.put("x-dead-letter-exchange", Y_DEAD_LETTER_EXCHANGE);
+        // 声明当前队列的死信路由 key
+        args.put("x-dead-letter-routing-key", "YD");
+        // 声明队列的 TTL
+        args.put("x-message-ttl", 40000);
+        return QueueBuilder.durable(QUEUE_B).withArguments(args).build();
+    }
+    
+    // 声明队列 QB 绑定 X 交换机
+    @Bean
+    public Binding queuebBindingX(@Qualifier("queueB") Queue queue1B,
+    @Qualifier("xExchange") DirectExchange xExchange){
+    	return BindingBuilder.bind(queue1B).to(xExchange).with("XB");
+    }
+    
+    // 声明死信队列 QD
+    @Bean("queueD")
+    public Queue queueD(){
+    	return new Queue(DEAD_LETTER_QUEUE);
+    }
+    
+    // 声明死信队列 QD 绑定关系
+    @Bean
+    public Binding deadLetterBindingQAD(@Qualifier("queueD") Queue queueD,
+    @Qualifier("yExchange") DirectExchange yExchange){
+    	return BindingBuilder.bind(queueD).to(yExchange).with("YD");
+    }
+}
+
+```
+
+> 消息生产者
+
+```java
+@Slf4j
+@RequestMapping("ttl")
+@RestController
+public class SendMsgController {
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    
+    @GetMapping("sendMsg/{message}")
+    public void sendMsg(@PathVariable String message) {
+        log.info("当前时间：{},发送一条信息给两个 TTL 队列:{}", new Date(), message);
+        rabbitTemplate.convertAndSend("X", "XA", "消息来自 ttl 为 10S 的队列: " + message);
+        rabbitTemplate.convertAndSend("X", "XB", "消息来自 ttl 为 40S 的队列: " + message);
+    }
+}
+```
+
+> 消息消费者
+
+```java
+@Slf4j
+@Component
+public class DeadLetterQueueConsumer {
+    @RabbitListener(queues = "QD")
+    public void receiveD(Message message, Channel channel) throws IOException {
+        String msg = new String(message.getBody());
+        log.info("当前时间：{},收到死信队列信息{}", new Date().toString(), msg);
+    }
+}
+```
+
+ 发起一个请求 http://localhost:8080/ttl/sendMsg/嘻嘻嘻 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-52.png)
+
+第一条消息在 10S 后变成了死信消息，然后被消费者消费掉
+
+第二条消息在 40S 之后变成了死信消息， 然后被消费掉 
+
+##  	延时队列优化
+
+> 架构图
+
+新增了一个队列 QC，该队列不设置 TTL 时间 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-53.png)
+
+> 配置类
+
+```java
+@Component
+public class MsgTtlQueueConfig {
+    // 死信交换机Y
+    public static final String Y_DEAD_LETTER_EXCHANGE = "Y";
+    // 队列C
+    public static final String QUEUE_C = "QC";
+    
+    // 声明队列 C 死信交换机
+    @Bean("queueC")
+    public Queue queueB(){
+        Map<String, Object> args = new HashMap<>(3);
+        // 声明当前队列绑定的死信交换机
+        args.put("x-dead-letter-exchange", Y_DEAD_LETTER_EXCHANGE);
+        // 声明当前队列的死信路由 key
+        args.put("x-dead-letter-routing-key", "YD");
+        // 没有声明 TTL 属性
+        return QueueBuilder.durable(QUEUE_C).withArguments(args).build();
+    }
+    
+    // 声明队列 B 绑定 X 交换机
+    @Bean
+    public Binding queuecBindingX(@Qualifier("queueC") Queue queueC,
+    @Qualifier("xExchange") DirectExchange xExchange){
+    	return BindingBuilder.bind(queueC).to(xExchange).with("XC");
+    }
+}
+```
+
+> 消息生产者
+
+```java
+@GetMapping("sendExpirationMsg/{message}/{ttlTime}")
+public void sendMsg(@PathVariable String message,@PathVariable String ttlTime) {
+    rabbitTemplate.convertAndSend("X", "XC", message, correlationData ->{
+        correlationData.getMessageProperties().setExpiration(ttlTime);
+        return correlationData;
+    });
+    log.info("当前时间：{},发送一条时长{}毫秒 TTL 信息给队列 C:{}", new Date(),ttlTime, message);
+}
+```
+
+ 发起请求
+
+http://localhost:8080/ttl/sendExpirationMsg/你好 1/20000 
+
+http://localhost:8080/ttl/sendExpirationMsg/你好 2/2000 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-54.png)
+
+如果使用在消息属性上设置 TTL 的方式，消息可能并不会按时“死亡“，因为 RabbitMQ 只会检查第一个消息是否过期，如果过期则丢到死信队列， 如果第一个消息的延时时长很长，而第二个消息的延时时长很短，第二个消息并不会优先得到执行。 
+
+##  Rabbitmq 插件实现延迟队列
+
+[rabbitmq_delayed_message_exchange 插件](https://www.rabbitmq.com/community-plugins.html)
+
+> 安装步骤
+
+1. 下载插件， 放置到 RabbitMQ 的插件目录
+
+2. 进入 RabbitMQ 的安装目录下的 plgins 目录，执行下面命令让该插件生效，然后重启 RabbitMQ 
+
+   ```bash
+   /usr/lib/rabbitmq/lib/rabbitmq_server-3.8.8/plugins
+   rabbitmq-plugins enable rabbitmq_delayed_message_exchange
+   ```
+
+   ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-55.png)
+
+> 架构图
+
+新增队列 delayed.queue，一个自定义交换机 delayed.exchange 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-56.png)
+
+> 配置类
+
+在自定义的交换机中，这是一种新的交换类型，该类型消息**支持延迟投递机制**，消息传递后并不会立即投递到目标队列中，而是存储在 mnesia(一个分布式数据系统)表中，当达到投递时间时，才投递到目标队列中 
+
+```java
+@Configuration
+public class DelayedQueueConfig {
+    public static final String DELAYED_QUEUE_NAME = "delayed.queue";
+    public static final String DELAYED_EXCHANGE_NAME = "delayed.exchange";
+    public static final String DELAYED_ROUTING_KEY = "delayed.routingkey";
+    
+    @Bean
+    public Queue delayedQueue() {
+    	return new Queue(DELAYED_QUEUE_NAME);
+    }
+    
+    // 自定义交换机 我们在这里定义的是一个延迟交换机
+    @Bean
+    public CustomExchange delayedExchange() {
+        Map<String, Object> args = new HashMap<>();
+        // 自定义交换机的类型
+        args.put("x-delayed-type", "direct");
+        return new CustomExchange(DELAYED_EXCHANGE_NAME, "x-delayed-message", true, false,
+        args);
+    }
+    
+    @Bean
+    public Binding bindingDelayedQueue(@Qualifier("delayedQueue") Queue queue,
+    @Qualifier("delayedExchange") CustomExchange
+    delayedExchange) {
+    	return BindingBuilder.bind(queue).to(delayedExchange).with(DELAYED_ROUTING_KEY).noargs();
+    }
+}
+```
+
+> 消息生产者
+
+```java
+public static final String DELAYED_EXCHANGE_NAME = "delayed.exchange";
+public static final String DELAYED_ROUTING_KEY = "delayed.routingkey";
+
+@GetMapping("sendDelayMsg/{message}/{delayTime}")
+public void sendMsg(@PathVariable String message,@PathVariable Integer delayTime) {
+    rabbitTemplate.convertAndSend(DELAYED_EXCHANGE_NAME, DELAYED_ROUTING_KEY, message,
+    correlationData ->{
+        correlationData.getMessageProperties().setDelay(delayTime);
+        return correlationData;
+     });
+    log.info(" 当 前 时 间 ： {}, 发送一条延迟 {} 毫秒的信息给队列 delayed.queue:{}", new
+    Date(),delayTime, message);
+}
+
+```
+
+> 消息消费者
+
+```java
+public static final String DELAYED_QUEUE_NAME = "delayed.queue";
+
+@RabbitListener(queues = DELAYED_QUEUE_NAME)
+public void receiveDelayedQueue(Message message){
+    String msg = new String(message.getBody());
+    log.info("当前时间：{},收到延时队列的消息：{}", new Date().toString(), msg);
+}
+```
+
+发起请求： 
+
+http://localhost:8080/ttl/sendDelayMsg/come on baby1/20000 
+
+http://localhost:8080/ttl/sendDelayMsg/come on baby2/2000 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-57.png)
+
+第二个消息被先消费掉  
+
+##  总结
+
+*  延时队列在需要延时处理的场景下非常有用，使用 RabbitMQ 来实现延时队列可以很好的利用 RabbitMQ 的特性
+*  如：消息可靠发送、消息可靠投递、死信队列来保障消息至少被消费一次以及未被正 确处理的消息不会被丢弃
+*  通过 RabbitMQ 集群的特性，可以很好的解决单点故障问题，不会因为 单个节点挂掉导致延时队列不可用或者消息丢失。 
+
+# 幂等性 
+
+> 概念
+
+用户对于同一操作发起的一次请求或者多次请求的结果是一致的，不会因为多次点击而产生了副作用。 
+
+用户购买商品后支付，支付扣款成功，但是返回结果的时候网络异常， 此时钱已经扣了，用户再次点击按钮，此时会进行第二次扣款，  返回结果成功，用户查询余额发现多扣钱 了，流水记录也变成了两条 
+
+> 消息重复消费
+
+消费者在消费 MQ 中的消息时，MQ 已把消息发送给消费者，消费者在给 MQ 返回 ack 时**网络中断**， 故 **MQ 未收到确认信息**，该条消息**会重新发给其他的消费者**，或者在网络重连后再次发送给该消费者，但实际上该消费者已成功消费了该条消息，造成消费者消费了重复的消息。 
+
+> 解决方案
+
+MQ 消费者的幂等性的解决**一般使用全局 ID 或者写个唯一标识**
+
+比如时间戳或者 UUID 或者订单消费者消费 MQ 中的消息也可利用 MQ 的该 id 来判断，或者可按自己的规则生成一个全局唯一 id，每次消费消息时用该 id 先判断该消息是否已消费过。 
+
+>  消费端的幂等性保障  
+
+在海量订单生成的业务高峰期，生产端有可能就会重复发生了消息，这时候消费端就要实现幂等性， 这就意味着我们的**消息永远不会被消费多次**，即使我们收到了一样的消息。 
+
+业界主流的幂等性有两种操作
+
+* a. 唯一 ID+指纹码机制，利用数据库主键去重
+  * 指纹码: 一些规则或者时间戳加别的服务给到的**唯一信息码**，它并不一定是我们系统生成的，基本都是由我们的业务规则拼接而来，但是一定要保证唯一性
+  * 然后就利用查询语句进行判断这个 id 是否存在数据库中。优势就是实现简单就一个拼接，然后查询判断是否重复
+  * 劣势就是在高并发时，如果是单个数 据库就会有写入性能瓶颈当然也可以采用分库分表提升性能  
+* b. 利用 redis 的原子性去实现  
+  * 利用 redis 执行 `setnx` 命令，天然具有幂等性。从而实现不重复消费 
+
+# 优先级队列
+
+> 添加方式
+>
+> 队列需要设置为优先级队列，消息需要设置消息的优先级，消费者需要等待消息已经发送到队列中才去消费，这样才有机会对消息进行排序 
+
+* 控制台页面添加 
+
+  ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-63.png)
+
+  
+
+* 队列中代码添加优先级 
+
+  ```java
+  Map<String, Object> params = new HashMap();
+  params.put("x-max-priority", 10);
+  channel.queueDeclare("hello", true, false, false, params);
+  ```
+
+  ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-64.png)
+
+* 消息中代码添加优先级 
+
+  ```java
+  AMQP.BasicProperties properties = new
+  AMQP.BasicProperties().builder().priority(5).build()
+  ```
+
+> 实现
+
+**消息生产者**
+
+```java
+public class Producer {
+	private static final String QUEUE_NAME="hello";
+    public static void main(String[] args) throws Exception {
+        try (Channel channel = RabbitMqUtils.getChannel();) {
+        // 给消息赋予一个 priority 属性
+        AMQP.BasicProperties properties = new
+        AMQP.BasicProperties().builder().priority(5).build();
+        for (int i = 1; i <11; i++) {
+            String message = "info"+i;
+            if(i==5){
+            	channel.basicPublish("", QUEUE_NAME, properties, message.getBytes());
+            }else{
+            	channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+            }
+            System.out.println("发送消息完成:" + message);
+            }
+        }
+    }
+}
+```
+
+**消息消费者**
+
+```java
+public class Consumer {
+    private static final String QUEUE_NAME="hello";
+   
+    public static void main(String[] args) throws Exception {
+        Channel channel = RabbitMqUtils.getChannel();
+        // 设置队列的最大优先级 最大可以设置到 255 官网推荐 1-10 如果设置太高比较吃内存和 CPU
+        Map<String, Object> params = new HashMap();
+        params.put("x-max-priority", 10);
+        channel.queueDeclare(QUEUE_NAME, true, false, false, params);
+        System.out.println("消费者启动等待消费......");
+        DeliverCallback deliverCallback=(consumerTag, delivery)->{
+            String receivedMessage = new String(delivery.getBody());
+            System.out.println("接收到消息:"+receivedMessage);
+        };
+        channel.basicConsume(QUEUE_NAME,true,deliverCallback,(consumerTag)->{
+        	System.out.println("消费者无法消费消息时调用，如队列被删除");
+        });
+    }
+}
+```
+
+# 惰性队列
+
+惰性队列会尽可能的将消息存入磁盘中，而在消费者消费到相应的消息时才会被加载到内存中，它的一个重要的设计目标**是支持更多的消息存储**。当消费者由于各种各样的原因(比如消费者下线、宕机亦或者是由于维护而关闭等)而致使**长时间内不能消费消息造成堆积**时，惰性队列就很有必要 
+
+> 惰性队列两种模式： default 和 lazy 
+
+*  默认的为 default 模式，在 3.6.0 之前的版本无需做任何变更 
+
+*  lazy 模式即为惰性队列的模式
+   * 可以通过调用 channel.queueDeclare 方法的时候在参数中设置，也可以通过 Policy 的方式设置
+*  如果一个队列同时使用这两种方式设置的话，那么 Policy 的方式具备更高的优先级。 如果要通过声明的方式改变已有队列的模式的话，那么只能先删除队列，然后再重新声明一个新的。  
+
+在队列声明的时候可以通过`x-queue-mode`参数来设置队列的模式，取值为“default”和“lazy” 
+
+```java
+Map<String, Object> args = new HashMap<String, Object>();
+args.put("x-queue-mode", "lazy");
+channel.queueDeclare("myqueue", false, false, false, args);
+```
+
+> 内存开销对比  
+
+ 在发送 1 百万条消息，每条消息大概占 1KB 的情况下，普通队列占用内存是 1.2GB，而惰性队列仅仅 占用 1.5MB 
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-65.png)
+
 
 

@@ -143,6 +143,11 @@ cover:
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover10.png
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover11.png
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover12.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover13.jpg
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg
+
 # Replace Broken Images (替換無法顯示的圖片)
 error_img:
   flink: /img/friend_404.gif

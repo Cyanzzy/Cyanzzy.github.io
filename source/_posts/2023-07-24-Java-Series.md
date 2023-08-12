@@ -2,11 +2,14 @@
 title: Java Series
 date: 2023-07-24 17:53:21
 tags: 
-  - JavaBasic
+  - 
 categories: 
   - Language
 swiper_index: 
 ---
+
+# Java语言基础
+
 > Java Basic
 
 [JavaBasic-1-基础内容](https://cyanzzy.github.io/2023/03/16/JavaBasic-1-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9/)
@@ -34,13 +37,20 @@ swiper_index:
 [Java8-7-接口中默认方法和静态方法](https://cyanzzy.github.io/2023/03/17/Java8-7-%E6%8E%A5%E5%8F%A3%E4%B8%AD%E9%BB%98%E8%AE%A4%E6%96%B9%E6%B3%95%E5%92%8C%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95/)
 [Java8-8-新时间日期API](https://cyanzzy.github.io/2023/03/17/Java8-8-%E6%96%B0%E6%97%B6%E9%97%B4%E6%97%A5%E6%9C%9FAPI/)
 
+# Java并发编程
+
 > JUC
 
 [JUC-0-Java并发编程零基础入门](https://cyanzzy.github.io/2023/08/01/JUC-0-Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E9%9B%B6%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/)
+[JUC-1-基础回顾]()
+[JUC-2-CompletableFuture]()
+# Java虚拟机
 
+> JVM 内存与垃圾回收篇
 
-> JVM
+[JVM 内存与垃圾回收篇-1-JVM与Java体系结构]()
+[JVM 内存与垃圾回收篇-2-类加载子系统]()
+[JVM 内存与垃圾回收篇-3-运行时数据区]()
 
-[JVM-1-内存与垃圾回收](https://cyanzzy.github.io/2023/08/03/JVM-1-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/)
 
 

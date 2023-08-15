@@ -141,3 +141,116 @@ public class ReceiveLogsDirect {
   }
 }
 ```
+
+# Spring AMQP
+
+我们将使用 Spring Boot 来引导和配置 Spring AMQP 项目，[代码仓库链接](https://gitee.com/cyanzzy/spring-amqp-learning)，与往常一样，配置类如下
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean
+    public DirectExchange direct() { // DirectExchange
+        return new DirectExchange("routing-direct");
+    }
+
+    @Bean // 创建临时队列
+    public Queue autoDeleteQueue1() {
+        return new AnonymousQueue();
+    }
+
+    @Bean
+    public Binding binding1a(DirectExchange direct, Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1)
+                .to(direct)
+                .with("orange");
+    }
+
+    @Bean
+    public Binding binding1b(DirectExchange direct, Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1)
+                .to(direct)
+                .with("black");
+    }
+
+    @Bean // 创建临时队列
+    public Queue autoDeleteQueue2() {
+        return new AnonymousQueue();
+    }
+
+    @Bean
+    public Binding binding2a(DirectExchange direct, Queue autoDeleteQueue2) {
+        return BindingBuilder.bind(autoDeleteQueue2)
+                .to(direct)
+                .with("green");
+    }
+
+    @Bean
+    public Binding binding2b(DirectExchange direct, Queue autoDeleteQueue2) {
+        return BindingBuilder.bind(autoDeleteQueue2)
+                .to(direct)
+                .with("black");
+    }
+
+}
+```
+
+消息发送方：
+
+```java
+@Service
+public class RoutingSenderServiceImpl implements RoutingSenderService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private DirectExchange direct;
+
+    private final String[] keys = {"orange", "black", "green"};
+
+    @Override
+    public void send(String message) { // 使用RabbitTemplate向队列发送消息
+
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            System.out.println("第 " + i + "次循环发消息");
+
+            rabbitTemplate.convertAndSend(direct.getName(), key, message);
+            System.out.println(" *********************send() 发送了 ：" + message + " exchange is: " + direct.getName() + "routing key is: " + key);
+        }
+
+    }
+}
+```
+
+消息接收方：
+
+```java
+@Component
+public class RoutingReceiver {
+
+    @RabbitListener(queues = "#{autoDeleteQueue1.name}")
+    public void receive1(String in) {
+
+        System.out.println("receive1: " + in);
+    }
+
+    @RabbitListener(queues = "#{autoDeleteQueue2.name}")
+    public void receive2(String in) {
+
+        System.out.println("receive2: " + in);
+    }
+}
+```
+
+使用http client 测试，结果如下：
+
+```json
+# Routing 测试
+GET {{routing_host}}/amqp/send?message= 你好  routing and routing
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-72.png)
+

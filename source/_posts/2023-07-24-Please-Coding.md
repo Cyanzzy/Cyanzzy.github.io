@@ -26,4 +26,4 @@ swiper_index:
 [ems](https://gitee.com/cyanzzy/)
 [user-center](https://gitee.com/cyanzzy/user-center)
 [online-education](https://gitee.com/cyanzzy/online-education)
-
+[erpsystem](https://gitee.com/cyanzzy/erpsystem)

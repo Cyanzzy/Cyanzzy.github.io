@@ -141,3 +141,94 @@ public class ReceiveLogs {
   }
 }
 ```
+
+# Spring AMQP
+
+我们将使用 Spring Boot 来引导和配置 Spring AMQP 项目，[代码仓库链接](https://gitee.com/cyanzzy/spring-amqp-learning)，与往常一样，配置类如下
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean // 创建临时队列1
+    public Queue  autoDeleteQueue1() { // 创建队列对象
+        return new AnonymousQueue();
+    }
+
+    @Bean // 绑定
+    public Binding binding1(FanoutExchange fanout, Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1).to(fanout);
+    }
+
+    @Bean // 创建临时队列
+    public Queue autoDeleteQueue2() { // 创建队列对象
+        return new AnonymousQueue();
+    }
+
+    @Bean // 绑定
+    public Binding binding2(FanoutExchange fanout, Queue autoDeleteQueue2) {
+        return BindingBuilder.bind(autoDeleteQueue2).to(fanout);
+    }
+
+    @Bean // FanoutExchange
+    public FanoutExchange fanoutExchange() {
+        return new FanoutExchange("publish-subscribe-fanout");
+    }
+}
+```
+
+
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-69.png)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-70.png)
+
+消息发送
+
+```java
+@Service
+public class PublishSubscribeSenderServiceImpl implements PublishSubscribeSenderService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private FanoutExchange fanout;
+
+    @Override
+    public void send(String message) { // 使用RabbitTemplate向队列发送消息
+        rabbitTemplate.convertAndSend(fanout.getName(), "", message);
+        System.out.println(" ********************* [x] Sent '" + message + "exchange is " + fanout.getName());
+    }
+}
+```
+
+消息监听
+
+```java
+@Component
+public class PublishSubscribeReceiver {
+
+    @RabbitListener(queues = "#{autoDeleteQueue1.name}")
+    public void receive1(String in) {
+
+        System.out.println("receive1: " + in);
+    }
+
+    @RabbitListener(queues = "#{autoDeleteQueue2.name}")
+    public void receive2(String in) {
+
+        System.out.println("receive2: " + in);
+    }
+}
+```
+
+使用http client发送请求，测试结果如下
+
+```json
+# PublishSubscribe 测试
+GET {{publish_subscribe_host}}/amqp/send?message=publish subscribe
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-71.png)
+

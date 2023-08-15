@@ -291,3 +291,108 @@ public class NewTask {
 }
 ```
 
+# Spring AMQP
+
+我们将使用 Spring Boot 来引导和配置 Spring AMQP 项目，[代码仓库链接](https://gitee.com/cyanzzy/spring-amqp-learning)，与往常一样，配置类如下
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean // 创建队列
+    public Queue workQueue() { // 创建队列对象
+        return new Queue("work-queue");
+    }
+
+}
+```
+
+消息发送方不变
+
+```java
+@Service
+public class WorkQueuesSenderServiceImpl implements WorkQueuesSenderService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private Queue queue; // 注入构造的队列
+
+    @Override
+    public void send(String message) { // 使用RabbitTemplate向队列发送消息
+        rabbitTemplate.convertAndSend(queue.getName(), message);
+        System.out.println(" ********************* [x] Sent '" + message + ", Routing key is " + queue.getName());
+    }
+}
+```
+
+当然也可以使用SpringBootTest测试
+
+```java
+@Component
+public class WorkQueuesSender {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    public void send(String message) {
+        rabbitTemplate.convertAndSend("work-queues", message);
+    }
+}
+```
+
+与之前不同的是，这里我们使用两个消费者接收消息，但最终只有一个能消费
+
+```java
+@Component
+public class WorkQueuesReceiver1 {
+
+    @RabbitListener(queues = "work-queue")
+    public void receive(String in, Channel channel, Message message) throws IOException, InterruptedException {
+
+        TimeUnit.SECONDS.sleep(1);
+
+
+        int prefetchCount = 1;
+        // 定义通道上允许的未确认消息的最大数量
+        channel.basicQos(prefetchCount);
+
+        System.out.println("WorkQueuesReceiver1: " + in);
+        // 消息应答
+        channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+    }
+}
+```
+
+```java
+@Component
+public class WorkQueuesReceiver2 {
+
+    @RabbitListener(queues = "work-queue")
+    public void receive(String in, Channel channel, Message message) throws IOException, InterruptedException {
+
+        TimeUnit.SECONDS.sleep(2);
+
+
+        int prefetchCount = 1;
+        // 定义通道上允许的未确认消息的最大数量
+        channel.basicQos(prefetchCount);
+
+        System.out.println("WorkQueuesReceiver2: " + in);
+        // 消息应答
+        channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+    }
+}
+```
+
+使用http client测试，连续发送两次请求，测试结果如下：
+
+```json
+# WorkQueues 测试
+GET {{work_queues_host}}/amqp/send?message=workqueues
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-68.png)
+
+

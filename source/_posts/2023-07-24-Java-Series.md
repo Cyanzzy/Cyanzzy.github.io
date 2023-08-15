@@ -42,15 +42,21 @@ swiper_index:
 > JUC
 
 [JUC-0-Java并发编程零基础入门](https://cyanzzy.github.io/2023/08/01/JUC-0-Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E9%9B%B6%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8/)
-[JUC-1-基础回顾]()
-[JUC-2-CompletableFuture]()
+[JUC-1-基础回顾](https://cyanzzy.github.io/2023/08/12/JUC-1-%E5%9F%BA%E7%A1%80%E5%9B%9E%E9%A1%BE/)
+[JUC-2-CompletableFuture](https://cyanzzy.github.io/2023/08/12/JUC-2-CompletableFuture/)
+[JUC-3-多线程锁](https://cyanzzy.github.io/2023/08/14/JUC-3-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E9%94%81/)
+[JUC-4-LockSupport与线程中断](https://cyanzzy.github.io/2023/08/15/JUC-4-LockSupport%E4%B8%8E%E7%BA%BF%E7%A8%8B%E4%B8%AD%E6%96%AD/)
 # Java虚拟机
 
 > JVM 内存与垃圾回收篇
 
-[JVM 内存与垃圾回收篇-1-JVM与Java体系结构]()
-[JVM 内存与垃圾回收篇-2-类加载子系统]()
-[JVM 内存与垃圾回收篇-3-运行时数据区]()
+[JVM 内存与垃圾回收篇-1-JVM与Java体系结构](https://cyanzzy.github.io/2023/08/09/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-1-JVM%E4%B8%8EJava%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/)
+[JVM 内存与垃圾回收篇-2-类加载子系统](https://cyanzzy.github.io/2023/08/09/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%AD%90%E7%B3%BB%E7%BB%9F/)
+[JVM 内存与垃圾回收篇-3-运行时数据区](https://cyanzzy.github.io/2023/08/09/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-3-%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/)
+[JVM 内存与垃圾回收篇-4-对象实例化内存布局与方法定位](https://cyanzzy.github.io/2023/08/14/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-4-%E5%AF%B9%E8%B1%A1%E5%AE%9E%E4%BE%8B%E5%8C%96%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E4%B8%8E%E6%96%B9%E6%B3%95%E5%AE%9A%E4%BD%8D/)
+[JVM 内存与垃圾回收篇-5-直接内存](https://cyanzzy.github.io/2023/08/14/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-5-%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98/)
+[JVM 内存与垃圾回收篇-6-执行引擎](https://cyanzzy.github.io/2023/08/14/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-6-%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/)
+[JVM 内存与垃圾回收篇-7-StringTable](https://cyanzzy.github.io/2023/08/15/JVM-%E5%86%85%E5%AD%98%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AF%87-7-StringTable/)
 
 
 

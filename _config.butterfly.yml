@@ -147,6 +147,17 @@ cover:
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg
     - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover17.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover19.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover21.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover22.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover23.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover24.png
+    - https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover25.png
+
+
 
 # Replace Broken Images (替換無法顯示的圖片)
 error_img:

@@ -48,8 +48,6 @@ channel.basicPublish("", "rpc_queue", props, message.getBytes());
 | replyTo       | 常用于命名回调队列                                           |
 | correlationId | 用于关联 RPC 响应和请求                                      |
 
-
-
 # Correlation Id
 
 在上面介绍的方法中，我们建议为每个 RPC 请求创建一个回调队列。这样做效率很低，有一个更好的方法--让我们为每个客户端创建一个回调队列。这就产生了一个新问题，即在该队列中收到一个响应后，不清楚该响应属于哪个请求。这时就需要使用 correlationId 属性。
@@ -209,3 +207,106 @@ public class RPCClient implements AutoCloseable {
 
 9. 与此同时，主线程正在等待 CompletableFuture 完成。
 10. 最后，我们将响应返回给用户。
+
+# Spring AMQP
+
+服务端给队列推送消息，客户端监听消息
+
+> 服务端
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean
+    public TopicExchange topicExchange(){
+        return new TopicExchange(RPC_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue rpcQueue(){
+        return new Queue(RPC_QUEUE, true);
+    }
+
+    @Bean
+    public Binding rpcQueueBinding(){
+        return BindingBuilder
+                .bind(rpcQueue())
+                .to(topicExchange())
+                .with(RPC_KEY);
+    }
+}
+```
+
+````java
+@RestController
+@RequestMapping("/amqp")
+public class ServerSenderController {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @GetMapping("/send")
+    public String send(@RequestParam String message) {
+
+        System.out.println("服务端准备发送消息给客户端*******");
+        rabbitTemplate.convertAndSend(RPC_EXCHANGE, RPC_KEY, message);
+
+        System.out.println("服务端发送消息给客户端完毕*******");
+        System.out.println("其中EXCHANGE 为 " + RPC_EXCHANGE + "Routing key 为：" + RPC_KEY + "消息为：'" + message + "'" );
+        return "Send Client Success";
+    }
+}
+````
+
+> 客户端
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean
+    public TopicExchange topicExchange(){
+        return new TopicExchange(RPC_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Queue rpcQueue(){
+        return new Queue(RPC_QUEUE, true);
+    }
+
+    @Bean
+    public Binding rpcQueueBinding(){
+        return BindingBuilder
+                .bind(rpcQueue())
+                .to(topicExchange())
+                .with(RPC_KEY);
+    }
+}
+```
+
+```java
+@Component
+public class RPCClientReceiver {
+
+    @RabbitListener(queues = RPC_QUEUE)
+    public void receiveServerMessage(String in) {
+
+        System.out.println("****** receiveServerMessage : " + in);
+
+        System.out.println("**** *Start owning service");
+    }
+
+}
+```
+
+> 使用 http client 测试
+
+```json
+# RPC 测试
+GET {{rpc_host}}/amqp/send?message= 你好 我服务端给你客户端发了一个消息 哈哈哈
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-74.png)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-75.png)

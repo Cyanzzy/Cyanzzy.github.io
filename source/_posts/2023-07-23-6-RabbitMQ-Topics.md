@@ -7,7 +7,6 @@ categories:
   - Technology
 swiper_index: 
 ---
-
 # Topic exchange
 
 发送到 `topic` exchange 的消息不能有任意的 `routing_key`--**它必须是一个用点分隔的单词列表**。这些单词可以是任何内容，但通常会指定与信息相关的一些特征。
@@ -22,7 +21,7 @@ swiper_index:
 
 * `#` (hash) can substitute for **zero or more words.**
 
-![](![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-35.png)
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-35.png)
 
 我们要发送的消息都是描述动物的。发送消息时将使用由三个单词（两个点）组成的` routing key `。路由键中的第一个词描述速度，第二个词描述颜色，第三个词描述物种：` <speed>.<colour>.<species> `。
 
@@ -129,3 +128,112 @@ public class ReceiveLogsTopic {
 }
 ```
 
+# Spring AMQP
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-35.png)
+
+我们将使用 Spring Boot 来引导和配置 Spring AMQP 项目，[代码仓库链接](https://gitee.com/cyanzzy/spring-amqp-learning)，与往常一样，配置类如下
+
+```java
+@Configuration
+public class RabbitMQConfig {
+
+    @Bean // TopicExchange
+    public TopicExchange topic() {
+        return new TopicExchange("topics-topic");
+    }
+
+    @Bean // 创建临时队列
+    public Queue autoDeleteQueue1() {
+        return new AnonymousQueue();
+    }
+
+    @Bean
+    public Binding binding1a(TopicExchange topic, Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1)
+                .to(topic)
+                .with("*.orange.*");
+    }
+
+    @Bean
+    public Binding binding1b(TopicExchange topic, Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1)
+                .to(topic)
+                .with("*.*.rabbit");
+    }
+
+    @Bean // 创建临时队列
+    public Queue autoDeleteQueue2() {
+        return new AnonymousQueue();
+    }
+
+    @Bean
+    public Binding binding2a(TopicExchange topic, Queue autoDeleteQueue2) {
+        return BindingBuilder.bind(autoDeleteQueue2)
+                .to(topic)
+                .with("lazy.#");
+    }
+
+}
+```
+
+发送消息
+
+```java
+@Service
+public class TopicsSenderServiceImpl implements TopicsSenderService {
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private TopicExchange topic;
+
+    private final String[] keys = {"quick.orange.rabbit", "lazy.orange.elephant",
+            "quick.orange.fox", "lazy.brown.fox", "lazy.pink.rabbit", "quick.brown.fox"};
+
+    @Override
+    public void send(String message) { // 使用RabbitTemplate向队列发送消息
+
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            System.out.println("第 " + i + "次循环发消息");
+
+            rabbitTemplate.convertAndSend(topic.getName(), key, message);
+            System.out.println(" *********************send() 发送了 ：" + message + " exchange is: " + topic.getName() + "routing key is: " + key);
+        }
+
+    }
+}
+```
+
+接收消息
+
+```java
+@Component
+public class TopicsReceiver {
+
+    @RabbitListener(queues = "#{autoDeleteQueue1.name}")
+    public void receive1(String in) {
+
+        System.out.println("receive1: " + in);
+    }
+
+    @RabbitListener(queues = "#{autoDeleteQueue2.name}")
+    public void receive2(String in) {
+
+        System.out.println("receive2: " + in);
+    }
+}
+```
+
+使用http client 测试结果如下
+
+```json
+# Topics 测试
+GET {{routing_host}}/amqp/send?message= 你好  topics exchange
+```
+
+
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-73.png)

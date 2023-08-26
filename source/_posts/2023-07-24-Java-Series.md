@@ -50,6 +50,7 @@ swiper_index:
 [JUC-6-volatile与JMM](https://cyanzzy.github.io/2023/08/16/JUC-6-volatile%E4%B8%8EJMM/)
 [JUC-7-CAS](https://cyanzzy.github.io/2023/08/22/JUC-7-CAS/)
 [JUC-8-原子访问类]()
+[JUC-9-ThreadLocal]()
 
 # Java虚拟机
 
@@ -69,3 +70,4 @@ swiper_index:
 > JVM 字节码与类的加载篇
 
 [JVM 字节码与类的加载篇-1-Class文件结构]()
+[JVM 字节码与类的加载篇-2-字节码指令集与解析]()

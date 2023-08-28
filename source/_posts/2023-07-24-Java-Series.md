@@ -49,8 +49,8 @@ swiper_index:
 [JUC-5-Java内存模型JMM](https://cyanzzy.github.io/2023/08/16/JUC-5-Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8BJMM/)
 [JUC-6-volatile与JMM](https://cyanzzy.github.io/2023/08/16/JUC-6-volatile%E4%B8%8EJMM/)
 [JUC-7-CAS](https://cyanzzy.github.io/2023/08/22/JUC-7-CAS/)
-[JUC-8-原子访问类]()
-[JUC-9-ThreadLocal]()
+[JUC-8-原子访问类](https://cyanzzy.github.io/2023/08/25/JUC-8-%E5%8E%9F%E5%AD%90%E8%AE%BF%E9%97%AE%E7%B1%BB/)
+[JUC-9-ThreadLocal](https://cyanzzy.github.io/2023/08/26/JUC-9-ThreadLocal/)
 
 # Java虚拟机
 
@@ -69,5 +69,5 @@ swiper_index:
 
 > JVM 字节码与类的加载篇
 
-[JVM 字节码与类的加载篇-1-Class文件结构]()
-[JVM 字节码与类的加载篇-2-字节码指令集与解析]()
+[JVM 字节码与类的加载篇-1-Class文件结构](https://cyanzzy.github.io/2023/08/25/JVM-%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%8E%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E7%AF%87-1-Class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84/)
+[JVM 字节码与类的加载篇-2-字节码指令集与解析](https://cyanzzy.github.io/2023/08/26/JVM-%E5%AD%97%E8%8A%82%E7%A0%81%E4%B8%8E%E7%B1%BB%E7%9A%84%E5%8A%A0%E8%BD%BD%E7%AF%87-2-%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4%E9%9B%86%E4%B8%8E%E8%A7%A3%E6%9E%90/)

@@ -5,7 +5,8 @@ tags:
   - Elasticsearch
 categories: 
   - Technology
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
 
 [1 初识 Elasticsearch](https://cyanzzy.github.io/2023/07/24/1-%E5%88%9D%E8%AF%86-Elasticsearch/)

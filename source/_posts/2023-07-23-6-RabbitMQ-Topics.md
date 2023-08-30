@@ -5,8 +5,10 @@ tags:
   - MQ
 categories: 
   - Technology
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
+
 # Topic exchange
 
 发送到 `topic` exchange 的消息不能有任意的 `routing_key`--**它必须是一个用点分隔的单词列表**。这些单词可以是任何内容，但通常会指定与信息相关的一些特征。

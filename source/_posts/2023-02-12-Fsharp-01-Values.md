@@ -6,7 +6,8 @@ tags:
   - FSharp
 categories: 
   - Language
-swiper_index:  
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
 
 > 大纲：int、string、float、float32、decimal、tuple

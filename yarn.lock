@@ -1575,6 +1575,11 @@
   dependencies:
     "function-bind" "^1.1.1"
 
+"hexo-blog-encrypt@^3.1.9":
+  "integrity" "sha512-dzuZiW5mD8t1FOhJXqc+IgV1Tc45YtatJb/w8k4PyT9McQxsROQXsBw+zbDembzuqMnbnkCeT2SapZ/r9AgAcw=="
+  "resolved" "https://registry.npmmirror.com/hexo-blog-encrypt/-/hexo-blog-encrypt-3.1.9.tgz"
+  "version" "3.1.9"
+
 "hexo-bunyan@^1.0.0":
   "integrity" "sha512-RymT8Ck+K77mLt9BEYNb4uyfC7RIQnU5N3laXowMrS28jj2h89VHJCOnhV00mmta4fHRqNa07kP1Hrn17nvMkQ=="
   "resolved" "https://registry.npmmirror.com/hexo-bunyan/-/hexo-bunyan-1.0.0.tgz"

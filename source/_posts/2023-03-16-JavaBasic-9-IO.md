@@ -5,8 +5,10 @@ tags:
   - Java
 categories: 
   - Language
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
+
 # File类
 
 * 文件和目录可以通过File封装成对象

@@ -5,7 +5,8 @@ tags:
   - Design Pattern
 categories: 
   - Technology
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
 
 [设计模式-0-概述](https://cyanzzy.github.io/2023/05/12/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-0-%E6%A6%82%E8%BF%B0/)

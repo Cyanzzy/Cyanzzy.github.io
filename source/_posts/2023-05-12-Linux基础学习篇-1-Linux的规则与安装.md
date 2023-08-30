@@ -5,8 +5,10 @@ tags:
   - Linux
 categories: 
   - Technology
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
+
 # 主机规划与磁盘分区
 
 ## 各种硬件设备在Linux中的文件名

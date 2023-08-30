@@ -5,7 +5,8 @@ tags:
   - MQ
 categories: 
   - Technology
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
 
 [Publisher confirms](https://www.rabbitmq.com/confirms.html#publisher-confirms)  是 RabbitMQ 实现可靠发布的扩展。当在信道上启用 publisher confirms时，客户端发布的消息将由代理异步确认，这意味着它们已在服务器端得到处理。

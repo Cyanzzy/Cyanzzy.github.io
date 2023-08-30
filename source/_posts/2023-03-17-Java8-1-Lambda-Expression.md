@@ -5,8 +5,10 @@ tags:
   - Java
 categories: 
   - Language
-swiper_index: 
+password: zzy   
+message: 亲，能不能输入密码啊？
 ---
+
 > 面向对象编程是对数据进行抽象；函数式编程是对行为进行抽象。
 >
 > **核心思想**: 使用不可变值和函数，函数对一个值进行处理，映射成另一个值。

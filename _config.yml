@@ -284,4 +284,13 @@ swiper:
 butterfly_article_double_row:
   enable: true
 
+# hexo-blog-encrypt 文章加密
+encrypt:
+  enable: true
+
+
+
+
+
+
 

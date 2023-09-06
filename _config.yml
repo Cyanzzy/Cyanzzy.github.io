@@ -108,6 +108,8 @@ deploy:
   # https https://github.com/Cyanzzy/Cyanzzy.github.io.git
   repository: git@github.com:Cyanzzy/Cyanzzy.github.io.git
   branch: main
+  # 部署超时时间
+  deploy_timeout: 120000
 
 # 本地搜索
 search:

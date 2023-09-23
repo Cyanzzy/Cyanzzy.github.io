@@ -5,8 +5,6 @@ tags:
   - Linux
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # Linux 目录结构

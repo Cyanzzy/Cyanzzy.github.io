@@ -5,8 +5,6 @@ tags:
   - MQ
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 在本篇中我们将使用 RabbitMQ 构建一个 RPC 系统：一个客户端和一个可扩展的 RPC 服务器。由于我们没有任何值得分发的耗时任务，因此我们将创建一个返回斐波那契数字的虚拟 RPC 服务。

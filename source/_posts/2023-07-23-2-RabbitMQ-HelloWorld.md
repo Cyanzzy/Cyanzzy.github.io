@@ -5,8 +5,6 @@ tags:
   - MQ
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 > 参考文档

@@ -5,8 +5,6 @@ tags:
   - JVM
 categories: 
   - Language
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # 虚拟机和JVM

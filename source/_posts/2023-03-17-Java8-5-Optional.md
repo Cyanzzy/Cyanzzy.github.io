@@ -5,8 +5,6 @@ tags:
   - Java
 categories: 
   - Language
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 Optional 类(java.util.Optional) 是一个容器类，**代表一个值存在或不存在**， 原来用 null 表示一个值不存在，现在 Optional 可以更好的表达这个概念。并且 可以避免空指针异常。  

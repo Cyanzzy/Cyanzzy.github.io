@@ -5,8 +5,6 @@ tags:
   - MQ
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 在本篇中，我们将创建一个 *Work Queue*，用于在多个 *Worker* 之间分配耗时的任务。

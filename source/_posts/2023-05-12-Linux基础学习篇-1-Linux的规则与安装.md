@@ -5,8 +5,6 @@ tags:
   - Linux
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # 主机规划与磁盘分区

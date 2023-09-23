@@ -5,8 +5,6 @@ tags:
   - Docker
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # Docker 简介

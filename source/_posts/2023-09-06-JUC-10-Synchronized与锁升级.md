@@ -5,8 +5,6 @@ tags:
   - Java
 categories: 
   - Language
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-106.jpg)

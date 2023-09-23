@@ -5,8 +5,6 @@ tags:
   - Java
 categories: 
   - Language
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 Stream API 提供了一种高效且易于使用的处理数据的方式， Java8的Stream使用函数式编程模式，可以用来对集合或数组进行链状流式的操作  

@@ -5,8 +5,6 @@ tags:
   - Java
 categories: 
   - Language
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 > 面向对象编程是对数据进行抽象；函数式编程是对行为进行抽象。

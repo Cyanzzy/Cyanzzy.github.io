@@ -5,8 +5,6 @@ tags:
   - Distributed Microservices
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 在了解分布式微服务之前，请先了解[Dubbo](https://cyanzzy.github.io/2023/07/23/%E4%BC%81%E4%B8%9A%E5%BC%80%E5%8F%91%E8%BF%9B%E9%98%B6-3-Dubbo/)的核心思想。

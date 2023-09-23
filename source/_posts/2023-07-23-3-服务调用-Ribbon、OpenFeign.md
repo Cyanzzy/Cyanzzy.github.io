@@ -5,8 +5,6 @@ tags:
   - Distributed Microservices
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # 负载均衡服务调用 Ribbon

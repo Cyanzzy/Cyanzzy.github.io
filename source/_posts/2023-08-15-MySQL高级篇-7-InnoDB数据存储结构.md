@@ -5,8 +5,6 @@ tags:
   - MySQL
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 # 数据库的存储结构--页

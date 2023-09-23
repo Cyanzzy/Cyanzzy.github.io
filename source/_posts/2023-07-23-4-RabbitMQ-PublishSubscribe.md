@@ -5,8 +5,6 @@ tags:
   - MQ
 categories: 
   - Technology
-password: zzy   
-message: 亲，能不能输入密码啊？
 ---
 
 在本篇文章中，我们将向多个消费者中发送一条消息，该模式称为“publish/subscribe”。

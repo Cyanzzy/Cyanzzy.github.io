@@ -9,18 +9,18 @@ categories:
 
 > 面向对象编程是对数据进行抽象；函数式编程是对行为进行抽象。
 >
-> **核心思想**: 使用不可变值和函数，函数对一个值进行处理，映射成另一个值。
+> **核心思想**：使用不可变值和函数，函数对一个值进行处理，映射成另一个值。
 
-lambda表达式仅能放入如下代码:
+lambda 表达式仅能放入如下代码:
 
-* 预定义使用了 @Functional 注释的函数式接口，自带一个抽象函数的方法
-* SAM(Single Abstract Method 单个抽象方法)类型。
+* 预定义使用了 `@Functional` 注解的函数式接口，自带一个抽象函数的方法
+* Single Abstract Method，单个抽象方法类型
 
-这些称为lambda表达式的目标类型，可以用作返回类型，或lambda目标代码的参数。
+这些称为 lambda 表达式的目标类型，可以用作返回类型，或 lambda 目标代码的参数。
 
-若一个方法接收Runnable、Comparable或者 Callable 接口，都有**单个抽象方法**，可以传入lambda表达式。
+若一个方法接收 Runnable、Comparable 或者 Callable 接口，都有 **单个抽象方法**，可以传入lambda表达式。
 
-类似的，如果**一个方法接受声明于 java.util.function 包内的接口**，例如 Predicate、Function、Consumer 或 Supplier，那么可以向其传lambda表达式。
+类似的，如果 **一个方法接受声明于 java.util.function 包内的接口**，例如 Predicate、Function、Consumer 或 Supplier，那么可以向其传 lambda 表达式。
 
 # 基本格式
 

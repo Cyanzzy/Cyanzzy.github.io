@@ -7,7 +7,7 @@ categories:
   - Language
 ---
 
-Stream API 提供了一种高效且易于使用的处理数据的方式， Java8的Stream使用函数式编程模式，可以用来对集合或数组进行链状流式的操作  
+Stream API 提供了一种高效且易于使用的处理数据的方式， Java 8 的 Stream 使用函数式编程模式，可以用来对集合或数组进行链状流式的操作  
 
 # 概述
 
@@ -15,22 +15,22 @@ Stream API 提供了一种高效且易于使用的处理数据的方式， Java8
 
 Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列。  
 
-*  Stream 自己**不会存储元素**。 
-*  Stream **不会改变源对象**。相反，他们会返回一个持有结果的新Stream 
+*  Stream 自己 **不会存储元素**。 
+*  Stream **不会改变源对象**。相反，他们会返回一个持有结果的新 Stream 
 *  Stream 操作是延迟执行的。这意味着他们会等到需要结果的时候才执行 
 
 # 操作 
 
 ## 创建操作
 
- 一个数据源（如：集合、数组），获取一个流  
+一个数据源（如：集合、数组），获取一个流  
 
 > 获取流
 
 | 方法                            | 说明           |
 | ------------------------------- | -------------- |
-| default Stream stream()         | 返回一个顺序流 |
-| default Stream parallelStream() | 返回一个并行流 |
+| `default Stream stream()`        | 返回一个顺序流 |
+| `default Stream parallelStream()` | 返回一个并行流 |
 
 > 数组创建流
 
@@ -38,9 +38,9 @@ Stream 是数据渠道，用于操作数据源（集合、数组等）所生成�
 
 | 方法                                   | 说明       |
 | -------------------------------------- | ---------- |
-| static<T>  Stream<T> stream(T[] array) | 返回一个流 |
+| `static<T>  Stream<T> stream(T[] array)` | 返回一个流 |
 
- 数组：`Arrays.stream(数组)`或使用`Stream.of()`创建 
+ 数组：`Arrays.stream(数组)` 或使用 `Stream.of()` 创建 
 
 ```java
 Integer[] arr = {1, 2, 3};
@@ -67,33 +67,33 @@ Stream<Map.Entry<String, Integer>> stream = map.entrySet().stream();
 
 >  值创建流 
 
- 使用静态方法 Stream.of(), 通过显示值创建一个流。它可以接收任意数量的参数。 
+ 使用静态方法 Stream.of()，通过显示值创建一个流。它可以接收任意数量的参数。 
 
 | 方法                                       | 说明       |
 | ------------------------------------------ | ---------- |
-| public static<T> Stream<T> of(T... values) | 返回一个流 |
+| `public static<T> Stream<T> of(T... values)` | 返回一个流 |
 
 >  函数创建流
 
- 使用静态方法 Stream.iterate() 和 Stream.generate(), 创建无限流 
+ 使用静态方法 Stream.iterate() 和 Stream.generate()，创建无限流 
 
 | 方法                                                         | 说明 |
 | ------------------------------------------------------------ | ---- |
-| public static<T> Stream<T> iterate(final T seed, final UnaryOperator f) | 迭代 |
-| public static<T> Stream<T> generate(Supplier<T> s)           | 生成 |
+| `public static<T> Stream<T> iterate(final T seed, final UnaryOperator f)` | 迭代 |
+| `public static<T> Stream<T> generate(Supplier<T> s)`           | 生成 |
 
 ## 中间操作 
 
- 一个中间操作链，对数据源的数据进行处理 。 多个中间操作可以连接起来形成一个流水线，除非流水线上触发终止操作，否则中间操作不会执行任何的处理！而在终止操作时一次性全部处理，称为“惰性求值” 
+ 一个中间操作链，对数据源的数据进行处理。多个中间操作可以连接起来形成一个流水线，除非流水线上触发终止操作，否则中间操作不会执行任何的处理！而在终止操作时一次性全部处理，称为“惰性求值” 
 
 > 筛选与切片 
 
 | 方法                | 说明                                                         |
 | ------------------- | ------------------------------------------------------------ |
-| filter(Predicate p) | 接收 Lambda ， 从流中**排除**某些元素。                      |
-| distinct()          | 筛选，通过流所生成元素的 hashCode() 和 equals() **去除重复**元素 |
-| limit(long maxSize) | **截断**流，使其元素不超过给定数量。                         |
-| skip(long n)        | **跳过**元素，返回一个扔掉了前 n 个元素的流。若流中元素不足 n 个，则返回一个空流。与 limit(n) 互补 |
+| `filter(Predicate p)` | 接收 Lambda ， 从流中**排除**某些元素。                      |
+| `distinct()`          | 筛选，通过流所生成元素的 hashCode() 和 equals() **去除重复**元素 |
+| `limit(long maxSize)` | **截断**流，使其元素不超过给定数量。                         |
+| `skip(long n)`        | **跳过**元素，返回一个扔掉了前 n 个元素的流。若流中元素不足 n 个，则返回一个空流。与 limit(n) 互补 |
 
 ### filter
 
@@ -120,7 +120,7 @@ authors.stream()
 
 ### distinct
 
- 流中去重`[distinct是依赖Object的equals方法判断是否是相同对象的，要重写equals方法，lombok中使用@EqualsAndHashCode注解重写]` 
+ 流中去重 `[distinct是依赖Object的equals方法判断是否是相同对象的，要重写equals方法，lombok中使用@EqualsAndHashCode注解重写]` 
 
 ```java
 authors.stream()
@@ -142,7 +142,7 @@ authors.stream()
 
 ### skip
 
- 跳过流中前n个元素，返回剩下的元素 
+ 跳过流中前 n 个元素，返回剩下的元素 
 
 ```java
 authors.stream()
@@ -155,15 +155,16 @@ authors.stream()
 
 | 方法                            | 说明                                                         |
 | ------------------------------- | ------------------------------------------------------------ |
-| map(Function f)                 | **接收一个函数**作为参数，该函数会被应用到每个元素上，并将其映射成一个新的元素。 |
-| mapToDouble(ToDoubleFunction f) | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 DoubleStream。 |
-| mapToInt(ToIntFunction f)       | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 IntStream。 |
-| mapToLong(ToLongFunction f)     | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 LongStream。 |
-| flatMap(Function f)             | 接收一个函数作为参数，**将流中的每个值都换成另一个流，然后把所有流连接成一个流** |
+| `map(Function f)`                 | **接收一个函数**作为参数，该函数会被应用到每个元素上，并将其映射成一个新的元素。 |
+| `mapToDouble(ToDoubleFunction f)` | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 DoubleStream。 |
+| `mapToInt(ToIntFunction f)`       | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 IntStream。 |
+| `mapToLong(ToLongFunction f)`    | 接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 LongStream。 |
+| `flatMap(Function f)`             | 接收一个函数作为参数，**将流中的每个值都换成另一个流，然后把所有流连接成一个流** |
 
+注意：map 适用于一对一的转换操作，而 flatMap 适用于一对多的转换操作，并且用于展开嵌套集合结构。
 ### map
 
- 把流中的元素进行计算或转换 
+map 方法用于对每个元素执行函数操作，将每个输入元素转换为另一个对象。它保留了每个输入元素对应一个输出元素的关系，即一对一的关系
 
 ```java
 // 匿名内部类写法
@@ -187,8 +188,8 @@ authors.stream()
 
 ### flatMap
 
- `map`只能只能把一个对象转换成另一个对象来作为流中的元素，而`flatMap`可以**把一个对象转换成多个对象作为流中的元素**。 
-
+ `map` 只能只能把一个对象转换成另一个对象来作为流中的元素，而 `flatMap` 用于将每个输入元素转换为一个流，然后将这些流的元素连接起来形成一个新的流。它的作用是扁平化多个流为一个流。这对于处理嵌套的集合结构特别有用。
+ 
 ```java
 public class Author implements Comparable<Author> {
     private Long id;
@@ -229,17 +230,44 @@ authors.stream()
        .distinct()
        .forEach(category->System.out.println(category));
 ```
+### map 和 flatMap 区别
+map 方法将一个元素映射为另一个元素，而 flatMap 方法将一个元素映射为多个元素，然后将这些元素扁平化为一个流。
+具体来说，map 方法返回的是一个包含映射结果的新流，而 flatMap 方法返回的是一个包含多个流的新流，这些流被扁平化为一个流。
+因此，flatMap 方法常用于将多个流合并为一个流的场景，而 map 方法则常用于对流中的元素进行转换的场景。
+
+假设有一个字符串列表，我们想要将其中的每个字符串按照空格分隔后转换为一个单词列表，那么可以使用 map 方法实现：
+
+```java
+List<String> words = Arrays.asList("Hello World", "Stream API");
+List<List<String>> wordList = words.stream()
+                                   .map(str -> Arrays.asList(str.split(" ")))
+                                   .collect(Collectors.toList());
+```
+而如果我们想要将其中的每个字符串按照空格分隔后扁平化为一个单词流，那么可以使用 flatMap 方法实现：
+
+```java
+List<String> words = Arrays.asList("Hello World", "Stream API");
+List<String> wordList = words.stream()
+        .flatMap(str -> Arrays.stream(str.split(" ")))
+        .collect(Collectors.toList());
+```
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-13.jpg)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-14.jpg)
+
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-15.jpg)
 
 > 排序
 
 | 方法                    | 说明                               |
 | ----------------------- | ---------------------------------- |
-| sorted()                | 产生一个新流，其中按自然顺序排序   |
-| sorted(Comparator comp) | 产生一个新流，其中按比较器顺序排序 |
+| `sorted()`                | 产生一个新流，其中按自然顺序排序   |
+| `sorted(Comparator comp)` | 产生一个新流，其中按比较器顺序排序 |
 
 ### sorted
 
- 1.调用无参`sorted`方法 ，调用空参的`sorted()`方法，需要流中元素实现`Comparable`接口 
+ 1.调用无参 `sorted` 方法 ，调用空参的 `sorted()` 方法，需要流中元素实现 `Comparable` 接口 
 
 ```java
 // 重写Comparable接口
@@ -257,7 +285,7 @@ authors.stream()
        .forEach(author->System.out.println(author.getAge()));
 ```
 
- 2.调用有参`sorted`方法 
+ 2.调用有参 `sorted` 方法 
 
 ```java
 authors.stream()
@@ -274,15 +302,15 @@ authors.stream()
 
 | 方法                   | 说明                                                         |
 | ---------------------- | ------------------------------------------------------------ |
-| allMatch(Predicate p)  | 检查是否匹配所有元素                                         |
-| anyMatch(Predicate p)  | 检查是否至少匹配一个元素                                     |
-| noneMatch(Predicate p) | 检查是否没有匹配所有元素                                     |
-| findFirst()            | 返回第一个元素                                               |
-| findAny()              | 返回当前流中的任意元素                                       |
-| count()                | 返回流中元素总数                                             |
-| max(Comparator c)      | 返回流中最大值                                               |
-| min(Comparator c)      | 返回流中最小值                                               |
-| forEach(Consumer c)    | 内部迭代(使用 Collection 接口需要用户去做迭代，称为外部迭代。相反，Stream API 使用内部 迭代——它帮你把迭代做了) |
+| `allMatch(Predicate p)`  | 检查是否匹配所有元素                                         |
+| `anyMatch(Predicate p)`  | 检查是否至少匹配一个元素                                     |
+| `noneMatch(Predicate p)` | 检查是否没有匹配所有元素                                     |
+| `findFirst()`            | 返回第一个元素                                               |
+| `findAny()`              | 返回当前流中的任意元素                                       |
+| `count()`                | 返回流中元素总数                                             |
+| `max(Comparator c)`      | 返回流中最大值                                               |
+| `min(Comparator c)`      | 返回流中最小值                                               |
+| `forEach(Consumer c)`    | 内部迭代（使用 Collection 接口需要用户去做迭代，称为外部迭代。相反，Stream API 使用内部 迭代——它帮你把迭代做了） |
 
 ### forEach
 
@@ -324,7 +352,7 @@ Optional<Integer> min=authors.stream()
 
 ### AnyMatch
 
-判断是否有任意符合匹配条件的元素，结果为boolean类型
+判断是否有任意符合匹配条件的元素，结果为 boolean 类型
 
 ```java
 authors.stream()
@@ -333,7 +361,7 @@ authors.stream()
 
 ### allMatch
 
-判断是否都符合匹配条件，结果为boolean类型
+判断是否都符合匹配条件，结果为 boolean 类型
 
 ```java
 authors.stream()
@@ -342,7 +370,7 @@ authors.stream()
 
 ### noneMatch
 
-判断留着元素都不符合匹配条件的，结果为boolean类型
+判断留着元素都不符合匹配条件的，结果为 boolean 类型
 
 ```java
 authors.stream()
@@ -381,11 +409,11 @@ first.ifPresent(author->System.out.print(author.getName()));
 
 Collector 接口中方法的实现决定了如何对流执行收集操作(如收 集到 List、Set、Map)。但是 Collectors 实用类提供了很多静态方法，可以方便地创建常见收集器实例
 
-### reduce归并
+### reduce 归并
 
-对流中的数据按照你制定的计算方式计算出一个结果，即**把stream中的元素组合起来，传入一个初始值，按照计算方式依次拿流中的元素和在初始化值的基础上进行计算，计算结果再和后面元素计算**
+对流中的数据按照你制定的计算方式计算出一个结果，即 **把 stream 中的元素组合起来，传入一个初始值，按照计算方式依次拿流中的元素和在初始化值的基础上进行计算，计算结果再和后面元素计算**
 
-> **reduce单个参数的重载形式内部计算逻辑** 
+> **reduce 单个参数的重载形式内部计算逻辑** 
 
 ```java
 boolean foundAny = false;
@@ -403,7 +431,7 @@ return foundAny ? Optional.of(result) : Optional.empty();
 
  将流中第一个元素作为变量初始化值 
 
-> **reduce两个参数的重载形式内部计算逻辑** 
+> **reduce 两个参数的重载形式内部计算逻辑** 
 
 ```java
 // 给定初始值
@@ -413,9 +441,9 @@ for (T element : this stream)
 return result;    
 ```
 
-其中，identity是通过方法参数传入的初始值，accumulator的apply具体进行什么计算也是通过方法参数确定的
+其中，identity 是通过方法参数传入的初始值，accumulator 的 apply 具体进行什么计算也是通过方法参数确定的
 
-**使用reduce求和**
+**使用 reduce 求和**
 
 ```java
 // 双参数
@@ -424,8 +452,10 @@ list.stream().reduce(0, (x1, x2) -> x1 + x2);
 list.stream().reduce(0, (x1, x2) -> Integer.sum(x1, x2));
 list.stream().reduce(0,Integer::sum);
 ```
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-16.jpg)
 
-**使用reduce员工工资求和**
+
+**使用 reduce 员工工资求和**
 
 ```java
 // 单参数
@@ -434,7 +464,7 @@ data.stream()
     .reduce((salary1, salary2)-> salary1 + salary2);
 ```
 
-**使用reduce对年龄求和**
+**使用 reduce 对年龄求和**
 
 ```java
 authors.stream()
@@ -451,7 +481,7 @@ Integer sum = authors.stream()
                      .reduce((result,element) ->result + element); 
 ```
 
-**使用reduce求年龄最大值**
+**使用 reduce 求年龄最大值**
 
 ```java
 authors.stream().map(author->author.getAge())
@@ -466,7 +496,7 @@ Integer max = authors.stream()
                      .reduce(Integer.MIN_VALUE,(result,element)->result < element ? element : result);
 ```
 
- **使用reduce求年龄最小值** 
+ **使用 reduce 求年龄最小值** 
 
 ```java
 // 两个参数的重载实现

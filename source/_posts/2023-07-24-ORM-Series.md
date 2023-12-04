@@ -7,6 +7,8 @@ categories:
   - Technology
 ---
 
+
+[JDBC 基础回顾](https://cyanzzy.github.io/2023/05/27/%E5%9B%9E%E5%BF%86%E4%BC%A0%E7%BB%9F%E7%9A%84JDBC/)
 > Mybatis
 
 [Mybatis-基础篇](https://cyanzzy.github.io/2023/03/25/%E4%BC%81%E4%B8%9A%E5%BC%80%E5%8F%91%E5%9F%BA%E7%A1%80-4-Mybatis-%E5%9F%BA%E7%A1%80%E7%AF%87/)

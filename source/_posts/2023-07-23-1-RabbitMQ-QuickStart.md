@@ -20,25 +20,38 @@ categories:
 
 ### 使用原因
 
-> **流量消峰** 
+> 流量削峰
 
-订单系统为例，如果订单系统最多能处理一万次订单，这个处理能力应付正常时段的下单时绰绰有余，正常时段我们下单一秒后就能返回结果。
+1. **秒杀系统：** 在秒杀活动中，大量用户可能会在短时间内涌入系统，导致服务器压力剧增。使用 RabbitMQ 可以将用户的秒杀请求放入队列中，由消费者按照系统处理能力逐一处理，从而避免瞬时高峰对系统的冲击。
+2. **用户注册和激活：** 在某些促销活动中，用户注册数量可能会暴增，为了避免注册请求直接访问数据库，可以通过 RabbitMQ 将注册请求异步处理，确保系统能够逐步处理用户注册和激活。
+3. **电商订单处理：** 在促销活动或者特殊时期，订单量可能激增。通过将订单请求放入消息队列，可以让系统按照处理能力逐步处理订单，避免订单处理的高峰时期对数据库和其他服务的冲击。
+4. **日志处理：** 在大型网站中，日志产生的速度可能非常快。通过使用消息队列，可以异步地处理日志，进行实时或离线的日志分析，而不会影响主要的业务逻辑。
+5. **推送服务：** 在需要向大量用户发送推送消息的场景下，通过消息队列可以异步地发送推送请求，保证推送服务的稳定性，并且避免因为用户量激增导致的系统崩溃。
+6. **支付系统：** 在处理大量支付请求时，为了确保事务的一致性和可靠性，可以使用消息队列将支付请求异步发送给支付系统，支付系统再通过确认机制保证支付的准确性。
 
-但是在高峰期，如果有两万次下单操作系统是处理不了的，只能限制订单超过一万后不允许用户下单。
+在这些场景中，通过消息队列的流量削峰，系统能够更好地处理突发性的高并发请求，提高系统的稳定性和可伸缩性。这些应用场景中，RabbitMQ 作为消息队列中间件，起到了平滑调度和异步处理的作用，帮助系统更好地应对复杂的业务场景。
 
-**使用消息队列做缓冲**，可以取消这个限制，把一秒内下的订单分散成一段时间来处理，这时有些用户可能在下单十几秒后才能收到下单成功的操作，但是比不能下单的体验要好。  
+> 应用解耦
 
-> 应用解耦 
+1. **微服务架构通信：** 在微服务架构中，不同的微服务可能需要相互通信。通过使用消息队列，微服务之间可以解耦，一个微服务通过发送消息通知其他微服务，而无需直接调用它们的 API。这种解耦方式使得系统更加灵活和易于维护。
+2. **日志系统：** 当一个系统需要记录日志并将日志信息传递给其他系统进行进一步处理时，使用消息队列可以实现解耦。日志系统将日志消息发布到消息队列，而其他系统则通过订阅消息队列来接收并处理日志信息，实现了解耦和异步处理。
+3. **事件驱动架构：** 在事件驱动的架构中，系统中的各个组件通过消息队列进行通信。当一个组件产生某个事件时，它将事件发布到消息队列，而其他组件则通过订阅消息队列来处理这些事件。这种方式实现了组件之间的解耦，每个组件都可以独立演化。
+4. **异步任务处理：** 在处理异步任务时，比如用户上传文件后的处理过程，可以将任务放入消息队列中。上传文件的服务将消息发布到队列，而异步处理服务则通过订阅队列来获取任务并进行处理。这样可以解耦上传服务和异步处理服务，提高系统的可扩展性。
+5. **分布式系统协调：** 在分布式系统中，各个节点之间可能需要协调工作。通过使用消息队列，节点之间可以进行松耦合的通信，一个节点通过发送消息通知其他节点进行协调，而不需要直接依赖于其他节点的接口。
+6. **系统通知和广播：** 当系统需要向多个模块广播通知时，使用消息队列可以方便地实现解耦。一个模块将通知发布到消息队列，而其他模块则通过订阅消息队列来接收通知，实现了模块之间的解耦和松耦合。
 
-电商应用为例，应用中有订单系统、库存系统、物流系统、支付系统。用户创建订单后，如果耦合调用库存系统、物流系统、支付系统，任何一个子系统出了故障，都会造成下单操作异常。
+通过这些场景，消息队列在 Java 项目中的应用解耦不仅能够提高系统的可维护性和可扩展性，还能够简化系统的架构，使得各个组件能够更加独立地进行演化和升级。
 
-**当转变成基于消息队列的方式后**，系统间调用的问题会减少很多，比如物流系统因为发生故障，需要几分钟来修复。
+> 异步处理
 
-在这几分钟的时间里，**物流系统要处理的内存被缓存在消息队列中**，用户的下单操作可以正常完成。当物流系统恢复后，继续处理订单信息即可，用户感受不到物流系统的故障，提升系统的可用性。 
+1. **电商订单处理：** 在电商平台中，当用户下单后，订单处理流程可能涉及到库存扣减、支付确认、物流通知等多个步骤。通过使用 RabbitMQ，可以将订单处理的各个步骤异步化，每个步骤都发布一个消息，由相应的消费者进行处理。这样可以提高订单处理的并发性和响应速度。
+2. **用户注册和激活：** 在用户注册时，如果需要发送激活邮件，可以将发送邮件的任务放入消息队列。这样用户注册的请求能够立即响应，而邮件的发送可以异步进行，提高注册流程的性能和用户体验。
+3. **日志处理：** 对于大规模的网站，日志产生的速度非常快。通过使用消息队列，可以异步地将日志写入到日志存储系统，而不影响主要业务逻辑。这种方式可以提高系统的稳定性，同时也方便进行实时或离线的日志分析。
+4. **推送服务：** 在需要向大量用户发送推送消息的场景中，可以将推送任务放入消息队列，由专门的推送服务消费。这样可以提高推送服务的并发能力，而不阻塞主业务逻辑。
+5. **文件处理：** 当用户上传大文件需要进行处理时，可以将文件处理任务放入消息队列。上传服务将文件信息发布到队列，而异步处理服务则通过订阅队列来获取文件处理任务，实现了文件处理的异步和解耦。
+6. **搜索引擎索引更新：** 在搜索引擎中，当数据更新时，需要更新搜索索引。通过使用消息队列，可以异步地将索引更新任务发送到消息队列，由专门的索引更新服务进行处理，提高搜索引擎的性能和实时性。
 
-> 异步处理   
-
-![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-08.png)
+通过这些场景，异步处理使得系统能够更加高效地处理并发请求，提高系统的性能和可伸缩性。 RabbitMQ 在这些场景中充当了消息传递的角色，通过异步方式提高了系统的响应速度和整体性能。
 
 ### MQ分类
 
@@ -106,9 +119,9 @@ categories:
 
 ## RabbitMQ
 
-> RabbitMQ概念
+> RabbitMQ 概念
 
-RabbitMQ是由erlang语言开发，基于AMQP（Advanced Message Queue 高级消息队列协议）协议实现的消息队列，它是一种应用程序之间的通信方法，消息队列在分布式系统开发中应用非常广泛 
+RabbitMQ 是由 erlang 语言开发，基于 AMQP（Advanced Message Queue 高级消息队列协议）协议实现的消息队列，它是一种应用程序之间的通信方法，消息队列在分布式系统开发中应用非常广泛 
 
 > 核心概念
 
@@ -119,7 +132,7 @@ RabbitMQ是由erlang语言开发，基于AMQP（Advanced Message Queue 高级消
 **交换机** 
 
 * 一方面它接收来自生产者的消息，另一方面它将消息推送到队列中
-* 交换机必须确切知道**如何处理它接收到的消息**，是将这些消息推送到特定队列还是推送到多个队列，亦或者是把消息丢弃 
+* 交换机必须确切知道 **如何处理它接收到的消息**，是将这些消息推送到特定队列还是推送到多个队列，亦或者是把消息丢弃 
 
 **消费者** 
 
@@ -129,7 +142,7 @@ RabbitMQ是由erlang语言开发，基于AMQP（Advanced Message Queue 高级消
 
 * 队列是 RabbitMQ 内部使用的一种数据结构，尽管消息流经 RabbitMQ 和应用程序，但它们只能存储在队列中
 * 队列仅受主机的内存和磁盘限制的约束，本质上是一个大的消息缓冲区
-* 许多生产者可 以将消息发送到一个队列，许多消费者可以尝试从一个队列接收数据。这就是我们使用队列的方式 
+* 许多生产者可以将消息发送到一个队列，许多消费者可以尝试从一个队列接收数据。这就是我们使用队列的方式 
 
 ### RabbitMQ核心
 
@@ -464,22 +477,16 @@ public class Producer {
 
         // 创建信道
         Channel channel = RabbitMQUtils.getChannel();
-
         // 声明队列
         channel.queueDeclare(QUEUE_NAME, false, false,false, null);
-
         Scanner scanner = new Scanner(System.in);
 
         while (scanner.hasNext()) {
             String message = scanner.next();
-
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes("UTF-8"));
-
             System.out.println("Send Success: " + message);
         }
-
     }
-
 }
 ```
 
@@ -487,7 +494,6 @@ public class Producer {
 
 ```java
 public class Consumer1 {
-
 
     // 队列名称
     private final static String QUEUE_NAME = "hello";
@@ -497,14 +503,10 @@ public class Consumer1 {
 
         // 创建信道
         Channel channel = RabbitMQUtils.getChannel();
-
         System.out.println("Consumer1 Receive Message Cost less time");
-
         DeliverCallback deliverCallback = (consumerTag, message) -> {
-
             SleepUtils.sleep(1);
             System.out.println("Consumer1--deliverCallback：" + new String(message.getBody(), "UTF-8"));
-
             /**
              * Acknowledge one or several received messages.
              *
@@ -515,17 +517,13 @@ public class Consumer1 {
              */
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
         };
-
         CancelCallback cancelCallback = consumerTag -> {
             System.out.println(consumerTag + "Consumer1--cancelCallback");
         };
-
         // 手动应答
         boolean autoAck = false;
         channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
-
     }
-
 }
 ```
 
@@ -542,14 +540,10 @@ public class Consumer2 {
 
         // 创建信道
         Channel channel = RabbitMQUtils.getChannel();
-
         System.out.println("Consumer2 Receive Message Cost more time");
-
         DeliverCallback deliverCallback = (consumerTag, message) -> {
-
             SleepUtils.sleep(30);
             System.out.println("Consumer2--deliverCallback：" + new String(message.getBody(), "UTF-8"));
-
             /**
              * Acknowledge one or several received messages.
              *
@@ -560,11 +554,9 @@ public class Consumer2 {
              */
             channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
         };
-
         CancelCallback cancelCallback = consumerTag -> {
             System.out.println(consumerTag + "Consumer2--cancelCallback");
         };
-
         // 手动应答
         boolean autoAck = false;
         channel.basicConsume(QUEUE_NAME, autoAck, deliverCallback, cancelCallback);
@@ -1350,11 +1342,11 @@ public class EmitLog {
 
 > Direct exchange  
 
-direct类型的工作方式是**消息只去到它绑定的 routingKey 队列中** 
+direct 类型的工作方式是**消息只去到它绑定的 routingKey 队列中** 
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-rabbitmq-20230723-31.png)
 
-在这种绑定情况下，生产者发布消息到 exchange 上，绑定键为 orange 的消息会被发布到队列 Q1。绑定键为 black和green 和的消息会被发布到队列 Q2，其他消息类型的消息将被丢弃。 
+在这种绑定情况下，生产者发布消息到 exchange 上，绑定键为 orange 的消息会被发布到队列 Q1。绑定键为 black和 green 和 black 的消息会被发布到队列 Q2，其他消息类型的消息将被丢弃。 
 
 > 多重绑定  
 
@@ -1475,8 +1467,8 @@ public class EmitLogDirect {
 * 它必须是一个单词列表，以**点号分隔**开
 * 单词可以是任意单词
 * 单词列表最多不能超过 255 个字节 
-* *(星号)可以代替**一个**单词
-* #(井号)可以替代**零个或多个**单词   
+* `*`(星号)可以代替**一个**单词
+* `#`(井号)可以替代**零个或多个**单词   
 
 > 官方案例
 

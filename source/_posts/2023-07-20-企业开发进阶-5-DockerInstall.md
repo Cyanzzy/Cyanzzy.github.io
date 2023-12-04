@@ -128,6 +128,8 @@ categories:
 
 > run发生了什么
 
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-05.png)
+
 # Docker 常规安装
 
 1. 搜索镜像

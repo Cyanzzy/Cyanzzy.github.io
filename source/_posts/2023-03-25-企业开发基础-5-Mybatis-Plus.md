@@ -11,7 +11,7 @@ categories:
 
 > 概述
 
-MyBatis-Plus是一个 MyBatis的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。 
+MyBatis-Plus 是一个 MyBatis 的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。 
 
 > 特性
 
@@ -70,7 +70,7 @@ INSERT INTO user (id, name, age, email) VALUES
 
 ## 项目搭建
 
-> **引入SpringBootStarter父工程**
+> **引入 SpringBootStarter 父工程**
 
 ```xml
 <parent>
@@ -220,7 +220,7 @@ public interface BaseMapper<T> extends Mapper<T> {
 
 | 方法                  | 参数     | 说明                     |
 | --------------------- | -------- | ------------------------ |
-| int insert(T entity); | 实体对象 | 根据实体对象插入一条记录 |
+| `int insert(T entity);` | 实体对象 | 根据实体对象插入一条记录 |
 
 ```java
 /**
@@ -234,11 +234,11 @@ int insert(T entity);
 
 | 方法                                                         | 参数                                                         | 说明                          |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------- |
-| int deleteById(Serializable id);                             | 主键ID                                                       | 根据 ID 删除                  |
-| int deleteById(T entity);                                    | 实体对象                                                     | 根据实体(ID)删除              |
-| int deleteByMap(@Param(Constants.COLUMN_MAP) Map<String, Object> columnMap); | 表字段 map 对象                                              | 根据 columnMap 条件，删除记录 |
-| int delete(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | 实体对象封装操作类（可以为 null,里面的 entity 用于生成 where | 根据 entity 条件，删除记录    |
-| int deleteBatchIds(@Param(Constants.COLLECTION) Collection<? extends<br/>Serializable> idList); | 主键ID列表(不能为 null 以及 empty)                           | 删除（根据ID 批量删除）       |
+| `int deleteById(Serializable id);`                             | 主键ID                                                       | 根据 ID 删除                  |
+| `int deleteById(T entity);`                                    | 实体对象                                                     | 根据实体(ID)删除              |
+| `int deleteByMap(@Param(Constants.COLUMN_MAP) Map<String, Object> columnMap);` | 表字段 map 对象                                              | 根据 columnMap 条件，删除记录 |
+| `int delete(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | 实体对象封装操作类（可以为 null,里面的 entity 用于生成 where | 根据 entity 条件，删除记录    |
+| `int deleteBatchIds(@Param(Constants.COLLECTION) Collection<? extends<br/>Serializable> idList);` | 主键ID列表(不能为 null 以及 empty)                           | 删除（根据ID 批量删除）       |
 
 
 
@@ -289,8 +289,8 @@ Serializable> idList);
 
 | 方法                                                         | 参数                                                         | 说明                            |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------- |
-| int updateById(@Param(Constants.ENTITY) T entity);           | 实体对象                                                     | 根据 ID 修改                    |
-| int update(@Param(Constants.ENTITY) T entity, @Param(Constants.WRAPPER)Wrapper<T> updateWrapper); | entity 实体对象 (set 条件值,可以为 null)；updateWrapper 实体对象封装操作类（可以为 null,里面的 entity 用于生成 | 根据 whereEntity 条件，更新记录 |
+| `int updateById(@Param(Constants.ENTITY) T entity);`           | 实体对象                                                     | 根据 ID 修改                    |
+| `int update(@Param(Constants.ENTITY) T entity, @Param(Constants.WRAPPER)Wrapper<T> updateWrapper);` | entity 实体对象 (set 条件值,可以为 null)；updateWrapper 实体对象封装操作类（可以为 null,里面的 entity 用于生成 | 根据 whereEntity 条件，更新记录 |
 
 ```java
 /**
@@ -323,16 +323,16 @@ T selectById(Serializable id);
 
 | 方法                                                         | 参数                                                         | 说明                                     |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------- |
-| List<T> selectBatchIds(@Param(Constants.COLLECTION) Collection<? extendsSerializable> idList) | 主键ID列表(不能为 null 以及 empty)                           | 查询（根据ID 批量查询）                  |
-| List<T> selectByMap(@Param(Constants.COLUMN_MAP) Map<String, Object> columnMap); | 表字段 map 对象                                              | 查询（根据 columnMap 条件）              |
-| T selectOne(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper) | 实体对象封装操作类（可以为 null）                            | 根据 entity 条件，查询一条记录           |
-| boolean exists(Wrapper<T> queryWrapper) {                    | 实体对象封装操作类                                           | 根据 Wrapper 条件，判断是否存在记录      |
-| Long selectCount(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | 实体对象封装操作类（可以为 null）                            | 根据 Wrapper 条件，查询总记录数          |
-| List<T> selectList(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | 实体对象封装操作类（可以为 null                              | 根据 entity 条件，查询全部记录           |
-| List<Map<String, Object>> selectMaps(@Param(Constants.WRAPPER) Wrapper<T>queryWrapper); | 实体对象封装操作类（可以为 null                              | 根据 Wrapper 条件，查询全部记录          |
-| List<Object> selectObjs(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | 实体对象封装操作类（可以为 null                              | 根据 Wrapper 条件，查询全部记录          |
-| <P extends IPage<T>> P selectPage(P page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | page 分页查询条件（可以为 RowBounds.DEFAULT）;queryWrapper 实体对象封装操作类（可以为 null） | 根据 entity 条件，查询全部记录（并翻页） |
-| <P extends IPage<Map<String, Object>>> P selectMapsPage(P page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper); | page 分页查询条件;queryWrapper 实体对象封装操作类（可以为 null | 根据 Wrapper 条件，查询全部记录（并翻页  |
+| `List<T> selectBatchIds(@Param(Constants.COLLECTION) Collection<? extendsSerializable> idList)` | 主键ID列表(不能为 null 以及 empty)                           | 查询（根据ID 批量查询）                  |
+| `List<T> selectByMap(@Param(Constants.COLUMN_MAP) Map<String, Object> columnMap);` | 表字段 map 对象                                              | 查询（根据 columnMap 条件）              |
+| `T selectOne(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper)` | 实体对象封装操作类（可以为 null）                            | 根据 entity 条件，查询一条记录           |
+| `boolean exists(Wrapper<T> queryWrapper)`                    | 实体对象封装操作类                                           | 根据 Wrapper 条件，判断是否存在记录      |
+| `Long selectCount(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | 实体对象封装操作类（可以为 null）                            | 根据 Wrapper 条件，查询总记录数          |
+| `List<T> selectList(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | 实体对象封装操作类（可以为 null                              | 根据 entity 条件，查询全部记录           |
+| `List<Map<String, Object>> selectMaps(@Param(Constants.WRAPPER) Wrapper<T>queryWrapper);` | 实体对象封装操作类（可以为 null                              | 根据 Wrapper 条件，查询全部记录          |
+| `List<Object> selectObjs(@Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | 实体对象封装操作类（可以为 null                              | 根据 Wrapper 条件，查询全部记录          |
+| `<P extends IPage<T>> P selectPage(P page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | page 分页查询条件（可以为 RowBounds.DEFAULT）;queryWrapper 实体对象封装操作类（可以为 null） | 根据 entity 条件，查询全部记录（并翻页） |
+| `<P extends IPage<Map<String, Object>>> P selectMapsPage(P page, @Param(Constants.WRAPPER) Wrapper<T> queryWrapper);` | page 分页查询条件;queryWrapper 实体对象封装操作类（可以为 null | 根据 Wrapper 条件，查询全部记录（并翻页  |
 
 ```java
 /**
@@ -458,7 +458,7 @@ public void testInsert() {
 }
 ```
 
-雪花算法生成id
+雪花算法生成 id
 
 ## 删除操作
 
@@ -568,13 +568,13 @@ public void testSelectList(){
 }
 ```
 
-通过观察BaseMapper中的方法，大多方法中都有**Wrapper类型的形参，此为条件构造器**，可针对于SQL语句设置不同的条件，若没有条件，则可以为该形参赋值null，即查询（删除/修改）所 有数据  
+通过观察 BaseMapper 中的方法，大多方法中都有 **Wrapper类型的形参，此为条件构造器**，可针对于 SQL 语句设置不同的条件，若没有条件，则可以为该形参赋值 null，即查询（删除/修改）所有数据  
 
-## 通用Service
+## 通用 Service
 
-MyBatis-Plus中有一个接口 IService和其实现类 ServiceImpl，封装了常见的业务层逻辑
+MyBatis-Plus 中有一个接口 IService 和其实现类 ServiceImpl，封装了常见的业务层逻辑
 
-> 创建Service接口和实现类
+> 创建 Service 接口和实现类
 
 ```java
 // UserService继承IService模板提供的基础功能
@@ -621,13 +621,13 @@ public void testSaveBatch(){
 }
 ```
 
-MyBatis-Plus在确定操作的表时，由`BaseMapper`的泛型决定，即**实体类型决定**，且**默认操作的表名和实体类型的类名一致**  
+MyBatis-Plus 在确定操作的表时，由 `BaseMapper` 的泛型决定，即 **实体类型决定**，且 **默认操作的表名和实体类型的类名一致**  
 
 # MP常用注解
 
 ## @TableName 
 
-> 若**实体类类型的类名和要操作的表的表名不一致**，会出现什么问题 
+> 若 **实体类类型的类名和要操作的表的表名不一致**，会出现什么问题 
 
 **将表user更名为t_user**，测试查询功能程序抛出异常，`Table 'mybatis_plus.user' doesn't exist`，因为现在的表名为t_user，而**默认操作的表名和实体类型的类名一致**，即user表
 
@@ -647,7 +647,7 @@ public class User {
 
 > 解决方案2 **全局配置**
 
-当遇到实体类对应的表带有固定前缀时，使用MyBatis-Plus提供的**全局配置**，为实体类所对应的表名设置默认的前缀，那么就不需要在每个实体类上通过@TableName标识实体类对应的表  
+当遇到实体类对应的表带有固定前缀时，使用 MyBatis-Plus 提供的 **全局配置**，为实体类所对应的表名设置默认的前缀，那么就不需要在每个实体类上通过 @TableName 标识实体类对应的表  
 
 ```yml
 mybatis-plus:
@@ -662,15 +662,15 @@ mybatis-plus:
 
 ## @TableId
 
-经过以上的测试，MyBatis-Plus在实现CRUD时，会默认将id作为主键列，并在插入数据时，**默认基于雪花算法的策略生成id** 
+经过以上的测试，MyBatis-Plus 在实现 CRUD 时，会默认将 id 作为主键列，并在插入数据时，**默认基于雪花算法的策略生成 id** 
 
-> 若**实体类和表中表示主键的不是id，而是其他字段**，例如uid，MPs会自动识别uid为主键列吗？ 
+> 若 **实体类和表中表示主键的不是 id，而是其他字段**，例如uid，MPs会自动识别uid为主键列吗？ 
 
-实体类中的属性id改为uid，将表中的字段id也改为uid，测试添加功能  程序抛出异常，`Field 'uid' doesn't have a default value`，说明MyBatis-Plus没有将uid作为主键 赋值
+实体类中的属性 id 改为 uid，将表中的字段 id 也改为 uid，测试添加功能  程序抛出异常，`Field 'uid' doesn't have a default value`，说明 MyBatis-Plus 没有将 uid 作为主键赋值
 
 > 解决方案
 
-在实体类中uid属性上通过@TableId**将其标识为主键**，即可成功执行SQL语句 
+在实体类中 uid 属性上通过 @TableId **将其标识为主键**，即可成功执行 SQL 语句 
 
 ```java
 public class User {
@@ -684,9 +684,9 @@ public class User {
 
 ### value
 
-若实体类中主键对应的属性为**id**，而表中表示主键的字段为**uid**，此时**若只在属性id上添加注解** @TableId，则抛出异常`Unknown column 'id' in 'field list'`，即MyBatis-Plus**仍然会将id作为表的主键**操作
+若实体类中主键对应的属性为 **id**，而表中表示主键的字段为 **uid**，此时**若只在属性 id 上添加注解** @TableId，则抛出异常`Unknown column 'id' in 'field list'`，即 MyBatis-Plus **仍然会将id作为表的主键** 操作
 
-而表中表示主键的是字段uid 此时需要通过`@TableId`注解的value属性，**指定表中的主键字段**
+而表中表示主键的是字段 uid 此时需要通过 `@TableId` 注解的value属性，**指定表中的主键字段**
 
 ```java
 @TableId("uid")或 @TableId(value="uid") 
@@ -698,7 +698,7 @@ public class User {
 
 | 值                        | 描述                                                         |
 | ------------------------- | ------------------------------------------------------------ |
-| IdType.ASSIGN_ID（默 认） | 基于**雪花算法**的策略生成数据id，与数据库id是否设置自增无关 |
+| IdType.ASSIGN_ID（默认） | 基于**雪花算法**的策略生成数据id，与数据库id是否设置自增无关 |
 | IdType.AUTO               | 使用数据库的**自增策略**，注意，该类型请**确保**数据库设置了id自增， 否则无效 |
 
 ```yml
@@ -714,21 +714,21 @@ mybatis-plus:
 
 ## @TableField 
 
-经过以上的测试，我们可以发现，MyBatis-Plus在执行SQL语句时，要保证实体类中的属性名和表中的字段名一致 
+经过以上的测试，我们可以发现，MyBatis-Plus 在执行 SQL 语句时，要保证实体类中的属性名和表中的字段名一致 
 
 > **如果实体类中的属性名和字段名不一致的情况**，会出现什么问题呢？ 
 
 > 解决方案1 **开启驼峰命名映射**
 
-若**实体类中的属性使用的是驼峰命名风格，而表中的字段使用的是下划线命名风格** 
+若 **实体类中的属性使用的是驼峰命名风格，而表中的字段使用的是下划线命名风格** 
 
-例如实体类属性userName，表中字段user_name 此时MyBatis-Plus会**自动**将下划线命名风格**转化为驼峰命名风格** 相当于在MyBatis中配置 
+例如实体类属性 userName，表中字段 user_name 此时 MyBatis-Plus会 **自动** 将下划线命名风格 **转化为驼峰命名风格** 相当于在 MyBatis 中配置 
 
-> 解决方案2 **TableField **
+> 解决方案2 **TableField**
 
-若**实体类中的属性和表中的字段不满足解决方案1情况** 
+若 **实体类中的属性和表中的字段不满足解决方案1情况** 
 
-例如实体类属性name，表中字段username 此时需要在实体类属性上**使用@TableField("username")设置属性所对应的字段名** 
+例如实体类属性 name，表中字段 username 此时需要在实体类属性上 **使用 @TableField("username") 设置属性所对应的字段名** 
 
 ```java
 public class User {
@@ -744,13 +744,13 @@ public class User {
 
 > 逻辑删除 
 
-* 理删除：**真实删除**，将对应数据从数据库中删除，之后查询不到此条被删除的数据 
-* 逻辑删除：假删除，将对应数据中代表是否被删除字段的**状态修改**为“被删除状态”，之后在数据库 中仍旧能看到此条数据记录 
-* 使用场景：可以进行**数据恢复** 
+* 物理删除：**真实删除**，将对应数据从数据库中删除，之后查询不到此条被删除的数据 
+* 逻辑删除：假删除，将对应数据中代表是否被删除字段的 **状态修改** 为“被删除状态”，之后在数据库中仍旧能看到此条数据记录 
+* 使用场景：可以进行 **数据恢复** 
 
 > 解决方案
 
-1.数据库创建逻辑删除状态列，设置默认值0
+1.数据库创建逻辑删除状态列，设置默认值 0
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mybatis-plus-20230325-04.png)
 
@@ -855,7 +855,7 @@ SELECT id,username AS name,age,email,is_deleted FROM t_user WHERE is_deleted=0
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mybatis-plus-20230325-03.png)
 
-# 条件构造器Wrapper
+# 条件构造器 Wrapper
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mybatis-plus-20230325-05.png)
 
@@ -864,9 +864,9 @@ SELECT id,username AS name,age,email,is_deleted FROM t_user WHERE is_deleted=0
 * AbstractWrapper ： **用于查询条件封装，生成 sql 的 where 条件** 
   * QueryWrapper ： 查询条件封装 
   * UpdateWrapper ： Update 条件封装 
-  * AbstractLambdaWrapper ： 使用Lambda 语法 
-    * LambdaQueryWrapper ：用于Lambda语法使用的查询Wrapper 
-    * LambdaUpdateWrapper ： Lambda 更新封装Wrapper
+  * AbstractLambdaWrapper ： 使用 Lambda 语法 
+    * LambdaQueryWrapper ：用于 Lambda 语法使用的查询 Wrapper 
+    * LambdaUpdateWrapper ： Lambda 更新封装 Wrapper
 
 ## QueryWrapper  
 
@@ -1068,7 +1068,7 @@ public void testLambdaUpdateWrapper() {
 
 ## 分页插件
 
-> MyBatis Plus自带分页插件，只要简单的配置即可实现分页功能 
+> MyBatis Plus 自带分页插件，只要简单的配置即可实现分页功能 
 
 ```java
 @Configuration
@@ -1105,7 +1105,7 @@ public void testPage(){
 
 ## 自定义分页
 
-> UserMapper中定义接口方法 
+> UserMapper 中定义接口方法 
 
 ```java
 /**

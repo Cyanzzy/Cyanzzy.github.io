@@ -1,5 +1,5 @@
 ---
-title: JavaBasic-2-Lambada表达和Stream流
+title: JavaBasic-2-Lambada表达式和Stream流
 date: 2023-03-16 18:25:38
 tags: 
   - Java

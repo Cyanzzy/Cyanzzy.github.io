@@ -29,7 +29,6 @@ RabbitMQ 和一般的消息传递使用术语
 
 三者不一定部署在同一个主机上，应用程序既可以是生产者又可以是消费者
 
-# 入门程序
 
  P 是生产者，C 是消费者。中间是一个队列，代表消费者保存的消息缓冲区。
 
@@ -82,11 +81,14 @@ public class Send {
     public static void main(String[] args) {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
+        // 1. 创建连接
         try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
-
+            // 2. 创建信道
+            Channel channel = connection.createChannel()) {
+            // 3. 声明队列
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
             String message = "Hello World!";
+            // 4. 发布消息
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
             System.out.println(" [x] Sent '" + message + "'");
         } catch (Exception e) {
@@ -111,29 +113,31 @@ public class Send {
 ```java
 public class Recv {
 
+    // 队列名称
     private final static String QUEUE_NAME = "hello";
 
     public static void main(String[] argv) throws Exception {
+        // 创建工厂
         ConnectionFactory factory = new ConnectionFactory();
+        // 设置主机
         factory.setHost("localhost");
+        // 1. 创建连接
         Connection connection = factory.newConnection();
+        // 2. 创建信道
         Channel channel = connection.createChannel();
-
+        // 3. 声明队列
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
     }
 }
-
 ```
 
 请注意，我们在这里也声明了队列。因为我们可能会在发布者之前启动消费者，所以我们要在尝试从队列中消费消息之前确保队列存在。
 
-为什么不使用 try-with-resource 语句自动关闭通道和连接呢？如果这样做，我们只需让程序继续前进，关闭一切并退出！这样做很不妥，因为我们希望在消费者异步监听消息到达时，进程仍能继续运行。
-
 > DeliverCallback 子类的作用
 
-额外的 `DeliverCallback` 接口，用于缓冲服务器推送给我们的信息。要告诉服务器将队列中的消息传递给我们。由于它将**以异步方式**向我们推送消息，因此我们以对象的形式提供一个回调，该对象将缓冲消息，直到我们准备好使用它们。
+额外的 `DeliverCallback` 接口用于缓冲服务器推送给我们的信息。要告诉服务器将队列中的消息传递给我们。由于它将 **以异步方式** 向我们推送消息，因此我们以对象的形式提供一个回调，该对象将缓冲消息直到我们准备好使用它们。
 
 ```java
 DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -148,21 +152,28 @@ channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
 ```java
 public class Recv {
 
+    // 队列名称
     private final static String QUEUE_NAME = "hello";
 
     public static void main(String[] argv) throws Exception {
+        // 创建工厂
         ConnectionFactory factory = new ConnectionFactory();
+        // 设置主机
         factory.setHost("localhost");
+        // 1. 创建连接
         Connection connection = factory.newConnection();
+        // 2. 创建信道
         Channel channel = connection.createChannel();
-
+        // 3. 声明队列
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
+        //4. 异步回调（用于缓冲服务器推送给我们的信息）
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             System.out.println(" [x] Received '" + message + "'");
         };
+        // 5. 消费消息
         channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
     }
 }

@@ -9,29 +9,29 @@ categories:
 
 # 安装前检查
 
->  查看是否安装过MySQL 
+>  查看是否安装过 MySQL 
 
- 如果你是用rpm安装, 检查一下RPM PACKAGE： 
+ 如果你是用 rpm 安装, 检查一下 RPM PACKAGE： 
 
 ```bash
 rpm -qa | grep -i mysql # -i 忽略大小写
 ```
 
- 检查mysql service： 
+ 检查 mysql service： 
 
 ```bash
 systemctl status mysqld.service
 ```
 
- 如果存在mysql-libs的旧版本包，显示如下： 
+ 如果存在 mysql-libs 的旧版本包，显示如下： 
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-24.jpg)
 
- 如果不存在mysql-lib的版本，显示如下：
+ 如果不存在 mysql-lib 的版本，显示如下：
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-25.jpg) 
 
-> MySQL的卸载 
+> MySQL 的卸载 
 
  关闭 mysql 服务 
 
@@ -70,30 +70,30 @@ rm -rf xxx
 rm -rf /etc/my.cnf
 ```
 
-# MySQL的Linux版安装
+# MySQL 的 Linux 版安装
 
-## 下载MySQL
+## 下载 MySQL
 
 1.  下载地址 https://www.mysql.com  
 2.   点击 MySQL Community Server 
 
-3.   Linux系统下安装软件的常用三种方式： 
+3.   Linux 系统下安装软件的常用三种方式： 
 
-   *  使用rpm命令安装扩展名为".rpm"的软件包 
-   *  从互联网获取 的yum源，直接使用yum命令安装。  
-   *  针对 tar.gz 这样的压缩格式，要用tar命令来解压；如果是其它压缩格式，就使用其它命令。 
+   *  使用 rpm 命令安装扩展名为 ".rpm" 的软件包 
+   *  从互联网获取 的 yum 源，直接使用 yum 命令安装。  
+   *  针对 tar.gz 这样的压缩格式，要用 tar 命令来解压；如果是其它压缩格式，就使用其它命令。 
 
-4. 本文选择tar方式，下载`mysql-8.0.25-1.el7.x86_64.rpm-bundle`
+4. 本文选择 tar 方式，下载 `mysql-8.0.25-1.el7.x86_64.rpm-bundle`
 
 5. 将下面文件上传服务器
 
    ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-26.jpg)
 
-## 检查MySQL依赖 
+## 检查 MySQL 依赖 
 
- 检查/tmp临时目录权限（必不可少） 
+ 检查 /tmp 临时目录权限（必不可少） 
 
- 由于mysql安装过程中，会通过mysql用户在/tmp目录下新建tmp_db文件，所以请给/tmp较大的权限。执 行 
+ 由于 mysql 安装过程中，会通过 mysql 用户在 /tmp 目录下新建 tmp_db 文件，所以请给 /tmp 较大的权限。执行 
 
 ```bash
 chmod -R 777 /tmp
@@ -106,11 +106,11 @@ rpm -qa|grep libaio
 rpm -qa|grep net-tools
 ```
 
-## CentOS7下MySQL安装过程 
+## CentOS 7 下 MySQL 安装过程 
 
- 将安装程序拷贝到/opt目录下 
+ 将安装程序拷贝到 /opt 目录下 
 
- 在mysql的安装文件目录下执行：（**必须按照顺序执行**）  
+ 在 mysql 的安装文件目录下执行：（**必须按照顺序执行**）  
 
 ```bash
 rpm -ivh mysql-community-common-8.0.25-1.el7.x86_64.rpm
@@ -120,8 +120,8 @@ rpm -ivh mysql-community-client-8.0.25-1.el7.x86_64.rpm
 rpm -ivh mysql-community-server-8.0.25-1.el7.x86_64.rpm
 ```
 
-*  注意: 如在检查工作时，没有检查mysql依赖环境在安装mysql-community-server会报错 
-*  rpm 是Redhat Package Manage缩写，通过RPM的管理，用户可以把源代码包装成以rpm为扩展名的 文件形式，易于安装 
+*  注意: 如在检查工作时，没有检查 mysql 依赖环境在安装 mysql-community-server 会报错 
+*  rpm 是 Redhat Package Manage 缩写，通过 RPM 的管理，用户可以把源代码包装成以 rpm 为扩展名的 文件形式，易于安装 
 
 * -i , --install 安装软件包
 *  -v , --verbose 提供更多的详细信息输出 
@@ -131,7 +131,7 @@ rpm -ivh mysql-community-server-8.0.25-1.el7.x86_64.rpm
 
 > 查看MySQL版本
 
- 执行如下命令，如果成功表示安装mysql成功。类似java -version如果打出版本等信息 
+ 执行如下命令，如果成功表示安装 mysql 成功。类似 java -version 如果打出版本等信息 
 
 ```bash
 mysql --version
@@ -153,7 +153,7 @@ rpm -qa|grep -i mysql
 mysqld --initialize --user=mysql
 ```
 
- 说明： --initialize 选项默认以“安全”模式来初始化，则会为 root 用户生成一个密码并将 该密码标记为过 期 ，登录后你需要设置一个新的密码。生成的 临时密码 会往日志中记录一份。  
+ 说明： --initialize 选项默认以“安全”模式来初始化，则会为 root 用户生成一个密码并将该密码标记为过期 ，登录后你需要设置一个新的密码。生成的临时密码会往日志中记录一份。  
 
  查看密码，root@localhost: 后面就是初始化的密码 ： 
 
@@ -162,7 +162,7 @@ cat /var/log/mysqld.log
 ## root@localhost: t;I!kjq>t2/6
 ```
 
-> 启动MySQL，查看状态 
+> 启动 MySQL，查看状态 
 
 ```bash
 # 加不加.service后缀都可以
@@ -172,7 +172,7 @@ cat /var/log/mysqld.log
 查看状态：systemctl status mysqld.service
 ```
 
- mysqld 这个可执行文件就代表着 MySQL 服务器程序，运行这个可执行文件就可以直接启动一个 服务器进程。 
+ mysqld 这个可执行文件就代表着 MySQL 服务器程序，运行这个可执行文件就可以直接启动一个服务器进程。 
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-28.jpg)
 
@@ -182,13 +182,13 @@ cat /var/log/mysqld.log
 ps -ef | grep -i mysql
 ```
 
-> 查看MySQL服务是否自启动 
+> 查看 MySQL 服务是否自启动 
 
 ```bash
 systemctl list-unit-files|grep mysqld.service
 ```
 
- 如不是enabled可以运行如下命令设置自启动 
+ 如不是 enabled 可以运行如下命令设置自启动 
 
 ```bash
 systemctl enable mysqld.service
@@ -200,11 +200,11 @@ systemctl enable mysqld.service
 systemctl disable mysqld.service
 ```
 
-## MySQL登录 
+## MySQL 登录 
 
 > 首次登录 
 
-通过 `mysql -hlocalhost -P3306 -uroot -p` 进行登录，在Enter password：录入初始化密码 
+通过 `mysql -hlocalhost -P3306 -uroot -p` 进行登录，在 Enter password：录入初始化密码 
 
 > 修改密码  
 
@@ -216,19 +216,19 @@ systemctl disable mysqld.service
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
 ```
 
- 5.7版本之后（不含5.7），mysql加入了全新的密码安全机制。设置新密码太简单会报错， 改为更复杂的密码规则之后，设置成功，可以正常使用数据库 
+ 5.7 版本之后（不含 5.7），mysql 加入了全新的密码安全机制。设置新密码太简单会报错， 改为更复杂的密码规则之后，设置成功，可以正常使用数据库 
 
 > 设置远程登录 
 
-1.当前问题：用SQLyog或Navicat中配置远程连接Mysql数据库时遇到如下报错信息，这是由于Mysql配置了不支持远 程连接引起的 
+1.当前问题：用 SQLyog 或 Navicat 中配置远程连接 Mysql 数据库时遇到如下报错信息，这是由于 Mysql 配置了不支持远程连接引起的 
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-29.jpg)
 
 2.确认网络 
 
-* 在远程机器上使用`ping ip地址`保证网络畅通 
+* 在远程机器上使用 `ping ip地址` 保证网络畅通 
 
-* 在远程机器上使用telnet命令 保证端口号开放 访问 （开启telnet命令：控制面板--程序和功能--启动或关闭Windows功能--Telnet客户端）
+* 在远程机器上使用 telnet 命令保证端口号开放访问 （开启 telnet 命令：控制面板--程序和功能--启动或关闭 Windows 功能--Telnet 客户端）
 
   ```bash
   telnet ip地址 端口号
@@ -262,9 +262,9 @@ firewall-cmd --add-port=3306/tcp --permanent
 firewall-cmd --reload
 ```
 
-4.Linux下修改配置 
+4.Linux 下修改配置 
 
- 在Linux系统MySQL下测试： 
+ 在 Linux 系统 MySQL 下测试： 
 
 ```sql
 use mysql;
@@ -273,23 +273,23 @@ select Host,User from user;
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-30.jpg)
 
- 可以看到root用户的当前主机配置信息为localhost。 
+ 可以看到 root 用户的当前主机配置信息为 localhost。 
 
-5.修改Host为通配符% 
+5.修改 Host 为通配符 % 
 
-Host列指定了允许用户登录所使用的IP，user=root Host=localhost，表示只能通过本机客户端去访问。
+Host 列指定了允许用户登录所使用的 IP，user=root Host=localhost，表示只能通过本机客户端去访问。
 
-而 % 是个 通配符 ，如果Host=192.168.1.%，那么就表示只要是IP地址前缀为“192.168.1.”的客户端都可以连 接。如果 Host=% ，表示所有IP都有连接权限。 
+而 % 是个 通配符 ，如果 Host=192.168.1.%，那么就表示只要是 IP 地址前缀为 “192.168.1.” 的客户端都可以连接。如果 Host=% ，表示所有IP都有连接权限。 
 
-**注意：在生产环境下不能为了省事将host设置为%，这样做会存在安全问题，具体的设置可以根据生产 环境的IP进行设置** 
+**注意：在生产环境下不能为了省事将 host 设置为 %，这样做会存在安全问题，具体的设置可以根据生产环境的 IP 进行设置** 
 
 ```sql
 update user set host = '%' where user ='root';
 ```
 
- Host设置了“%”后便可以允许远程访问。  
+ Host 设置了 `%` 后便可以允许远程访问。  
 
- **Host修改完成后记得执行flush privileges使配置立即生效：** 
+ **Host 修改完成后记得执行 flush privileges 使配置立即生效：** 
 
 ```sql
 flush privileges
@@ -297,8 +297,8 @@ flush privileges
 
 6.测试 
 
-* 如果是 MySQL5.7 版本，接下来就可以使用SQLyog或者Navicat成功连接至MySQL
-* 如果是 MySQL8 版本，连接时还会出现如下问题：  
+* 如果是 MySQL 5.7 版本，接下来就可以使用 SQLyog 或者 Navicat 成功连接至 MySQL
+* 如果是 MySQL 8 版本，连接时还会出现如下问题：  
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-31.jpg)
 
@@ -310,13 +310,13 @@ flush privileges
 ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '密码';
 ```
 
- 然后在重新配置SQLyog的连接，则可连接成功 
+ 然后在重新配置 SQLyog 的连接，则可连接成功 
 
 # 字符集的相关操作
 
-##  修改MySQL5.7字符集 
+##  修改 MySQL 5.7 字符集 
 
-在MySQL 8.0版本之前，默认字符集为 latin1 ，utf8字符集指向的是 utf8mb3 。从MySQL 8.0开始，数据库的默认编码将改为 utf8mb4 ，从而避免上述乱码的问题。  
+在 MySQL 8.0 版本之前，默认字符集为 latin1 ，utf8 字符集指向的是 utf8mb3 。从 MySQL 8.0开始，数据库的默认编码将改为 utf8mb4 ，从而避免上述乱码的问题。  
 
 ### 修改步骤
 
@@ -328,11 +328,11 @@ show variables like 'character%';
 show variables like '%char%';
 ```
 
- MySQL8.0中执行：  
+ MySQL 8.0 中执行：  
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-32.jpg)
 
- MySQL5.7中执行： 
+ MySQL 5.7 中执行： 
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/03-mysql-20230507-33.jpg)
 

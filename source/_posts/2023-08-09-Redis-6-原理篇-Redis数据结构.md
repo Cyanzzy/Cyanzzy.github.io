@@ -115,7 +115,7 @@ Redis是一个键值型（Key-Value Pair）的数据库，可以根据键实现�
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-redis-20230512-188.png)
 
-![1653985586543](E:/work/job/尚硅谷资源/Redis-笔记资料/04-原理篇/讲义/原理篇.assets/1653985586543.png)
+![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-redis-20230512-227.png)
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-redis-20230512-189.png)
 
@@ -205,11 +205,13 @@ ZipListEntry中的encoding编码分为字符串和整数两种：
 
 **字符串**：如果encoding是以“00”、“01”或者“10”开头，则证明content是字符串
 
+
+
 | **编码**                                         | **编码长度** | **字符串大小**      |
 | ------------------------------------------------ | ------------ | ------------------- |
-| `|00pppppp\|`                                    | 1 bytes      | <= 63 bytes         |
-| `|01pppppp|qqqqqqqq|`                            | 2 bytes      | <= 16383 bytes      |
-| `|10000000|qqqqqqqq|rrrrrrrr|ssssssss|tttttttt|` | 5 bytes      | <= 4294967295 bytes |
+| &#124;00pppppp&#124;                                    | 1 bytes      | <= 63 bytes         |
+| &#124;01pppppp&#124;qqqqqqqq&#124;                            | 2 bytes      | <= 16383 bytes      |
+| &#124;10000000&#124;qqqqqqqq&#124;rrrrrrrr&#124;ssssssss&#124;tttttttt&#124; | 5 bytes      | <= 4294967295 bytes |
 
 例如，我们要保存字符串：“ab”和 “bc”
 

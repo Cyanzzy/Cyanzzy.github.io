@@ -10,46 +10,46 @@ categories:
 
 # Dockerfile
 
-Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
+Dockerfile 是用来构建 Docker 镜像的文本文件，是由一条条构建镜像所需的指令和参数构成的脚本。
 
 > 三部曲
 
-1. 编写Dockerfile文件
+1. 编写 Dockerfile 文件
 2. docker build 命令构建镜像
-3. docker run依镜像运行容器实例
+3. docker run 依镜像运行容器实例
 
 ## 基础知识
 
 1. 每条保留字指令都必须为大写字母且后面要跟随至少一个参数
 2. 指令按照从上到下，顺序执行
-3. #表示注释
+3. `#` 表示注释
 4. 每条指令都会创建一个新的镜像层并对镜像进行提交
 
-## 执行Dockerfile大致流程
+## 执行 Dockerfile 大致流程
 
-1. docker从基础镜像运行一个容器
+1. docker 从基础镜像运行一个容器
 2. 执行一条指令并对容器作出修改
-3. 执行类似docker commit的操作提交一个新的镜像层
-4. docker再基于刚提交的镜像运行一个新容器
-5. 执行dockerfile中的下一条指令直到所有指令都执行完成
+3. 执行类似 docker commit 的操作提交一个新的镜像层
+4. docker 再基于刚提交的镜像运行一个新容器
+5. 执行 dockerfile 中的下一条指令直到所有指令都执行完成
 
 > 小结
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-34.png)
 
-* **Dockerfile**定义了进程需要的一切东西。Dockerfile涉及的内容包括执行代码或者是文件、环境变量、依赖包、运行时环境、动态链接库、操作系统的发行版、服务进程和内核进程
+* **Dockerfile** 定义了进程需要的一切东西。Dockerfile 涉及的内容包括执行代码或者是文件、环境变量、依赖包、运行时环境、动态链接库、操作系统的发行版、服务进程和内核进程
 
-* **Docker镜像**，在用Dockerfile定义一个文件之后，docker build时会产生一个Docker镜像，当运行 Docker镜像时会真正开始提供服务;
+* **Docker 镜像**，在用 Dockerfile 定义一个文件之后，docker build 时会产生一个 Docker 镜像，当运行 Docker 镜像时会真正开始提供服务;
 
-* Docker容器，容器是直接提供服务的
+* Docker 容器，容器是直接提供服务的
 
 ## 常用保留字指令
 
-[Tomcat8 Dockerfile](https://github.com/docker-library/tomcat)
+[Tomcat 8 Dockerfile](https://github.com/docker-library/tomcat)
 
 ### FROM
 
-基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是from
+基础镜像，当前新镜像是基于哪个镜像的，指定一个已经存在的镜像作为模板，第一条必须是 from
 
 ### MAINTAINER
 
@@ -57,9 +57,9 @@ Dockerfile是用来构建Docker镜像的文本文件，是由一条条构建镜�
 
 ### RUN
 
-容器构建时需要运行的命令，RUN是在 docker build时运行
+容器构建时需要运行的命令，RUN 是在 `docker build` 时运行
 
-> shell格式
+> shell 格式
 
 ```shell
 RUN <命令行命令>
@@ -67,7 +67,7 @@ RUN <命令行命令>
 RUN yum -y install vim
 ```
 
-> exec格式
+> exec 格式
 
 ```text
 RUN ["可执行文件", "参数1", "参数2"]
@@ -79,11 +79,11 @@ RUN ["可执行文件", "参数1", "参数2"]
 
 ### WORKDIR
 
-指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点S
+指定在创建容器后，终端默认登陆的进来工作目录，一个落脚点
 
 ### USER
 
-指定该镜像以什么样的用户去执行，如果都不指定，默认是root
+指定该镜像以什么样的用户去执行，如果都不指定，默认是 root
 
 ### ENV
 
@@ -99,19 +99,19 @@ ENV MY_PATH /usr/mytest
 
 ### ADD
 
-将宿主机目录下的文件拷贝进镜像**且会自动处理URL和解压tar压缩包**
+将宿主机目录下的文件拷贝进镜像**且会自动处理 URL 和解压 tar 压缩包**
 
 ### COPY
 
-类似ADD，拷贝文件和目录到镜像中。
+类似 ADD，拷贝文件和目录到镜像中。
 将从构建上下文目录中 <源路径> 的文件/目录复制到新的一层的镜像内的 <目标路径> 位置
 
 ```bash
 COPY src dest
 ```
 
-* <src源路径>：源文件或者源目录
-* <dest目标路径>：容器内的指定路径，该路径不用事先建好，路径不存在的话，会自动创建。
+* `<src源路径>`：源文件或者源目录
+* `<dest目标路径>`：容器内的指定路径，该路径不用事先建好，路径不存在的话，会自动创建。
 
 ### VOLUME
 
@@ -135,18 +135,18 @@ CMD ["可执行文件", "参数1", "参数2" ...]
 
 > 参数列表格式
 
-`CMD ["参数1", "参数2" ...]`，在指定了`ENTRYPOINT`指令后，用`CMD`指定具体的参数
+`CMD ["参数1", "参数2" ...]`，在指定了 `ENTRYPOINT` 指令后，用 `CMD` 指定具体的参数
 
 Dockerfile 中可以有多个 CMD 指令，**但只有最后一个生效，CMD 会被 docker run 之后的参数替换**
 
 > CMD 和 RUN 区别
 
-* CMD是在docker run 时运行
-* RUN是在 docker build时运行
+* CMD 是在 docker run 时运行
+* RUN 是在 docker build 时运行
 
 ### ENTRYPOINT
 
-用来指定一个容器启动时要运行的命令，类似于 CMD 指令，但是**ENTRYPOINT不会被docker run后面的命令覆盖，而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序**
+用来指定一个容器启动时要运行的命令，类似于 CMD 指令，但是 **ENTRYPOINT 不会被 docker run 后面的命令覆盖，而且这些命令行参数会被当作参数送给 ENTRYPOINT 指令指定的程序**
 
 > 命令格式
 
@@ -154,15 +154,15 @@ Dockerfile 中可以有多个 CMD 指令，**但只有最后一个生效，CMD �
 ENTRYPOINT ["<executable>", "<param1>", "<param2>"]
 ```
 
-* NTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。
+* ENTRYPOINT 可以和 CMD 一起用，一般是变参才会使用 CMD ，这里的 CMD 等于是在给 ENTRYPOINT 传参。
 
-* 当指定了ENTRYPOINT后，CMD的含义就发生了变化，不再是直接运行其命令而是将CMD的内容作为参数传递给ENTRYPOINT指令，他两个组合会变成 
+* 当指定了 ENTRYPOINT 后，CMD 的含义就发生了变化，不再是直接运行其命令而是将 CMD 的内容作为参数传递给 ENTRYPOINT 指令，他两个组合会变成 
 
   ```bash
   <ENTRYPOINT>"<CMD>"
   ```
 
-> 假设已通过Dockerfile构建了nginx:test镜像
+> 假设已通过 Dockerfile 构建了 nginx:test 镜像
 
 ```bash
 FROM nginx
@@ -224,7 +224,7 @@ CMD echo "success--------------ok"
 CMD /bin/bash
 ```
 
-**2.构建** 注意，上面TAG后面有个空格，有个点
+**2.构建** 注意，上面 TAG 后面有个空格，有个点
 
 ```bash
 docker build -t 新镜像名字:TAG .
@@ -241,7 +241,7 @@ docker run -it centosjava8:1.5 /bin/bash
 
 # 虚悬镜像
 
-仓库名、标签都是<none>的镜像，俗称dangling image
+仓库名、标签都是 `<none>` 的镜像，俗称 dangling image
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-35.png)
 
@@ -364,11 +364,11 @@ public class OrderController {
 }
 ```
 
-> **通过dockerfile发布微服务部署到docker容器**
+> **通过 dockerfile 发布微服务部署到 docker 容器**
 
-**1.IDEA工具里面搞定微服务jar包**
+**1.IDEA 工具里面搞定微服务 jar 包**
 
-**2.编写Dockerfile，将微服务jar包和Dockerfile文件上传到同一个目录下/mydocker**
+**2.编写 Dockerfile，将微服务 jar 包和 Dockerfile 文件上传到同一个目录下/mydocker**
 
 ```bash
 # 基础镜像使用java
@@ -400,15 +400,15 @@ docker run -d -p 6001:6001 docker_test:1.6
 
 # Docker 网络
 
-> Docker不启动，默认网络情况
+> Docker 不启动，默认网络情况
 
 * ens33
 * lo
 * virbr0
 
-> Docker启动后，网络情况
+> Docker 启动后，网络情况
 
-会产生一个名为docker0的虚拟网桥
+会产生一个名为 docker0 的虚拟网桥
 
 ## 常用基本命令
 
@@ -416,51 +416,50 @@ docker run -d -p 6001:6001 docker_test:1.6
 
 | 命令                                | 说明           |
 | ----------------------------------- | -------------- |
-| docker network ls                   | 查看网络       |
-| docker network inspect  XXX网络名字 | 查看网络源数据 |
-| docker network rm XXX网络名字       | 删除网络       |
+| `docker network ls`                   | 查看网络       |
+| `docker network inspect  XXX网络名字` | 查看网络源数据 |
+| `docker network rm XXX网络名字`       | 删除网络       |
 
 ## docker network 作用
 
 * 容器间的互联和通信以及端口映射
-* 容器IP变动时候可以通过服务名直接网络通信而不受到影响
+* 容器 IP 变动时可以通过服务名直接网络通信而不受到影响
 
 ## docker network 模式
 
 | 网络模式  | 指定                                       | 说明                                                         |
 | --------- | ------------------------------------------ | ------------------------------------------------------------ |
-| bridge    | 使用--network  bridge指定，默认使用docker0 | 为每个容器分配、设置IP，并将容器连接到一个`docker0`虚拟网桥，默认为该模式 |
-| host      | 使用--network host指定                     | 容器将不会虚拟出自己的网卡，配置自己的IP等，而是使用宿主机的IP和端口 |
-| none      | 使用--network none指定                     | 容器有独立的network namespace，但没有对其进行任何网络设置，如分配veth pair和网桥连接、IP等 |
-| container | 使用--network container:NAME或者容器ID指定 | 新创建的容器不会创建自己的网卡和配置自己的IP，而是和一个指定的容器共享IP、端口范围等 |
+| `bridge`    | 使用`--network  bridge`指定，默认使用docker0 | 为每个容器分配、设置IP，并将容器连接到一个`docker0`虚拟网桥，默认为该模式 |
+| `host`      | 使用`--network host`指定                     | 容器将不会虚拟出自己的网卡，配置自己的IP等，而是使用宿主机的IP和端口 |
+| `none`      | 使用`--network none`指定                     | 容器有独立的network namespace，但没有对其进行任何网络设置，如分配veth pair和网桥连接、IP等 |
+| `container` | 使用`--network container:NAME或者容器ID`指定 | 新创建的容器不会创建自己的网卡和配置自己的IP，而是和一个指定的容器共享IP、端口范围等 |
 
-> 容器实例内默认网络IP生产规则
+> 容器实例内默认网络 IP 生产规则
 
-docker容器内部的ip是有可能会发生改变的
+docker 容器内部的 ip 是有可能会发生改变的
 
 ### bridge
 
-Docker 服务默认会创建一个 docker0 网桥（其上有一个 docker0 内部接口），该桥接网络的名称为docker0，它在内核层连通了其他的物理或虚拟网卡，**这就将所有容器和本地主机都放到同一个物理网络**。Docker 默认指定了 docker0 接口 的 IP 地址和子网掩码，**让主机和容器之间可以通过网桥相互通信**。
+Docker 服务默认会创建一个 docker0 网桥（其上有一个 docker0 内部接口），该桥接网络的名称为 docker0，它在内核层连通了其他的物理或虚拟网卡，**这就将所有容器和本地主机都放到同一个物理网络**。Docker 默认指定了 docker0 接口 的 IP 地址和子网掩码，**让主机和容器之间可以通过网桥相互通信**。
 
 ```bash
 # 查看 bridge 网络的详细信息，并通过 grep 获取名称项
 docker network inspect bridge | grep name
 
-
 ifconfig
 ```
 
-* Docker使用Linux桥接，在宿主机虚拟一个Docker容器网桥(docker0)，Docker启动一个容器时会根据Docker网桥的网段分配给容器一个IP地址，称为Container-IP，同时Docker网桥是每个容器的默认网关。因为在同一宿主机内的容器都接入同一个网桥，这样容器之间就能够通过容器的Container-IP直接通信。
+* Docker 使用 Linux 桥接，在宿主机虚拟一个 Docker 容器网桥(docker0)，Docker 启动一个容器时会根据 Docker 网桥的网段分配给容器一个 IP 地址，称为 Container-IP，同时 Docker 网桥是每个容器的默认网关。因为在同一宿主机内的容器都接入同一个网桥，这样容器之间就能够通过容器的Container-IP直接通信
 
-* docker run 的时候，没有指定network的话默认使用的网桥模式就是bridge，使用的就是docker0。在宿主机ifconfig，就可以看到docker0和自己create的networketh0，eth1，eth2……代表网卡一，网卡二，网卡三……，lo代表127.0.0.1，即localhost，inet addr用来表示网卡的IP地址
+* docker run 时未指定 network 则默认使用的网桥模式就是 bridge，即 `docker0`
 
-* 网桥docker0创建一对对等虚拟设备接口一个叫veth，另一个叫eth0，成对匹配。
-  * 整个宿主机的网桥模式都是docker0，类似一个交换机有一堆接口，每个接口叫veth，在本地主机和容器内分别创建一个虚拟接口，并让他们彼此联通（这样一对接口叫veth pair）；
+* 网桥 docker0 创建一对对等虚拟设备接口一个叫 `veth`，另一个叫 `eth0`，成对匹配
+  * 整个宿主机的网桥模式都是 `docker0`，类似一个交换机有一堆接口，每个接口叫 `veth`，在本地主机和容器内分别创建一个虚拟接口，并让他们彼此联通（这样一对接口叫 veth pair）；
 
-  * 每个容器实例内部也有一块网卡，每个接口叫eth0；
-  * docker0上面的每个veth匹配某个容器实例内部的eth0，两两配对，一一匹配。
+  * 每个容器实例内部也有一块网卡，每个接口叫 `eth0`；
+  * `docker0` 上面的每个 `veth` 匹配某个容器实例内部的 `eth0`
 
-通过上述，将宿主机上的所有容器都连接到这个内部网络上，两个容器在同一个网络下,会从这个网关下各自拿到分配的ip，此时两个容器的网络是互通的。
+通过上述，将宿主机上的所有容器都连接到这个内部网络上，两个容器在同一个网络下，会从这个网关下各自拿到分配的 ip，此时两个容器的网络是互通的。
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-37.png)
 
@@ -475,42 +474,42 @@ docker run -d -p 8082:8080   --name tomcat82 billygoo/tomcat8-jdk8
 
 ### host
 
-直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行NAT 转换。
-
-容器将不会获得一个独立的Network Namespace， 而是和宿主机共用一个Network Namespace。容器将不会虚拟出自己的网卡而是使用宿主机的IP和端口。
+* 该模式下直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行 NAT 转换
+* 容器将不会获得一个独立的 Network Namespace， 而是和宿主机共用一个 Network Namespace
+* 容器将不会虚拟出自己的网卡而是使用宿主机的 IP 和端口
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-39.png)
 
-> warning
+> 错误示范：
 
 ```bash
 docker run -d -p 8083:8080 --network host --name tomcat83 billygoo/tomcat8-jdk8
 ```
 
-* docker启动时指定--network=host或-net=host，如果还指定了-p映射端口，那这个时候就会有此警告，
-  并且**通过-p设置的参数将不会起到任何作用**，**端口号会以主机端口号为主，重复时则递增**。
-* 解决的办法就是使用docker的其他网络模式，例如--network=bridge
+* docker 启动时指定 `--network=hos`t 或 `-net=host`，如果还指定了 `-p` 映射端口，此时就会有警告，
+  并且**通过-p 设置的参数将不会起到任何作用**，**端口号会以主机端口号为主，重复时则递增**。
+* 解决方案：使用 docker 的其他网络模式，例如 `--network=bridge`
 
-> 正确
+> 正确示范：
 
 ```bash
-docker run -d     --network host --name tomcat83 billygoo/tomcat8-jdk8
+docker run -d --network host --name tomcat83 billygoo/tomcat8-jdk8
 ```
 
 > 容器实例内部
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-40.png)
 
-> 没有设置-p的端口映射了，如何访问启动的tomcat83 
+> 如果没有设置 `-p` 的端口映射，那么如何访问启动的 tomcat83 ?
 
-http://宿主机IP:8080/
+Q：http://宿主机IP:8080/
 
 在CentOS里面用默认的火狐浏览器访问容器内的tomcat83看到访问成功，因为此时容器的IP借用主机的，
 所以容器共享宿主机网络IP，这样的好处是外部主机与容器可以直接通信。
 
 ### none
 
-禁用网络功能，只有lo标识(就是127.0.0.1表示本地回环)在none模式下，并不为Docker容器进行任何网络配置，这个Docker容器没有网卡、IP、路由等信息，只有一个lo，需要我们自己为Docker容器添加网卡、配置IP等。
+该模式下禁用网络功能，只有 lo 标识（即127.0.0.1，表示本地回环）。在 none 模式下，并不为 Docker 容器进行任何网络配置，该 Docker 容器没有网卡、IP、路由等信息，只有一个 lo，需要自行为 Docker 容器添加网卡、配置 IP 等。
 
 ```bash
 docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8
@@ -518,7 +517,7 @@ docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8
 
 ### container
 
-新建的容器和已经存在的一个容器共享一个网络ip配置而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。
+新创建的容器不会创建自己的网卡，配置自己的 IP，而是和一个指定的容器共享 IP、端口范围等。两个容器除网络方面，其他的如文件系统、进程列表等还是隔离的。
 
 ![](https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-docker-20230715-41.png)
 
@@ -526,7 +525,7 @@ docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8
 
 ### 自定义网络
 
-自定义桥接网络，自定义网络默认使用的是桥接网络bridge
+自定义桥接网络，自定义网络默认使用的是桥接网络 bridge
 
 ```bash
 docker network create es-net
@@ -534,15 +533,17 @@ docker run -d -p 8081:8080 --network es-net  --name tomcat81 billygoo/tomcat8-jd
 docker run -d -p 8082:8080 --network es-net  --name tomcat81 billygoo/tomcat8-jdk8
 ```
 
-自定义网络本身就维护好了主机名和ip的对应关系（ip和域名都能ping通）
+自定义网络本身就维护好了主机名和 ip 的对应关系（ip 和域名都能 ping 通）
 
 # Docker Compose 容器编排
 
-**Compose 是 Docker 公司推出的一个工具软件，可以管理多个 Docker 容器组成一个应用**。你需要定义一个 YAML 格式的配置文件docker-compose.yml，写好多个容器之间的调用关系。然后，只要一个命令，就能同时启动/关闭这些容器
+**Compose 是 Docker 公司推出的一个工具软件，可以管理多个 Docker 容器组成一个应用**。你需要定义一个 YAML 格式的配置文件 docker-compose.yml，写好多个容器之间的调用关系。然后只要一个命令，就能同时启动/关闭这些容器
 
-Compose允许用户通过一个单独的docker-compose.yml模板文件（YAML 格式）来定义一组相关联的应用容器为一个项目（project）。可以很容易地用一个配置文件定义一个多容器的应用，然后使用一条指令安装这个应用的所有依赖，完成构建。Docker-Compose 解决了容器与容器之间如何管理编排的问题。
+Compose 允许用户通过一个单独的 docker-compose.yml 模板文件（YAML 格式）来定义一组相关联的应用容器为一个项目。可以很容易地用一个配置文件定义一个多容器的应用，然后使用一条指令安装这个应用的所有依赖、完成构建。Docker-Compose **解决了容器与容器之间管理编排的问题**。
 
-[官网文档](https://docs.docker.com/compose/compose-file/compose-file-v3/) 	[下载地址](https://docs.docker.com/compose/install/)
+[compose-file 官网文档](https://docs.docker.com/compose/compose-file/compose-file-v3/) 	
+
+[compose 下载地址](https://docs.docker.com/compose/install/)
 
 > 安装步骤
 
@@ -556,32 +557,32 @@ docker-compose --version
 
 * docker-compose.yml
 
-* 服务（service）：一个个应用容器实例，比如订单微服务、库存微服务、mysql容器、nginx容器或者redis容器
+* 服务（service）：一个个应用容器实例，比如订单微服务、库存微服务、mysql 容器、nginx 容器或者 redis 容器
 * 工程（project）：由一组关联的应用容器组成的一个完整业务单元，在 docker-compose.yml 文件中定义。
 
 > 三部曲
 
-1. 编写Dockerfile定义各个微服务应用并构建出对应的镜像文件
+1. 编写 Dockerfile 定义各个微服务应用并构建出对应的镜像文件
 2. 使用 docker-compose.yml 定义一个完整业务单元，安排好整体应用中的各个容器服务。
-3. 最后，执行docker-compose up命令 来启动并运行整个应用程序，完成一键部署上线
+3. 最后，执行 `docker-compose up` 命令 来启动并运行整个应用程序，完成一键部署上线
 
 ## Compose 常用命令
 
 | 命令                                 | 说明                                                         |
 | ------------------------------------ | ------------------------------------------------------------ |
-| docker-compose -h                    | 查看帮助                                                     |
-| docker-compose up                    | 启动所有docker-compose服务                                   |
-| docker-compose up -d                 | 启动所有docker-compose服务并后台运行                         |
-| docker-compose down                  | 停止并删除容器、网络、卷、镜像。                             |
-| docker-compose exec  yml里面的服务id | 进入容器实例内部  docker-compose exec docker-compose.yml文件中写的服务id /bin/bash |
-| docker-compose ps                    | 展示当前docker-compose编排过的运行的所有容器                 |
-| docker-compose top                   | 展示当前docker-compose编排过的容器进程                       |
-| docker-compose logs yml里面的服务id  | 查看容器输出日志                                             |
-| docker-compose config                | 检查配置                                                     |
-| docker-compose config -q             | 检查配置，有问题才有输出                                     |
-| docker-compose restart               | 重启服务                                                     |
-| docker-compose start                 | 启动服务                                                     |
-| docker-compose stop                  | 停止服务                                                     |
+| `docker-compose -h`                    | 查看帮助                                                     |
+| `docker-compose up`                    | 启动所有docker-compose服务                                   |
+| `docker-compose up -d`                 | 启动所有docker-compose服务并后台运行                         |
+| `docker-compose down`                  | 停止并删除容器、网络、卷、镜像。                             |
+| `docker-compose exec  yml里面的服务id` | 进入容器实例内部  docker-compose exec docker-compose.yml文件中写的服务id /bin/bash |
+| `docker-compose ps`                    | 展示当前docker-compose编排过的运行的所有容器                 |
+| `docker-compose top`                   | 展示当前docker-compose编排过的容器进程                       |
+| `docker-compose logs yml里面的服务id`  | 查看容器输出日志                                             |
+| `docker-compose config`                | 检查配置                                                     |
+| `docker-compose config -q`             | 检查配置，有问题才有输出                                     |
+| `docker-compose restart`               | 重启服务                                                     |
+| `docker-compose start`                 | 启动服务                                                     |
+| `docker-compose stop`                  | 停止服务                                                     |
 
 ## Compose 编排微服务
 

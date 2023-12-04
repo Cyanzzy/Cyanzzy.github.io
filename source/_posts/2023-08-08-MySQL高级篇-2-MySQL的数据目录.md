@@ -6,7 +6,7 @@ tags:
 categories: 
   - Technology
 ---
-# MySQL8的主要目录结构
+# MySQL 8 的主要目录结构
 
 ```bash
 find / -name mysql

@@ -302,7 +302,7 @@ addtoany:
 comments:
   # Up to two comments system, the first will be shown as default
   # Choose: Disqus/Disqusjs/Livere/Gitalk/Valine/Waline/Utterances/Facebook Comments/Twikoo/Giscus/Remark42/Artalk
-  use: # Valine,Disqus
+  use: Valine #,Disqus
   text: true # Display the comment name next to the button
   # lazyload: The comment system will be load when comment element enters the browser's viewport.
   # If you set it to true, the comment count will be invalid
@@ -342,11 +342,17 @@ gitalk:
 # valine
 # https://valine.js.org
 valine:
-  appId: # leancloud application app id
-  appKey: # leancloud application app key
+  appId:  0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz
+  appKey: mJGX4iHKsi4Cg4wFWtW59koH
+  notify: false # mail notifier , https://github.com/xCss/Valine/wiki
+  verify: false # Verification code
+  # placeholder: ヾﾉ≧∀≦)o Please leave your footprints
+  guest_info: nick,mail,link
+  pageSize: 10
   avatar: monsterid # gravatar style https://valine.js.org/#/avatar
+  lang: zh-cn
   serverURLs: # This configuration is suitable for domestic custom domain name users, overseas version will be automatically detected (no need to manually fill in)
-  bg: # valine background
+  # bg: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/commet_bg.jpg # valine background
   visitor: false
   option:
 

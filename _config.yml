@@ -227,7 +227,7 @@ categoryBar:
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png
     - descr: # Technology
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png
-    - descr: # Science
+    - descr: # Interview
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png
     - descr: # Algorithm
       cover: https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png
@@ -246,8 +246,8 @@ magnet:
     - name: Technology
       display_name: 技术架构
       icon: 🧡  
-    - name: Science
-      display_name: 科学研究
+    - name: Interview
+      display_name: 锦囊妙计
       icon: 💛
     - name: Algorithm
       display_name: 编程算法

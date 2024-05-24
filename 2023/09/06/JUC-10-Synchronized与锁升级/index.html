@@ -1,0 +1,598 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>JUC-10-Synchronized与锁升级 | NetTree</title><meta name="author" content="Cyan Chau"><meta name="copyright" content="Cyan Chau"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="Synchronized性能变化 Java5前，只有synchronized重量级锁，如果竞争激烈，性能会下降   Java早期版本中，synchronized属于重量级锁，效率低下，因为监视器锁（monitor）是依赖底层的操作系统的MutexLock（系统互斥量）实现的，挂起线程和恢复线程都需要转入内核态去完成，阻塞或唤醒一个Java线程需要操作系统切换CPU状态来完成，这种状态切换需要耗费">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JUC-10-Synchronized与锁升级">
+<meta property="og:url" content="https://cyanzzy.github.io/2023/09/06/JUC-10-Synchronized%E4%B8%8E%E9%94%81%E5%8D%87%E7%BA%A7/index.html">
+<meta property="og:site_name" content="NetTree">
+<meta property="og:description" content="Synchronized性能变化 Java5前，只有synchronized重量级锁，如果竞争激烈，性能会下降   Java早期版本中，synchronized属于重量级锁，效率低下，因为监视器锁（monitor）是依赖底层的操作系统的MutexLock（系统互斥量）实现的，挂起线程和恢复线程都需要转入内核态去完成，阻塞或唤醒一个Java线程需要操作系统切换CPU状态来完成，这种状态切换需要耗费">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg">
+<meta property="article:published_time" content="2023-09-06T06:01:12.000Z">
+<meta property="article:modified_time" content="2024-05-20T14:40:24.362Z">
+<meta property="article:author" content="Cyan Chau">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg"><link rel="shortcut icon" href="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png"><link rel="canonical" href="https://cyanzzy.github.io/2023/09/06/JUC-10-Synchronized%E4%B8%8E%E9%94%81%E5%8D%87%E7%BA%A7/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":230},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-right"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JUC-10-Synchronized与锁升级',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-20 22:40:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css"/>
+<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\A";
+  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+<link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css"><link rel="stylesheet" href="/css/runtime.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="NetTree"><span class="site-name">NetTree</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">JUC-10-Synchronized与锁升级</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-09-06T06:01:12.000Z" title="Created 2023-09-06 14:01:12">2023-09-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-05-20T14:40:24.362Z" title="Updated 2024-05-20 22:40:24">2024-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Language/">Language</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">4.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>13min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="JUC-10-Synchronized与锁升级"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-106.jpg" alt=""></p>
+<h1 id="Synchronized性能变化"><a href="#Synchronized性能变化" class="headerlink" title="Synchronized性能变化"></a>Synchronized性能变化</h1><blockquote>
+<p>Java5前，只有synchronized重量级锁，如果竞争激烈，性能会下降</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-107.jpg" alt=""></p>
+<p>Java早期版本中，synchronized属于重量级锁，效率低下，因为监视器锁（monitor）是依赖底层的操作系统的MutexLock（系统互斥量）实现的，挂起线程和恢复线程都需要转入内核态去完成，阻塞或唤醒一个Java线程需要操作系统切换CPU状态来完成，这种状态切换需要耗费处理器时间。</p>
+<p>Java的线程是映射到操作系统原生线程之上的，如果要阻塞或唤醒一个线程就需要操作系统介入，需要在户态与核心态之间切换，这种切换会消耗大量的系统资源。为了减少获得锁和释放锁所带来的性能消耗引入了轻量级锁和偏向锁。</p>
+<blockquote>
+<p>WHY 每个对象都可以成为一个锁</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-108.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-109.jpg" alt=""></p>
+<p>Monitor是一个同步工具，常被描述为一个Java对象，它依赖于底层操作系统的MutexLock实现，操作系统实现线程之间的切换需要从用户态到内核态的转换是成本非常高的</p>
+<p><strong>Monitor</strong></p>
+<p>JVM中的同步基于进入和退出管程（Monitor）对象实现，每个对象实例都会有一个Monitor，Monitor可以和对象一起创建、销毁。Monitor由ObjectMonitor实现，而ObjectMonitor是由C++的ObjectMonitor.hpp文件实现：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-110.jpg" alt=""></p>
+<p><strong>MutexLock</strong></p>
+<p>Monitor是在JVM底层实现，本质是依赖于底层操作系统的MutexLock实现，操作系统实现线程之间的切换需要从用户态到内核态的转换，状态转换需要耗费很多的处理器时间成本非常高。</p>
+<p><strong>Monitor与Java对象以及线程如何关联</strong></p>
+<ul>
+<li>如果Java对象被某个线程锁住，则该Java对象的Mark Word字段中LockWord指向monitor的起始地址</li>
+<li>Monitor的Owner字段会存放拥有相关联对象锁的线程id</li>
+</ul>
+<p>MutexLock的切换需要从用户态转换到核心态中，因此状态转换需要耗费很多的处理器时间</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-111.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-112.jpg" alt=""></p>
+<blockquote>
+<p>Java6后为减少获取锁和释放锁带来的性能消耗引入轻量级锁和偏向锁</p>
+</blockquote>
+<h1 id="Synchronized锁升级"><a href="#Synchronized锁升级" class="headerlink" title="Synchronized锁升级"></a>Synchronized锁升级</h1><p>synchronized用的锁是存在Java对象头里的Mark Word中<br>锁升级功能主要依赖MarkWord中锁标志位和释放偏向锁标志位</p>
+<blockquote>
+<p>64 位标记图</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-112.jpg" alt=""></p>
+<blockquote>
+<p>锁指向</p>
+</blockquote>
+<ul>
+<li>偏向锁：MarkWord存储的是偏向的线程ID</li>
+<li>轻量：锁MarkWord存储的是指向线程栈中Lock Record的指针</li>
+<li>重量锁：MarkWord存储的是指向堆中的monitor对象的指针</li>
+</ul>
+<h2 id="无锁"><a href="#无锁" class="headerlink" title="无锁"></a>无锁</h2><p>初始状态，一个对象被实例化后，若还未被任何线程竞争锁，那么它为<code>无锁状态</code>（001）</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-113.jpg" alt=""></p>
+<blockquote>
+<p>调用<code>hashCode()</code>前</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-114.jpg" alt=""></p>
+<blockquote>
+<p>调用<code>hashCode()</code>后</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-115.jpg" alt=""></p>
+<h2 id="偏锁"><a href="#偏锁" class="headerlink" title="偏锁"></a>偏锁</h2><blockquote>
+<p>偏向锁</p>
+</blockquote>
+<p>单线程进程，当线程A第一次竞争到锁时，通过操作修改Mark Word中的偏向线程ID、偏向模式。如果不存在其他线程竞争，那么持有偏向锁的线程将永远不需要进行同步。</p>
+<blockquote>
+<p>主要作用</p>
+</blockquote>
+<p>当一段同步代码一直被同一个线程多次访问，由于只有一个线程那么该线程在后续访问时便会自动获得锁</p>
+<blockquote>
+<p>研究发现</p>
+</blockquote>
+<p>多线程的情况下，锁不仅不存在多线程竞争，还存在锁由同一个线程多次获得的情况，偏向锁就是在这种情况下出现的，它的出现是为解决只有在一个线程执行同步时提高性能。</p>
+<p>偏向锁会偏向于第一个访问锁的线程，如果在接下来的运行过程中，该锁没有被其他的线程访问，则持有偏向锁的线程将永远不需要触发同步</p>
+<blockquote>
+<p>说明</p>
+</blockquote>
+<p>在实际应用运行过程中发现，“锁总是同一个线程持有，很少发生竞争”，即锁总是被第一个占用他的线程拥有，这个线程就是锁的偏向线程。</p>
+<p>那么只需要在锁第一次被拥有时记录下偏向线程ID。这样偏向线程就一直持有着锁，后续该线程进入和退出这段加同步锁的代码块时，不需要再次加锁和释放锁。而是直接会去检查锁的MarkWord里面是不是放的自己的线程ID</p>
+<ul>
+<li>如果相等表示偏向锁偏向于当前线程，不需再尝试获得锁，直到竞争发生才释放锁。以后每次同步，检查锁的偏向线程ID与当前线程ID是否一致，如果一致直接进入同步。无需每次加锁解锁都去CAS更新对象头</li>
+<li>如果不等表示发生竞争，锁已经不总是偏向于同一个线程，这时会尝试使用CAS来替换MarkWord里面的线程ID为新线程的ID<ul>
+<li>竞争成功表示之前的线程不存在了，MarkWord里面的线程ID为新线程的ID，锁不会升级，仍然为偏向锁</li>
+<li>竞争失败，这时可能需要升级变为轻量级锁，才能保证线程间公平竞争锁</li>
+</ul>
+</li>
+</ul>
+<p>注意：偏向锁只有遇到其他线程尝试竞争偏向锁时，持有偏向锁的线程才会释放锁，线程不会主动释放偏向锁</p>
+<blockquote>
+<p>技术实现</p>
+</blockquote>
+<p>synchronized方法被一个线程抢到了锁时，那这个方法所在的对象就会在其所在的Mark Word中将偏向锁修改状态位，同时还会有占用前54位来存储线程指针作为标识。若该线程再次访问同一个synchronized方法时，该线程只需去对象头的Mark Word中去判断一下是否有偏向锁指向本身的ID，无需再进入 Monitor去竞争对象。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-116.jpg" alt=""></p>
+<blockquote>
+<p>栗子</p>
+</blockquote>
+<p>偏向锁的操作不涉及用户到内核转换，不必要直接升级为最高级，以一个account对象的“对象头”为例：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-117.jpg" alt=""></p>
+<p>假如有个线程执行到synchronized代码块时，JVM使用CAS操作把线程指针ID记录到Mark Word，并修改标偏向标示，标示当前线程就获得该锁。锁对象变成偏向锁（通过CAS修改对象头里的锁标志位）。执行完同步代码块后，线程并不会主动释放偏向锁</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-118.jpg" alt=""></p>
+<p>此时线程获得锁并可以执行同步代码块，当该线程第二次到达同步代码块时会判断此时持有锁的线程是否还是自己，JVM通过account对象的Mark Word判断到当前线程ID还在，说明还持有着这个对象的锁，就可以继续进入临界区工作。由于之前未释议锁，这里就不需要重新加锁。如果自始至终使用锁的线程只有一个，很明显偏向锁几乎没有额外开销，性能极高。</p>
+<blockquote>
+<p>偏锁JVM参数</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>JVM参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-XX:+UseBiasedLocking -XX:BiasedLockingStartupDelay=0</code></td>
+<td>开启偏向锁</td>
+</tr>
+<tr>
+<td><code>-XX:UseBiasedLocking</code></td>
+<td>关闭偏向锁（关闭后程序默认直接进入轻量级锁状态）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>一切默认情况</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-119.jpg" alt=""></p>
+<p><strong>参数系统默认开启</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-120.jpg" alt=""></p>
+<p><strong>关闭延时参数，启用该功能</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-121.jpg" alt=""></p>
+<blockquote>
+<p>偏向锁的撤销</p>
+</blockquote>
+<ul>
+<li>当有另外线程逐步来竞争锁时就不能再使用偏向锁，而要升级为轻量级锁</li>
+<li>竞争线程尝试CAS更新对象头失败，会等待到全局安全点（此时不会执行任何代码）撤销偏向锁</li>
+</ul>
+<p><strong>偏锁的撤销：</strong></p>
+<p>偏向锁使用一种等到<strong>竞争出现才释放锁</strong>的机制，只有当其他线程竞争锁时，持有偏向锁的原来线程才会被撤销。撤销需要等待全局安全点，同时检查持有偏向锁的线程是否还在执行：</p>
+<ul>
+<li>第一个线程正在执行synchronized方法（处于同步块），它还没有执行完，其它线程来抢夺，该偏向锁会被取消掉并出现锁升级。此时轻量级锁由原持有偏向锁的线程持有，继续执行其同步代码，而正在竞争的线程会进入自旋等待获得该轻量级锁</li>
+<li>第一个线程执行完成synchronized方法（退出同步块），则将对象头设置成无锁状态并撤销偏向锁，重新偏向</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-122.jpg" alt=""></p>
+<blockquote>
+<p>总体步骤流程（红线流程部分为偏向锁获取和撤销流程）</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-123.jpg" alt=""></p>
+<h2 id="轻锁"><a href="#轻锁" class="headerlink" title="轻锁"></a>轻锁</h2><blockquote>
+<p>轻量级锁</p>
+</blockquote>
+<p>多线程竞争，但是任意时刻最多只有一个线程竞争，即不存在锁竞争太过激烈的情况，也就没有线程阻塞。</p>
+<blockquote>
+<p>主要作用</p>
+</blockquote>
+<p>有线程来参与锁的竞争，但是获取锁的冲突时间极短，本质是CAS自旋锁</p>
+<blockquote>
+<p>轻量锁的获取</p>
+</blockquote>
+<p>轻量级锁是为在线程近乎交替执行同步块时提高性能 </p>
+<ul>
+<li><p>主要目的：在没有多线程竞争的前提下，通过CAS减少重量级锁使用操作系统互斥量产生的性能消耗（即先自旋，不行才升级阻塞）</p>
+</li>
+<li><p>升级时机：当关闭偏向锁功能或多线程竞争偏向锁会导致偏向锁升级为轻量级锁</p>
+</li>
+</ul>
+<p>假如线程A已经拿到锁，这时线程B又来抢该对象的锁，由于该对象的锁已经被线程A拿到，当前该锁则已是偏向锁</p>
+<p>而线程B在争抢时发现对象头Mark Word中的线程ID不是线程B自己的线程ID（而是线程A的），那线程B就会进行CAS操作希望能获得锁</p>
+<p><strong>此时线程B操作中有两种情况：</strong><br><strong>如果锁获取成功</strong>，直接替换Mak Word中的线程ID为B自己的ID（A→B），重新偏向于其他线程（即将偏向锁交给其他线程，相当于当前线程”被”释放锁），该锁会保持偏向锁状态，A线程结束，B线程上位 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-124.jpg" alt=""></p>
+<p><strong>如果锁获取失败</strong>，则偏向锁升级为轻量级锁（设置偏向锁标识为0，并设置锁标志位为00），此时轻量级锁由原持有偏向锁的线程持有，继续执行其同步代码，而正在竞争的线程B会进入自旋等待获得该轻量级锁 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-125.jpg" alt=""></p>
+<blockquote>
+<p>轻量级锁的加锁</p>
+</blockquote>
+<p>JVM会为每个线程在当前线程的栈帧中创建用于存储锁记录的空间（Displaced Mark Word）。若一个线程获得锁时发现是轻量级锁，会把锁的MarkWord复制到自己的Displaced Mark Word里面。然后线程尝试用CAS将锁的MarkWord替换为指向锁记录的指针。如果成功，当前线程获得锁，如果失败，表示Mark Word已经被替换成其他线程的锁记录，说明在与其它线程竞争锁，当前线程就尝试使用自旋来获取锁。</p>
+<p>自旋CAS：不断尝试去获取锁，能不升级就不往上捅，尽量不要阻塞</p>
+<blockquote>
+<p>轻量级锁的释放</p>
+</blockquote>
+<p>在释放锁时，当前线程会使用CAS操作将Displaced Mark Word的内容复制回锁的Mark Word里面。如果没有发生竞争，那么这个复制的操作会成功。如果有其他线程因为自旋多次导致轻量级锁升级成重量级锁，那么CAS操作会失败，此时会释放锁并唤醒被阻塞的线程。</p>
+<blockquote>
+<p>轻量级锁演示</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>VM参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-XX:-UseBiasedLocking</code></td>
+<td>如果关闭偏向锁，则可以直接进入轻量级锁</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-126.jpg" alt=""></p>
+<blockquote>
+<p>步骤流程图</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-123.jpg" alt=""></p>
+<blockquote>
+<p>自旋达到一定次数和程度</p>
+</blockquote>
+<ul>
+<li><p>Java6前默认启用，默认情况下自旋次数为10，使用<code>-XX:PreBlockSpin=10</code>修改。或者自旋线程数超过CPU核数一半</p>
+</li>
+<li><p>Java6后，如果线程自旋成功，那么下次自旋的最大次数会增加；如果很少自旋成功，那么下次会减少自旋次数甚至不自旋（自适应意味自旋次数不是固定不变，而是根据同一个锁上次自旋的时间核拥有锁线程的状态来决定）</p>
+</li>
+</ul>
+<blockquote>
+<p>轻量级锁和偏向锁的区别</p>
+</blockquote>
+<ul>
+<li>争夺轻量级锁失败时自选尝试抢占锁</li>
+<li>轻量级锁每次退出同步块都需要释放锁，而偏向锁是在竞争发生时才释放锁</li>
+</ul>
+<h2 id="重锁"><a href="#重锁" class="headerlink" title="重锁"></a>重锁</h2><blockquote>
+<p>重锁</p>
+</blockquote>
+<p>有大量的线程参与锁的竞争吗，冲突性很高</p>
+<blockquote>
+<p>锁标志位</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-127.jpg" alt=""></p>
+<blockquote>
+<p>重量级锁原理</p>
+</blockquote>
+<p>Java中<code>synchronized</code>锁基于进入和退出Monitor对象实现，在编译时会将同步块的开始位置插入<code>monitor enter</code>指令，在结束位置插入<code>monitor exit</code>指令。<br>当线程执行到<code>monitor enter</code>指令时会尝试获取对象所对应的Monitor所有权，如果获取到锁则会在Monitor的<code>owner</code>中存放当前线程的id，这样它将处于锁定状态，除非退出同步块，否则其他线程无法获取到此Monitor。</p>
+<blockquote>
+<p>栗子</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-128.jpg" alt=""></p>
+<h2 id="锁升级后HashCode去向"><a href="#锁升级后HashCode去向" class="headerlink" title="锁升级后HashCode去向"></a>锁升级后HashCode去向</h2><blockquote>
+<p>锁升级为轻量级或重量级锁后，Mark Word中保存的分别是线程栈帧里的锁记录指针和重量级锁指针，已经没有位置再保存哈希码，GC年龄了，那么这些信息被移动到哪里去了呢？</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-129.jpg" alt=""></p>
+<p><strong>在无锁状态下</strong>，Mark Word中可以存储对象的<code>identity hash code</code>值。当对象的<code>hashCode()</code>方法第一次被调<br>用时，JVM会生成对应的<code>identity hash code</code>值并将该值存储到Mark Word中。</p>
+<p><strong>对于偏向锁</strong>，在线程获取偏向锁时会用Thread ID和epoch值覆盖<code>identity hash code</code>所在位置。如果一个对象的<code>hashCode()</code>方法已经被调用过一次后，该对象不能被设置偏向锁（因为如果可以的设置的话，那Mark Word中的<code>identity hash code</code>必然会被偏向线程ld给覆盖，这就会造成同一个对象前后两次调用<code>hashCode()</code>方法得到的结果不一致）</p>
+<p><strong>升级为轻量级锁时</strong>，JVM会在当前线程的栈帧中创建一个锁记录（Lock Record）空间，用于存储锁对象的Mark Word拷贝，该拷贝中可以包含<code>identity hash code</code>，所以轻量级锁可以和<code>identity hash code</code>共存，哈希码和GC年龄自然保存在此，释放锁后会将这些信息写回到对象头。</p>
+<p><strong>升级为重量级锁后</strong>，Mark Word保存的重量级锁指针，代表重量级锁的<code>ObjectMonitor</code>类里有字段记录非加锁状态下的Mark Word，锁释放后也会将信息写回到对象头。</p>
+<h2 id="各种锁优缺点"><a href="#各种锁优缺点" class="headerlink" title="各种锁优缺点"></a>各种锁优缺点</h2><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-130.jpg" alt=""></p>
+<blockquote>
+<p>偏向锁</p>
+</blockquote>
+<p>适用于单线程适用的情况，不存在锁竞争时进入同步方法/代码块则使用偏向锁</p>
+<blockquote>
+<p>轻量级锁</p>
+</blockquote>
+<p>适用于竞争较不激烈的情况，存在竞争时升级为轻量级锁，轻量级锁采用的是自旋锁，如果同步方法/代码块执行时间很短，采用轻量级锁虽然会占用cpu资源但是相对比使用重量级锁还是更高效</p>
+<blockquote>
+<p>重量级锁</p>
+</blockquote>
+<p>适用于竞争激烈的情况，如果同步方法/代码块执行时间很长，那么使用轻量级锁自旋带来的性能消耗就比使用重量级锁更严重，这时就需要升级为重量级锁</p>
+<h1 id="JIT编译器对锁的优化"><a href="#JIT编译器对锁的优化" class="headerlink" title="JIT编译器对锁的优化"></a>JIT编译器对锁的优化</h1><blockquote>
+<p> JIT</p>
+</blockquote>
+<p>Just In Time Compiler</p>
+<blockquote>
+<p>锁消除和锁粗化</p>
+</blockquote>
+<p>Java 中的锁消除（Lock Elimination）和锁粗化（Lock Coarsening）都是与多线程编程相关的优化技术，它们旨在提高程序的性能和降低同步操作的开销 </p>
+<p> <strong>锁消除（Lock Elimination）</strong>： </p>
+<p> 锁消除是一种编译器或运行时系统的优化技术，用于消除不必要的同步操作。在多线程编程中，为了保护共享资源或临界区，程序员通常使用锁（如 synchronized 关键字或 ReentrantLock 类）来确保只有一个线程可以访问该资源。然而，在某些情况下，编译器或运行时系统可以通过分析代码来确定某些锁操作是不必要的，然后将它们消除掉。 </p>
+<p>锁消除通常发生在以下情况下：</p>
+<ul>
+<li>编译器或运行时系统可以证明某个锁只能被单个线程访问，因此其他线程不可能进入临界区。这可以通过静态分析或运行时分析得出。</li>
+<li>编译器或运行时系统可以证明某个锁在某些情况下根本不会被访问，因此可以安全地删除相关的同步操作。</li>
+</ul>
+<p>锁消除有助于减少不必要的同步开销，提高程序性能，但需要注意，它必须是安全的，不会导致数据竞争或错误。</p>
+<p><strong>锁粗化（Lock Coarsening）</strong>：</p>
+<p>锁粗化是另一种多线程编程中的性能优化技术，它的目标是减少同步操作的次数，从而降低锁的竞争开销。通常情况下，线程在执行临界区代码时会获得锁，然后在离开临界区时释放锁。如果在短时间内多次进入临界区，就会频繁地获得和释放锁，这会导致锁的竞争，降低程序性能。</p>
+<p>锁粗化的思想是将多个连续的临界区合并成一个大的临界区，从而减少锁的获取和释放次数。这样可以降低锁的竞争，提高程序的性能。</p>
+<p>锁粗化的实现通常需要编译器或运行时系统的支持。它可以通过检测连续的临界区代码，然后将它们合并成一个大的临界区来实现。</p>
+<p>总之，锁消除和锁粗化都是用于优化多线程程序性能的技术。锁消除通过消除不必要的同步操作来减少开销，而锁粗化通过合并连续的临界区来减少锁的竞争开销。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://Cyanzzy.github.io">Cyan Chau</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://cyanzzy.github.io/2023/09/06/JUC-10-Synchronized%E4%B8%8E%E9%94%81%E5%8D%87%E7%BA%A7/">https://cyanzzy.github.io/2023/09/06/JUC-10-Synchronized%E4%B8%8E%E9%94%81%E5%8D%87%E7%BA%A7/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a></div><div class="post_share"><div class="social-share" data-image="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/09/06/JUC-11-AQS/" title="JUC-11-AQS"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover27.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">JUC-11-AQS</div></div></a></div><div class="next-post pull-right"><a href="/2023/09/06/JUC-9-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%A4%B4/" title="JUC-9-Java对象内存布局和对象头"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover26.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">JUC-9-Java对象内存布局和对象头</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/03/16/JavaBasic-1-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9/" title="JavaBasic-1-基础内容"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-1-基础内容</div></div></a></div><div><a href="/2023/03/16/JavaBasic-2-Lambada%E8%A1%A8%E8%BE%BE%E5%92%8CStream%E6%B5%81/" title="JavaBasic-2-Lambada表达式和Stream流"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-2-Lambada表达式和Stream流</div></div></a></div><div><a href="/2023/03/16/JavaBasic-10-%E5%8F%8D%E5%B0%84/" title="JavaBasic-10-反射"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover30.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-10-反射</div></div></a></div><div><a href="/2023/03/16/JavaBasic-3-%E5%B8%B8%E7%94%A8%E7%B1%BB/" title="JavaBasic-3-常用类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover19.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-3-常用类</div></div></a></div><div><a href="/2023/03/16/JavaBasic-11-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="JavaBasic-11-网络编程"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-11-网络编程</div></div></a></div><div><a href="/2023/03/16/JavaBasic-4-%E9%9B%86%E5%90%88%E7%B1%BB/" title="JavaBasic-4--集合类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-4--集合类</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Cyan Chau</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/cyanzzy"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/cyanzzy" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2445645059@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to NetTree, articles are here~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Synchronized%E6%80%A7%E8%83%BD%E5%8F%98%E5%8C%96"><span class="toc-number">1.</span> <span class="toc-text">Synchronized性能变化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Synchronized%E9%94%81%E5%8D%87%E7%BA%A7"><span class="toc-number">2.</span> <span class="toc-text">Synchronized锁升级</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E9%94%81"><span class="toc-number">2.1.</span> <span class="toc-text">无锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E9%94%81"><span class="toc-number">2.2.</span> <span class="toc-text">偏锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%94%81"><span class="toc-number">2.3.</span> <span class="toc-text">轻锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E9%94%81"><span class="toc-number">2.4.</span> <span class="toc-text">重锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E5%8D%87%E7%BA%A7%E5%90%8EHashCode%E5%8E%BB%E5%90%91"><span class="toc-number">2.5.</span> <span class="toc-text">锁升级后HashCode去向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%84%E7%A7%8D%E9%94%81%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">2.6.</span> <span class="toc-text">各种锁优缺点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#JIT%E7%BC%96%E8%AF%91%E5%99%A8%E5%AF%B9%E9%94%81%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">JIT编译器对锁的优化</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅱ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ">锦囊妙计-系统-面试题 Ⅱ</a><time datetime="2024-05-03T12:29:50.000Z" title="Created 2024-05-03 20:29:50">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅰ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ">锦囊妙计-系统-面试题 Ⅰ</a><time datetime="2024-05-03T12:29:41.000Z" title="Created 2024-05-03 20:29:41">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-阻塞原因"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因">锦囊妙计-Redis-阻塞原因</a><time datetime="2024-05-03T12:29:29.000Z" title="Created 2024-05-03 20:29:29">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-性能优化"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化">锦囊妙计-Redis-性能优化</a><time datetime="2024-05-03T12:29:19.000Z" title="Created 2024-05-03 20:29:19">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-事务"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务">锦囊妙计-Redis-事务</a><time datetime="2024-05-03T12:29:09.000Z" title="Created 2024-05-03 20:29:09">2024-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By Cyan Chau</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container').forEach(node => {
+            if (node.hasAttribute('display')) {
+              btf.wrap(node, 'div', { class: 'mathjax-overflow' })
+            } else {
+              btf.wrap(node, 'span', { class: 'mathjax-overflow' })
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz',
+      appKey: 'mJGX4iHKsi4Cg4wFWtW59koH',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/forbidden.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="30" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start --> <script data-pjax>if(document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    var parent = document.getElementById('recent-posts');
+    var child = '<div class="recent-post-item" style="width:100%;height:auto"><div id="catalog_magnet"><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Language/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">❤ 编程语言 (60)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Technology/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">🧡 技术架构 (135)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Interview/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💛 锦囊妙计 (72)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Algorithm/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💚 编程算法 (36)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><a class="magnet_link_more"  href="https://Cyanzzy.github.io/categories" style="flex:1;text-align: center;margin-bottom: 10px;">查看更多...</a></div></div>';
+    console.log('已挂载magnet')
+    parent.insertAdjacentHTML("afterbegin",child)}
+     </script><style>#catalog_magnet{flex-wrap: wrap;display: flex;width:100%;justify-content:space-between;padding: 10px 10px 0 10px;align-content: flex-start;}.magnet_item{flex-basis: calc(50% - 5px);background: #F2F2F2;margin-bottom: 10px;border-radius: 8px;transition: all 0.2s ease-in-out;}.magnet_item:hover{background: #3ecdf1}.magnet_link_more{color:#555}.magnet_link{color:black}.magnet_link:hover{color:white}@media screen and (max-width: 600px) {.magnet_item {flex-basis: 100%;}}.magnet_link_context{display:flex;padding: 10px;font-size:16px;transition: all 0.2s ease-in-out;}.magnet_link_context:hover{padding: 10px 20px;}</style>
+    <style></style><script data-pjax>
+    function butterfly_categories_card_injector_config(){
+      var parent_div_git = document.getElementById('recent-posts');
+      var item_html = '<style>li.categoryBar-list-item{width:24%;}.categoryBar-list{max-height: 190px;overflow:auto;}.categoryBar-list::-webkit-scrollbar{width:0!important}@media screen and (max-width: 650px){.categoryBar-list{max-height: 160px;}}</style><div class="recent-post-item" style="height:auto;width:100%;padding:0px;"><div id="categoryBar"><ul class="categoryBar-list"><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png);"> <a class="categoryBar-list-link" href="categories/Language/">Language</a><span class="categoryBar-list-count">60</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png);"> <a class="categoryBar-list-link" href="categories/Algorithm/">Algorithm</a><span class="categoryBar-list-count">36</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png);"> <a class="categoryBar-list-link" href="categories/Technology/">Technology</a><span class="categoryBar-list-count">135</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png);"> <a class="categoryBar-list-link" href="categories/Interview/">Interview</a><span class="categoryBar-list-count">72</span><span class="categoryBar-list-descr"></span></li></ul></div></div>';
+      console.log('已挂载butterfly_categories_card')
+      parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+      }
+    if( document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    butterfly_categories_card_injector_config()
+    }
+  </script><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v6.2.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.orgl" style="margin-inline:5px" data-title="主题版本Butterfly_v4.3.1" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a><a class="github-badge" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style="margin-inline:5px" data-title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" title=""><img src="https://img.shields.io/badge/Copyright-BY--NC--SA8%204.0-d42328?style=flat&amp;logo=Claris" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/runtime.js"></script><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/13/Content/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-13</span><a class="blog-slider__title" href="2023/02/13/Content/" alt="">Content</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/13/Content/" alt="">详情   </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/12/搭建博客教程/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-12</span><a class="blog-slider__title" href="2023/02/12/搭建博客教程/" alt="">Tutorials of Blog Based on Hexo Butterfly</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/12/搭建博客教程/" alt="">详情   </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":null,"use":"live2d-widget-model-koharu","display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/"});</script></body></html>

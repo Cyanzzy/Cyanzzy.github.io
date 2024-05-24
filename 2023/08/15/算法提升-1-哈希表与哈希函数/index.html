@@ -1,0 +1,639 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>算法提升-1-哈希表与哈希函数 | NetTree</title><meta name="author" content="Cyan Chau"><meta name="copyright" content="Cyan Chau"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="自定义结构 RandomPool 请设计出一种结构，在该结构中有如下三个功能，要求其时间复杂度为 $O(1)$   insert(key)：将某个 key 加入到该结构，做到不重复加入   delete(key)：将原本在结构中的某个 key 移除   getRandom()： 等概率随机返回结构中的任何一个key     设计思路   设计两个哈希表 keyIndexMap 和 indexKey">
+<meta property="og:type" content="article">
+<meta property="og:title" content="算法提升-1-哈希表与哈希函数">
+<meta property="og:url" content="https://cyanzzy.github.io/2023/08/15/%E7%AE%97%E6%B3%95%E6%8F%90%E5%8D%87-1-%E5%93%88%E5%B8%8C%E8%A1%A8%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:site_name" content="NetTree">
+<meta property="og:description" content="自定义结构 RandomPool 请设计出一种结构，在该结构中有如下三个功能，要求其时间复杂度为 $O(1)$   insert(key)：将某个 key 加入到该结构，做到不重复加入   delete(key)：将原本在结构中的某个 key 移除   getRandom()： 等概率随机返回结构中的任何一个key     设计思路   设计两个哈希表 keyIndexMap 和 indexKey">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg">
+<meta property="article:published_time" content="2023-08-15T12:38:12.000Z">
+<meta property="article:modified_time" content="2024-05-20T14:40:24.362Z">
+<meta property="article:author" content="Cyan Chau">
+<meta property="article:tag" content="DataStructure">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg"><link rel="shortcut icon" href="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png"><link rel="canonical" href="https://cyanzzy.github.io/2023/08/15/%E7%AE%97%E6%B3%95%E6%8F%90%E5%8D%87-1-%E5%93%88%E5%B8%8C%E8%A1%A8%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":230},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-right"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '算法提升-1-哈希表与哈希函数',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-20 22:40:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css"/>
+<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\A";
+  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+<link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css"><link rel="stylesheet" href="/css/runtime.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="NetTree"><span class="site-name">NetTree</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">算法提升-1-哈希表与哈希函数</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-08-15T12:38:12.000Z" title="Created 2023-08-15 20:38:12">2023-08-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-05-20T14:40:24.362Z" title="Updated 2024-05-20 22:40:24">2024-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Algorithm/">Algorithm</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">5.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>21min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="算法提升-1-哈希表与哈希函数"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="自定义结构-RandomPool"><a href="#自定义结构-RandomPool" class="headerlink" title="自定义结构 RandomPool"></a>自定义结构 RandomPool</h1><blockquote>
+<p>请设计出一种结构，在该结构中有如下三个功能，要求其时间复杂度为 $O(1)$</p>
+</blockquote>
+<ul>
+<li><p><code>insert(key)</code>：将某个 key 加入到该结构，做到不重复加入 </p>
+</li>
+<li><p><code>delete(key)</code>：将原本在结构中的某个 key 移除 </p>
+</li>
+<li><p><code>getRandom()</code>： 等概率随机返回结构中的任何一个key </p>
+</li>
+</ul>
+<blockquote>
+<p>设计思路</p>
+</blockquote>
+<ul>
+<li><p>设计两个哈希表 <code>keyIndexMap</code> 和 <code>indexKeyMap</code></p>
+</li>
+<li><p><code>keyIndexMap</code> 用来记录 key 到 index 的对应关系</p>
+</li>
+<li><p><code>indexKeyMap</code> 用来记录 index 到 key 的对应关系</p>
+</li>
+<li><p>整数size初始化为0，记录Pool的大小</p>
+</li>
+<li><p>执行 <code>insert(newKey)</code>，将(newKey，size)放入<code>keyIndexMap</code>，将(size,newKey)放入<code>indexKeyMap</code>，然后size自增</p>
+</li>
+<li><p>执行 <code>delete(deleteKey)</code>，最新加入的key记为lastKey，对应的index信息记为lastIndex。删除的key记为deleteKey，对应的index记为deleteKey</p>
+<ul>
+<li>把记录(lastKey,lastIndex)变为(lastKey,deleteIndex)，并在indexMap中把记录(deleteIndex,deleteKey)变为(deleteIndex,lastKey)</li>
+<li>在keyIndexMap中删除记录(deleteKey,deleteIndex)，在indexKeyMap中把记录(lastIndex,lastKey)删除</li>
+<li>size减一</li>
+</ul>
+</li>
+<li><p><code>getRandom</code> 操作时根据size随机得到index，返回对应的key</p>
+</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-92.png" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-93.png" alt=""></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RandomPool</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Pool</span>&lt;T&gt; &#123;</span><br><span class="line">        <span class="comment">// 实现T--&gt;index的映射</span></span><br><span class="line">        <span class="keyword">private</span> HashMap&lt;T, Integer&gt; keyIndexMap;</span><br><span class="line">        <span class="comment">// 实现index--&gt;T的映射</span></span><br><span class="line">        <span class="keyword">private</span> HashMap&lt;Integer, T&gt; indexKeyMap;</span><br><span class="line">        <span class="comment">// Pool的大小</span></span><br><span class="line">        <span class="keyword">private</span> <span class="type">int</span> size;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Pool</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.indexKeyMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            <span class="built_in">this</span>.keyIndexMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            <span class="built_in">this</span>.size = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 新增记录</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">insert</span><span class="params">(T key)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!<span class="built_in">this</span>.keyIndexMap.containsKey(key)) &#123;</span><br><span class="line">                <span class="built_in">this</span>.keyIndexMap.put(key, <span class="built_in">this</span>.size);</span><br><span class="line">                <span class="built_in">this</span>.indexKeyMap.put(<span class="built_in">this</span>.size++, key);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 删除记录</span></span><br><span class="line"><span class="comment">         * keyIndexMap (lastKey,lastIndex)--&gt;(lastKey,deleteIndex)</span></span><br><span class="line"><span class="comment">         * indexKeyMap (deleteIndex,deleteKey)--&gt;(deleteIndex,lastKey)</span></span><br><span class="line"><span class="comment">         * &lt;p&gt;</span></span><br><span class="line"><span class="comment">         * delete keyIndexMap (deleteKey,deleteIndex)</span></span><br><span class="line"><span class="comment">         * delete indexKeyMap (lastKey,lastIndex)</span></span><br><span class="line"><span class="comment">         *</span></span><br><span class="line"><span class="comment">         * <span class="doctag">@param</span> key</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">delete</span><span class="params">(T key)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">this</span>.keyIndexMap.containsKey(key)) &#123;</span><br><span class="line">                <span class="comment">// 指向要删除元素的index</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">deleteIndex</span> <span class="operator">=</span> <span class="built_in">this</span>.keyIndexMap.get(key);</span><br><span class="line">                <span class="comment">// 指向最后一个元素的index</span></span><br><span class="line">                <span class="type">int</span> <span class="variable">lastIndex</span> <span class="operator">=</span> --<span class="built_in">this</span>.size;</span><br><span class="line">                <span class="comment">// 指向最后一个元素的key</span></span><br><span class="line">                <span class="type">T</span> <span class="variable">lastKey</span> <span class="operator">=</span> <span class="built_in">this</span>.indexKeyMap.get(lastIndex);</span><br><span class="line"></span><br><span class="line">                <span class="built_in">this</span>.keyIndexMap.put(lastKey, deleteIndex);</span><br><span class="line">                <span class="built_in">this</span>.indexKeyMap.put(deleteIndex, lastKey);</span><br><span class="line"></span><br><span class="line">                <span class="built_in">this</span>.keyIndexMap.remove(key);</span><br><span class="line">                <span class="built_in">this</span>.indexKeyMap.remove(lastIndex);</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 随机获取记录</span></span><br><span class="line">        <span class="keyword">public</span> T <span class="title function_">getRandom</span><span class="params">()</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">this</span>.size == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">int</span> <span class="variable">randomIndex</span> <span class="operator">=</span> (<span class="type">int</span>) (Math.random() * <span class="built_in">this</span>.size); <span class="comment">// 0 ~ size -1</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.indexKeyMap.get(randomIndex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="bitmap"><a href="#bitmap" class="headerlink" title="bitmap"></a>bitmap</h1><blockquote>
+<p>基本思想：用一个bit位标记某个元素对应的value，key即是该元素</p>
+</blockquote>
+<p><span style="color:red"><strong>假设32位操作系统，4G内存，在20亿个随机整数中找出某个数m是否存在其中</strong></span></p>
+<ul>
+<li><p>如果每个数字用int存储，那就是20亿个int，因而占用的空间约为 (2000000000<em>4/1024/1024/1024)≈ <em>*7.45</em></em> G</p>
+</li>
+<li><p>如果每个数字用位存储，20亿的数就是20亿位，占空间约为(2000000000/8/1024/1024/1024)≈ <strong>0.23</strong> G</p>
+</li>
+</ul>
+<blockquote>
+<p>存储数据</p>
+</blockquote>
+<p>用bitmap存储<code>(1, 2 ,4, 6)</code></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-94.png" alt=""></p>
+<p><strong>1个int占32位</strong>，那么我们只需要申请一个int数组长度为 <code>int tmp[1+N/32]</code> 即可存储，其中N表示要存储的这些数中的最大值，于是乎：</p>
+<ul>
+<li><p>tmp[0]：可以表示0~31</p>
+</li>
+<li><p>tmp[1]：可以表示32~63</p>
+</li>
+<li><p>tmp[2]：可以表示64~95</p>
+</li>
+</ul>
+<h2 id="添加操作"><a href="#添加操作" class="headerlink" title="添加操作"></a>添加操作</h2><p>放入数字5，5/32=0，5%32=5，在temp[0]位置，把1向左移动五位，按位或</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-95.png" alt=""></p>
+<p>b[0] = b[0] | (1&lt;&lt;5)</p>
+<p><span style="color:red"><strong>插入一个数，将1左移带代表该数字的那一位，然后与原数进行按位或操作 <br>公式可以概括为：p + (i/8)|(1&lt;&lt;(i%8)) 其中，p表示现在的值，i表示待插入的数 </strong></span></p>
+<h2 id="删除操作"><a href="#删除操作" class="headerlink" title="删除操作"></a>删除操作</h2><p> 删除6</p>
+<p> <img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-96.png" alt=""></p>
+<p> 1左移6位，到达数字6代表的位，然后按位取反，最后与原数按位与</p>
+<p>b[0] = b[0] &amp; (~(1&lt;&lt;6))</p>
+<p>b[0] = b[0] &amp; (~(1&lt;&lt;(i%8)))</p>
+<h2 id="查找操作"><a href="#查找操作" class="headerlink" title="查找操作"></a>查找操作</h2><p>判断3在不在，那么只需判断 b[0] &amp; (1&lt;&lt;3) 如果这个值是0，则不存在，如果是1，就表示存在</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">  <span class="type">int</span> <span class="variable">a</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// a 32 bit </span></span><br><span class="line">  <span class="type">int</span>[] arr = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>]; <span class="comment">// 32bit * 10 -&gt; 320 bits</span></span><br><span class="line">  <span class="comment">// arr[0] int  0 ~ 31</span></span><br><span class="line">  <span class="comment">// arr[1] int 32 ~ 63</span></span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">178</span>; <span class="comment">// 取得178个bit的状态</span></span><br><span class="line">  <span class="comment">// 定位出 下标</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">numIndex</span> <span class="operator">=</span> i / <span class="number">32</span>;</span><br><span class="line">  <span class="comment">// 定位出 位</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">bitIndex</span> <span class="operator">=</span> i % <span class="number">32</span>;</span><br><span class="line">  <span class="comment">// 拿到i位的状态</span></span><br><span class="line">  <span class="type">int</span> <span class="variable">s</span> <span class="operator">=</span> ((arr[numIndex]&gt;&gt;(bitIndex)) &amp; <span class="number">1</span>);</span><br><span class="line">  <span class="comment">// 添加操作</span></span><br><span class="line">  arr[numIndex] = arr[numIndex] | (<span class="number">1</span>&lt;&lt;(bitIndex)); </span><br><span class="line">  i = <span class="number">178</span>;</span><br><span class="line">  <span class="comment">// 删除操作</span></span><br><span class="line">  arr[numIndex] = arr[numIndex] &amp; (~(<span class="number">1</span>&lt;&lt;bitIndex));</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><blockquote>
+<p>优缺点</p>
+</blockquote>
+<p><strong>优点:</strong></p>
+<ul>
+<li>运算效率高，不需要进行比较和移位；</li>
+<li>占用内存少，比如N=10000000；只需占用内存为N/8=1250000Byte=1.25M</li>
+</ul>
+<p><strong>缺点:</strong></p>
+<ul>
+<li>所有的数据不能重复。即不可对重复的数据进行排序和查找。</li>
+<li>只有当数据比较密集时才有优势</li>
+</ul>
+<blockquote>
+<p>快速排序</p>
+</blockquote>
+<ul>
+<li><p>要对0-7内的5个元素 <code>(4,7,2,5,3)</code> 排序（这里假设这些元素没有重复）</p>
+</li>
+<li><p>要表示8个数，我们就只需要8个Bit（1Bytes），开辟1Byte的空间，将这些空间的所有Bit位都置为0，然后将对应位置为1。</p>
+</li>
+<li><p>遍历一遍Bit区域，将该位是一的位的编号输出<code>(2，3，4，5，7)</code>，这样就达到了排序的目的，时间复杂度 $O(n)$</p>
+</li>
+</ul>
+<blockquote>
+<p>快速去重 </p>
+</blockquote>
+<p><strong>20亿个整数中找出不重复的整数的个数，内存不足以容纳这20亿个整数</strong></p>
+<ul>
+<li><p>一个数字的状态只有三种，分别为不存在，只有一个，有重复。</p>
+</li>
+<li><p>需要2bit就可以对一个数字的状态进行存储</p>
+</li>
+<li><p>假设一个数字不存在为<code>00</code>，存在一次<code>01</code>，存在两次及其以上为<code>11</code>。那我们大概需要存储空间2G左右。 </p>
+</li>
+<li><p>把这20亿个数字存储，如果对应的状态位为<code>00</code>，则将其变为<code>01</code>，表示存在一次 </p>
+</li>
+<li><p>如果对应的状态位为<code>01</code>，则将其变为<code>11</code>，表示已经有一个了，即出现多次</p>
+</li>
+<li><p>如果为<code>11</code>，则对应的状态位保持不变，仍表示出现多次 </p>
+</li>
+<li><p>统计状态位为<code>01</code>的个数，就得到了不重复的数字个数，时间复杂度为 $O(n)$</p>
+</li>
+</ul>
+<blockquote>
+<p>快速查找 </p>
+</blockquote>
+<p>int数组中的一个元素是4字节占32位，那么除以32就知道元素的下标，对32求余数（%32）就知道它在哪一位，如果该位是1，则表示存在 </p>
+<blockquote>
+<p> 补充：在没有溢出的前提下</p>
+</blockquote>
+<ul>
+<li><p><code>&lt;&lt;</code> 左移，相当于乘以2的n次方，例如：1&lt;&lt;6  相当于1×64=64，3&lt;&lt;4 相当于3×16=48*</p>
+</li>
+<li><p><code>&gt;&gt;</code> 右移，相当于除以2的n次方，例如：64&gt;&gt;3 相当于64÷8=8</p>
+</li>
+<li><p><code>^</code> 异或，相当于求余数，例如：48^32 相当于 48%32=16</p>
+</li>
+</ul>
+<blockquote>
+<p>总结回顾</p>
+</blockquote>
+<ul>
+<li><p>Bitmap主要用于快速检索关键字状态，通常要求关键字是一个连续的序列（或者关键字是一个连续序列中的大部分）</p>
+</li>
+<li><p>最基本的情况，使用1bit表示一个关键字的状态（可标示两种状态），但根据需要也可以使用2bit（表示4种状态），3bit（表示8种状态）。 </p>
+</li>
+<li><p>Bitmap的主要应用场合：表示连续（或接近连续，即大部分会出现）的关键字序列的状态（状态数/关键字个数 越小越好） </p>
+</li>
+</ul>
+<h1 id="布隆过滤器"><a href="#布隆过滤器" class="headerlink" title="布隆过滤器"></a>布隆过滤器</h1><blockquote>
+<p>突破口</p>
+</blockquote>
+<p>面试遇到黑名单系统、垃圾邮件过滤系统、爬虫的网址判重系统等。又看到<code>系统容忍一定程度的失误率，但是对空间要求严格</code>，可以考虑布隆过滤器</p>
+<p>布隆过滤器是一个很长的二进制向量和一系列随机映射函数。一个布隆过滤器精确的代表一个集合，可以精确判断一个元素是否在一个集合中，缺点是有一定的误识别率和删除困难。</p>
+<h2 id="布隆过滤器-1"><a href="#布隆过滤器-1" class="headerlink" title="布隆过滤器"></a>布隆过滤器</h2><blockquote>
+<p>布隆过滤器的优点：</p>
+</blockquote>
+<ul>
+<li><p>时间复杂度低，增加和查询元素的时间复杂为 $O(N)$ ，（ $N$ 为哈希函数的个数，通常情况比较小）</p>
+</li>
+<li><p>保密性强，布隆过滤器不存储元素本身</p>
+</li>
+<li><p>存储空间小，如果允许存在一定的误判，布隆过滤器是非常节省空间的（相比其他数据结构如Set集合）</p>
+</li>
+</ul>
+<blockquote>
+<p> 布隆过滤器的缺点：</p>
+</blockquote>
+<ul>
+<li>有点一定的误判率，但是可以通过调整参数来降低</li>
+<li>无法获取元素本身</li>
+<li>很难删除元素</li>
+</ul>
+<h2 id="应用场景-1"><a href="#应用场景-1" class="headerlink" title="应用场景"></a>应用场景</h2><p>布隆过滤器可以告诉我们 “某样东西一定不存在或者可能存在”，也就是说<strong>布隆过滤器说这个数不存在则一定不存在，布隆过滤器说这个数存在可能不存在</strong></p>
+<ul>
+<li><p>解决Redis缓存穿透问题 </p>
+</li>
+<li><p>邮件过滤，使用布隆过滤器来做邮件黑名单过滤</p>
+</li>
+<li><p>对爬虫网址进行过滤，爬过的不再爬</p>
+</li>
+<li><p>解决新闻推荐过的不再推荐（类似抖音刷过的往下滑动不再刷到）</p>
+</li>
+<li><p>HBase\RocksDB\LevelDB等数据库内置布隆过滤器，用于判断数据是否存在，可以减少数据库的IO请求</p>
+</li>
+</ul>
+<h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>当一个元素被加入集合时，通过 K 个散列函数将这个元素映射成一个位数组（Bit array）中的 K 个点，把它们置为 1 。</p>
+<p>检索时，只要看看这些点是不是都是1就知道元素是否在集合中；如果这些点有任何一个 0，则被检元素一定不在；如果都是1，则被检元素很可能在（之所以说“可能”是误差的存在）。</p>
+<blockquote>
+<p>数据结构</p>
+</blockquote>
+<p>布隆过滤器是一个很长的二进制向量和一系列随机映射函数</p>
+<p>以Redis中的布隆过滤器实现为例，Redis中的布隆过滤器底层是 <strong>一个大型位数组（二进制数组）+ 多个无偏hash函数</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-97.png" alt=""></p>
+<blockquote>
+<p>空间计算</p>
+</blockquote>
+<p>在布隆过滤器增加元素之前</p>
+<ul>
+<li>需要初始化布隆过滤器的空间，也就是上面说的二进制数组</li>
+<li>需要计算无偏hash函数的个数。</li>
+</ul>
+<p>布隆过滤器提供了两个参数，分别是预计加入元素的大小<code>n</code>，运行的错误率<code>f</code>。</p>
+<p>布隆过滤器中有算法根据这两个参数会计算出二进制数组的大小<code>l</code>，以及无偏hash函数的个数<code>k</code>。</p>
+<p>它们之间的关系比较简单：</p>
+<ul>
+<li>错误率越低，位数组越长，控件占用较大</li>
+<li>错误率越低，无偏hash函数越多，计算耗时较长</li>
+</ul>
+<blockquote>
+<p>增加元素</p>
+</blockquote>
+<p>往布隆过滤器增加元素，添加的key需要根据<code>k</code>个无偏hash函数计算得到多个hash值，</p>
+<p>然后对数组长度进行取模得到数组下标的位置，然后将对应数组下标的位置的值置为<code>1</code></p>
+<ul>
+<li>通过k个无偏hash函数计算得到k个hash值</li>
+<li>依次取模数组长度，得到数组索引</li>
+<li>将计算得到的数组索引下标位置数据修改为<code>1</code></li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-98.png" alt=""></p>
+<blockquote>
+<p>查询元素</p>
+</blockquote>
+<p>布隆过滤器最大的用处就在于判断某样东西一定不存在或者可能存在，而这个就是查询元素的结果。其查询元素的过程如下：</p>
+<ul>
+<li>通过k个无偏hash函数计算得到k个hash值</li>
+<li>依次取模数组长度，得到数组索引</li>
+<li>判断索引处的值是否全部为1，如果全部为1则存在==（这种存在可能是误判）==，如果存在一个0则必定不存在</li>
+</ul>
+<p><strong>关于误判</strong>，其实非常好理解，hash函数在怎么好，也无法完全避免hash冲突，也就是说可能会存在多个元素计算的hash值是相同的，那么它们取模数组长度后的到的数组索引也是相同的，这就是误判的原因。</p>
+<p>例如李子捌和李子柒的hash值取模后得到的数组索引都是1，但其实这里只有李子捌，如果此时判断李子柒在不在这里，误判就出现啦！</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-99.png" alt=""></p>
+<h1 id="一致性哈希算法"><a href="#一致性哈希算法" class="headerlink" title="一致性哈希算法"></a>一致性哈希算法</h1><h2 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h2><p>工程师使用服务器集群设计和实现数据缓存</p>
+<p>1.无论是添加、查询和删除数据，都先将数据的id通过哈希函数转换成哈希值，记为<code>key</code></p>
+<p>2.如果目前机器有<code>N</code>台，则计算<code>key%N</code>的值，这个值就是该数据所属的机器编号，无论添加、删除还是查询，都只在这台机器上运行</p>
+<blockquote>
+<p>该缓存策略存在的问题</p>
+</blockquote>
+<p>如果增加或删除机器，所有的数据不得不根据id重新算哈希值，并将哈希值对新机器数进行取模操作，然后进行大规模数据迁移</p>
+<blockquote>
+<p>改进方案</p>
+</blockquote>
+<p>分布式系统中对象与节点的映射关系，传统方案是使用对象的哈希值，对节点个数取模，再映射到相应编号的节点，</p>
+<p>这种方案在节点个数变动时，绝大多数对象的映射关系会失效而需要迁移 </p>
+<p>而一致性哈希算法中，当节点个数变动时，映射关系失效的对象非常少，迁移成本也非常小。 </p>
+<h2 id="算法原理"><a href="#算法原理" class="headerlink" title="算法原理"></a>算法原理</h2><h3 id="映射方案"><a href="#映射方案" class="headerlink" title="映射方案"></a>映射方案</h3><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-100.png" alt=""></p>
+<blockquote>
+<p>公用哈希函数和哈希环</p>
+</blockquote>
+<p> 设计哈希函数 Hash(key)，要求取值范围为 $[0, 2^{32})$<br>各哈希值在上图 Hash 环上的分布：时钟12点位置为0，按顺时针方向递增，临近12点的左侧位置为 $2^{32}-1$ 。 </p>
+<blockquote>
+<p>节点(Node)映射至哈希环</p>
+</blockquote>
+<p> 如图哈希环上的绿球所示，四个节点 Node A/B/C/D，其 IP 地址或机器名，经过同一个 Hash() 计算的结果，映射到哈希环上。 </p>
+<blockquote>
+<p>对象(Object)映射至哈希环</p>
+</blockquote>
+<p> 如图哈希环上的黄球所示，四个对象 Object A/B/C/D，其键值，经过同一个 Hash() 计算的结果，映射到哈希环上。 </p>
+<blockquote>
+<p>对象(Object)归属节点(Node)</p>
+</blockquote>
+<p>要确定某个对象归属哪个节点，只需从该对象开始，沿着哈希环顺时针方向查找，找到距离最近的节点，Object A/B/C/D 分别映射至 Node A/B/C/D。 </p>
+<h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><blockquote>
+<p>现实场景：服务器缩容时删除节点，或者有节点宕机。</p>
+</blockquote>
+<p>要删除节点 Node C：只会影响Object C，，调整映射至欲删除节点的下一个节点 Node D。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-101.png" alt=""></p>
+<h3 id="增加节点"><a href="#增加节点" class="headerlink" title="增加节点"></a>增加节点</h3><blockquote>
+<p> 现实场景：服务器扩容时增加节点。比如要在 Node B/C 之间增加节点 Node X： </p>
+</blockquote>
+<p> 只会影响Object C，调整映射至新增的节点 Node X。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-102.png" alt=""></p>
+<h3 id="虚拟节点"><a href="#虚拟节点" class="headerlink" title="虚拟节点"></a>虚拟节点</h3><p>节点数越少，越容易出现节点在哈希环上的分布不均匀，导致各节点映射的对象数量严重不均衡(数据倾斜)；相反，节点数越多越密集，数据在哈希环上的分布就越均匀。  但实际部署的物理节点有限，我们可以用有限的物理节点，虚拟出足够多的虚拟节点(Virtual Node)，最终达到数据在哈希环上均匀分布的效果 </p>
+<p>如下图，实际只部署了2个节点 Node A/B，每个节点都复制成3倍，结果看上去是部署了6个节点。<br>可以想象，当复制倍数为 $2^32$ 时，就达到绝对的均匀，通常可取复制倍数为32或更高。</p>
+<p>虚拟节点哈希值的计算方法调整为：<code>对“节点的IP(或机器名)+虚拟节点的序号(1~N)”作哈希</code>。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-103.png" alt=""></p>
+<h2 id="案例演示"><a href="#案例演示" class="headerlink" title="案例演示"></a>案例演示</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConsistentHashing</span> &#123;</span><br><span class="line">    <span class="comment">// 物理节点</span></span><br><span class="line">    <span class="keyword">private</span> Set&lt;String&gt; physicalNodes = <span class="keyword">new</span> <span class="title class_">TreeSet</span>&lt;String&gt;() &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            add(<span class="string">&quot;192.168.1.101&quot;</span>);</span><br><span class="line">            add(<span class="string">&quot;192.168.1.102&quot;</span>);</span><br><span class="line">            add(<span class="string">&quot;192.168.1.103&quot;</span>);</span><br><span class="line">            add(<span class="string">&quot;192.168.1.104&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//虚拟节点</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">VIRTUAL_COPIES</span> <span class="operator">=</span> <span class="number">1048576</span>; <span class="comment">// 物理节点至虚拟节点的复制倍数</span></span><br><span class="line">    <span class="keyword">private</span> TreeMap&lt;Long, String&gt; virtualNodes = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(); <span class="comment">// 哈希值 =&gt; 物理节点</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 32位的 Fowler-Noll-Vo 哈希算法</span></span><br><span class="line">    <span class="comment">// https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Long <span class="title function_">FNVHash</span><span class="params">(String key)</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">p</span> <span class="operator">=</span> <span class="number">16777619</span>;</span><br><span class="line">        <span class="type">Long</span> <span class="variable">hash</span> <span class="operator">=</span> <span class="number">2166136261L</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">0</span>, num = key.length(); idx &lt; num; ++idx) &#123;</span><br><span class="line">            hash = (hash ^ key.charAt(idx)) * p;</span><br><span class="line">        &#125;</span><br><span class="line">        hash += hash &lt;&lt; <span class="number">13</span>;</span><br><span class="line">        hash ^= hash &gt;&gt; <span class="number">7</span>;</span><br><span class="line">        hash += hash &lt;&lt; <span class="number">3</span>;</span><br><span class="line">        hash ^= hash &gt;&gt; <span class="number">17</span>;</span><br><span class="line">        hash += hash &lt;&lt; <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (hash &lt; <span class="number">0</span>) &#123;</span><br><span class="line">            hash = Math.abs(hash);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> hash;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据物理节点，构建虚拟节点映射表</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConsistentHashing</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (String nodeIp : physicalNodes) &#123;</span><br><span class="line">            addPhysicalNode(nodeIp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加物理节点</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">addPhysicalNode</span><span class="params">(String nodeIp)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">0</span>; idx &lt; VIRTUAL_COPIES; ++idx) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">hash</span> <span class="operator">=</span> FNVHash(nodeIp + <span class="string">&quot;#&quot;</span> + idx);</span><br><span class="line">            virtualNodes.put(hash, nodeIp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 删除物理节点</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">removePhysicalNode</span><span class="params">(String nodeIp)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">idx</span> <span class="operator">=</span> <span class="number">0</span>; idx &lt; VIRTUAL_COPIES; ++idx) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">hash</span> <span class="operator">=</span> FNVHash(nodeIp + <span class="string">&quot;#&quot;</span> + idx);</span><br><span class="line">            virtualNodes.remove(hash);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查找对象映射的节点</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getObjectNode</span><span class="params">(String object)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">hash</span> <span class="operator">=</span> FNVHash(object);</span><br><span class="line">        SortedMap&lt;Long, String&gt; tailMap = virtualNodes.tailMap(hash); <span class="comment">// 所有大于 hash 的节点</span></span><br><span class="line">        <span class="type">Long</span> <span class="variable">key</span> <span class="operator">=</span> tailMap.isEmpty() ? virtualNodes.firstKey() : tailMap.firstKey();</span><br><span class="line">        <span class="keyword">return</span> virtualNodes.get(key);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 统计对象与节点的映射关系</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dumpObjectNodeMap</span><span class="params">(String label, <span class="type">int</span> objectMin, <span class="type">int</span> objectMax)</span> &#123;</span><br><span class="line">        <span class="comment">// 统计</span></span><br><span class="line">        Map&lt;String, Integer&gt; objectNodeMap = <span class="keyword">new</span> <span class="title class_">TreeMap</span>&lt;&gt;(); <span class="comment">// IP =&gt; COUNT</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">object</span> <span class="operator">=</span> objectMin; object &lt;= objectMax; ++object) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">nodeIp</span> <span class="operator">=</span> getObjectNode(Integer.toString(object));</span><br><span class="line">            <span class="type">Integer</span> <span class="variable">count</span> <span class="operator">=</span> objectNodeMap.get(nodeIp);</span><br><span class="line">            objectNodeMap.put(nodeIp, (count == <span class="literal">null</span> ? <span class="number">0</span> : count + <span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 打印</span></span><br><span class="line">        <span class="type">double</span> <span class="variable">totalCount</span> <span class="operator">=</span> objectMax - objectMin + <span class="number">1</span>;</span><br><span class="line">        System.out.println(<span class="string">&quot;======== &quot;</span> + label + <span class="string">&quot; ========&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;String, Integer&gt; entry : objectNodeMap.entrySet()) &#123;</span><br><span class="line">            <span class="type">long</span> <span class="variable">percent</span> <span class="operator">=</span> (<span class="type">int</span>) (<span class="number">100</span> * entry.getValue() / totalCount);</span><br><span class="line">            System.out.println(<span class="string">&quot;IP=&quot;</span> + entry.getKey() + <span class="string">&quot;: RATE=&quot;</span> + percent + <span class="string">&quot;%&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ConsistentHashing</span> <span class="variable">ch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConsistentHashing</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始情况</span></span><br><span class="line">        ch.dumpObjectNodeMap(<span class="string">&quot;初始情况&quot;</span>, <span class="number">0</span>, <span class="number">65536</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 删除物理节点</span></span><br><span class="line">        ch.removePhysicalNode(<span class="string">&quot;192.168.1.103&quot;</span>);</span><br><span class="line">        ch.dumpObjectNodeMap(<span class="string">&quot;删除物理节点&quot;</span>, <span class="number">0</span>, <span class="number">65536</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 添加物理节点</span></span><br><span class="line">        ch.addPhysicalNode(<span class="string">&quot;192.168.1.108&quot;</span>);</span><br><span class="line">        ch.dumpObjectNodeMap(<span class="string">&quot;添加物理节点&quot;</span>, <span class="number">0</span>, <span class="number">65536</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="岛问题"><a href="#岛问题" class="headerlink" title="岛问题"></a>岛问题</h1><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-104.png" alt=""></p>
+<h2 id="单线程环境"><a href="#单线程环境" class="headerlink" title="单线程环境"></a>单线程环境</h2><blockquote>
+<p>思路：</p>
+</blockquote>
+<p>从<code>i</code>行<code>j</code>列位置出发，向上下左右四个位置依次去感染</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Islands</span> &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 岛问题</span></span><br><span class="line"><span class="comment">     </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> m</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">countIslands</span><span class="params">(<span class="type">int</span>[][] m)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (m == <span class="literal">null</span> || m[<span class="number">0</span>] == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">int</span> <span class="variable">N</span> <span class="operator">=</span> m.length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">M</span> <span class="operator">=</span> m[<span class="number">0</span>].length;</span><br><span class="line">        <span class="type">int</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; M; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (m[i][j] == <span class="number">1</span>) &#123;</span><br><span class="line">                    res++;</span><br><span class="line">                    <span class="comment">//从当前(i,j)感染并返回结果</span></span><br><span class="line">                    infect(m, i, j, N, M);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 感染函数</span></span><br><span class="line"><span class="comment">     </span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> m 矩阵m</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> i 当前横坐标</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> j 当前纵坐标</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> N 矩阵长</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> M 矩阵宽</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">infect</span><span class="params">(<span class="type">int</span>[][] m, <span class="type">int</span> i, <span class="type">int</span> j, <span class="type">int</span> N, <span class="type">int</span> M)</span> &#123;</span><br><span class="line">        <span class="comment">//违规条件</span></span><br><span class="line">        <span class="keyword">if</span> (i &lt; <span class="number">0</span> || i &gt;= N || j &lt; <span class="number">0</span> || j &gt;= M || m[i][j] != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//当前位置感染</span></span><br><span class="line">        m[i][j] = <span class="number">2</span>;</span><br><span class="line">        <span class="comment">//向右感染</span></span><br><span class="line">        infect(m, i + <span class="number">1</span>, j, N, M);</span><br><span class="line">        <span class="comment">//向左感染</span></span><br><span class="line">        infect(m, i - <span class="number">1</span>, j, N, M);</span><br><span class="line">        <span class="comment">//向下感染</span></span><br><span class="line">        infect(m, i, j + <span class="number">1</span>, N, M);</span><br><span class="line">        <span class="comment">//向上感染</span></span><br><span class="line">        infect(m, i, j - <span class="number">1</span>, N, M);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="多线程环境"><a href="#多线程环境" class="headerlink" title="多线程环境"></a>多线程环境</h2><blockquote>
+<p>进阶问题：给你多个CPU，设计出并行算法解决    <span style='color:red'><strong>提示：并查集思想</strong></span></p>
+</blockquote>
+<p>若是两个CPU情况，分成两部分，记录每个部分的岛屿数量和边界点，对于边界点采用并查集合并，合并同时数量减少。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-105.png" alt=""></p>
+<p>两个CPU分别处理会得到<code>4</code>个岛，但事实上只有一个岛，原本连通的被割断了，所以需要合并操作</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-106.png" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-107.png" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-108.png" alt=""></p>
+<blockquote>
+<p>多个CPU：收集四个边界信息，使用并查集</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-109.png" alt=""></p>
+<h1 id="并查集"><a href="#并查集" class="headerlink" title="并查集"></a>并查集</h1><h2 id="并查集操作"><a href="#并查集操作" class="headerlink" title="并查集操作"></a>并查集操作</h2><blockquote>
+<p>调用两操作总次数超过 $O(N)$，单词调用操作平均时间复杂度为 $O(1)$</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="title function_">isSameSet</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span>; <span class="comment">// 查询a和b是否属于一个集合</span></span><br><span class="line"><span class="keyword">void</span> <span class="title function_">union</span><span class="params">(<span class="type">int</span> a, <span class="type">int</span> b)</span>; <span class="comment">// 把a所在的集合与b所在的集合合并在一起</span></span><br></pre></td></tr></table></figure>
+<h2 id="并查集的初始化"><a href="#并查集的初始化" class="headerlink" title="并查集的初始化"></a>并查集的初始化</h2><ul>
+<li><p>并查集由一群集合构成，最开始所有元素单独构成一个集合</p>
+</li>
+<li><p>当集合中只有一个元素时，其父亲节点指向自身</p>
+</li>
+<li><p>使用 <code>fatherMap</code> 保存并查集中元素的父亲节点，<code>(key,value)</code>表示<code>key</code>节点的 <code>father</code> 是<code>value</code></p>
+</li>
+<li><p><code>rank</code> 是父亲节点所在集合的秩，表示该集合有多少元素，所有节点的 <code>rank</code> 信息保存在 <code>rankMap</code> 中</p>
+</li>
+</ul>
+<h2 id="查找父亲节点"><a href="#查找父亲节点" class="headerlink" title="查找父亲节点"></a>查找父亲节点</h2><p>要查一个节点属于哪个集合，就是差其代表节点（父亲节点root）</p>
+<p>一个节点通过 <code>father</code> 信息逐渐找到最上面的节点，该节点的 <code>father</code> 是自身，则为代表节点</p>
+<h2 id="路径压缩"><a href="#路径压缩" class="headerlink" title="路径压缩"></a>路径压缩</h2><p>通过 <code>father</code> 找到最上层节点后，会把最上层节点到该节点路径上的所有节点的 <code>father</code> 都设置成最上层节点</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/algorithm-20230213-110.png" alt=""></p>
+<h2 id="合并操作"><a href="#合并操作" class="headerlink" title="合并操作"></a>合并操作</h2><p>并查集的合并操作是找到两个集合的代表节点，然后规定将小集合归并到大集合中</p>
+<h2 id="算法实现"><a href="#算法实现" class="headerlink" title="算法实现"></a>算法实现</h2><blockquote>
+<p>并查集结构</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UnionFind</span> &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将集合中的单个元素封装成并查集结构</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">Element</span>&lt;V&gt; &#123;</span><br><span class="line">        <span class="keyword">public</span> V value;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">Element</span><span class="params">(V value)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.value = value;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//并查集操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">UnionFindSet</span>&lt;V&gt; &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 元素 V 所对应的并查集结构</span></span><br><span class="line">        <span class="keyword">public</span> HashMap&lt;V, Element&lt;V&gt;&gt; elementMap;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 存储代表节点  key 的代表元素是 value</span></span><br><span class="line">        <span class="keyword">public</span> HashMap&lt;Element&lt;V&gt;, Element&lt;V&gt;&gt; fatherMap;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 存储代表节点所在集合的秩，代表节点所在集合的元素个数为value</span></span><br><span class="line">        <span class="keyword">public</span> HashMap&lt;Element&lt;V&gt;, Integer&gt; rankMap;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 初始化并查集</span></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">UnionFindSet</span><span class="params">(List&lt;V&gt; list)</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 初始化哈希结构</span></span><br><span class="line">            elementMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            fatherMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            rankMap = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 对于集合中的单个元素封装成并查集结构</span></span><br><span class="line">            <span class="keyword">for</span> (V value : list) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 将value封装成并查集节点</span></span><br><span class="line">                Element&lt;V&gt; element = <span class="keyword">new</span> <span class="title class_">Element</span>&lt;V&gt;(value);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// value--&gt;对应并查集节点</span></span><br><span class="line">                elementMap.put(value, element);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// key的代表节点为value</span></span><br><span class="line">                fatherMap.put(element, element);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// key，代表节点所在集合元素个数初始化成1</span></span><br><span class="line">                rankMap.put(element, <span class="number">1</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 递归找代表节点</span></span><br><span class="line">        <span class="keyword">public</span> Element&lt;V&gt; <span class="title function_">findFather</span><span class="params">(Element&lt;V&gt; element)</span> &#123;</span><br><span class="line"></span><br><span class="line">            Stack&lt;Element&lt;V&gt;&gt; path = <span class="keyword">new</span> <span class="title class_">Stack</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> (element != fatherMap.get(element)) &#123;</span><br><span class="line">                <span class="comment">// 将不是代表节点的元素压栈</span></span><br><span class="line">                path.push(element);</span><br><span class="line">                <span class="comment">// 继续向上查找</span></span><br><span class="line">                element = fatherMap.get(element);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 路径压缩：将element到代表节点所在路径的元素的直接父亲设置成代表节点，降低时间复杂度</span></span><br><span class="line">            <span class="keyword">while</span> (!path.isEmpty()) &#123;</span><br><span class="line">                fatherMap.put(path.pop(), element);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> element;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 判断两集合是不是属于一个集合</span></span><br><span class="line">        <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isSameSet</span><span class="params">(V a, V b)</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果两个集合的代表节点一样，表示在一个集合中，返回true，否则不一样返回false</span></span><br><span class="line">            <span class="keyword">if</span> (elementMap.containsKey(a) &amp;&amp; elementMap.containsKey(b)) &#123;</span><br><span class="line">                <span class="keyword">return</span> findFather(elementMap.get(a)) == findFather(elementMap.get(b));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将a、b所在的两个集合合并</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">union</span><span class="params">(V a, V b)</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (elementMap.containsKey(a) &amp;&amp; elementMap.containsKey(b)) &#123;</span><br><span class="line"></span><br><span class="line">                Element&lt;V&gt; aF = findFather(elementMap.get(a));</span><br><span class="line">                Element&lt;V&gt; bF = findFather(elementMap.get(b));</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 当处于不同集合才能合并</span></span><br><span class="line">                <span class="keyword">if</span> (aF != bF) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// 存储较大的集合</span></span><br><span class="line">                    Element&lt;V&gt; big = rankMap.get(aF) &gt;= rankMap.get(bF) ? aF : bF;</span><br><span class="line">                    <span class="comment">// 存储看较小的集合</span></span><br><span class="line">                    Element&lt;V&gt; small = big == aF ? bF : aF;</span><br><span class="line">                    <span class="comment">// 将较小集合的直接代表节点设置成较大集合的代表节点</span></span><br><span class="line">                    fatherMap.put(small, big);</span><br><span class="line">                    <span class="comment">// 更新秩</span></span><br><span class="line">                    rankMap.put(big, rankMap.get(aF) + rankMap.get(bF));</span><br><span class="line">                    <span class="comment">// 删除小集合</span></span><br><span class="line">                    rankMap.remove(small);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://Cyanzzy.github.io">Cyan Chau</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://cyanzzy.github.io/2023/08/15/%E7%AE%97%E6%B3%95%E6%8F%90%E5%8D%87-1-%E5%93%88%E5%B8%8C%E8%A1%A8%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0/">https://cyanzzy.github.io/2023/08/15/%E7%AE%97%E6%B3%95%E6%8F%90%E5%8D%87-1-%E5%93%88%E5%B8%8C%E8%A1%A8%E4%B8%8E%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/DataStructure/">DataStructure</a></div><div class="post_share"><div class="social-share" data-image="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/08/16/MySQL%E9%AB%98%E7%BA%A7%E7%AF%87-8-%E7%B4%A2%E5%BC%95%E7%9A%84%E5%88%9B%E5%BB%BA%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/" title="MySQL高级篇-8-索引的创建与设计原则"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover13.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">MySQL高级篇-8-索引的创建与设计原则</div></div></a></div><div class="next-post pull-right"><a href="/2023/08/15/JUC-4-LockSupport%E4%B8%8E%E7%BA%BF%E7%A8%8B%E4%B8%AD%E6%96%AD/" title="JUC-4-LockSupport与线程中断"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">JUC-4-LockSupport与线程中断</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/02/13/%E7%AE%97%E6%B3%95%E5%AF%BC%E5%AD%A6-1-%E6%95%B0%E7%BB%84%E7%B1%BB%E5%9E%8B%E9%A2%98%E7%9B%AE/" title="算法导学-1-数组类型题目"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-13</div><div class="title">算法导学-1-数组类型题目</div></div></a></div><div><a href="/2023/02/13/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-1-%E5%B8%B8%E8%A7%81%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/" title="数据结构-1-常见排序算法"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover4.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-13</div><div class="title">数据结构-1-常见排序算法</div></div></a></div><div><a href="/2023/02/14/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-2-%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E7%9A%84%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/" title="数据结构-2-排序算法的简单应用"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover12.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-14</div><div class="title">数据结构-2-排序算法的简单应用</div></div></a></div><div><a href="/2023/02/23/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-3-%E9%93%BE%E8%A1%A8/" title="数据结构-3-链表"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover12.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-23</div><div class="title">数据结构-3-链表</div></div></a></div><div><a href="/2023/03/01/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84-4-%E4%BA%8C%E5%8F%89%E6%A0%91/" title="数据结构-4-二叉树"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-01</div><div class="title">数据结构-4-二叉树</div></div></a></div><div><a href="/2023/02/23/%E7%AE%97%E6%B3%95%E5%AF%BC%E5%AD%A6-2-%E9%93%BE%E8%A1%A8%E7%B1%BB%E5%9E%8B%E9%A2%98%E7%9B%AE/" title="算法导学-2-链表类型题目"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover28.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-23</div><div class="title">算法导学-2-链表类型题目</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Cyan Chau</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/cyanzzy"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/cyanzzy" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2445645059@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to NetTree, articles are here~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E7%BB%93%E6%9E%84-RandomPool"><span class="toc-number">1.</span> <span class="toc-text">自定义结构 RandomPool</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#bitmap"><span class="toc-number">2.</span> <span class="toc-text">bitmap</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E6%93%8D%E4%BD%9C"><span class="toc-number">2.1.</span> <span class="toc-text">添加操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">删除操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E6%93%8D%E4%BD%9C"><span class="toc-number">2.3.</span> <span class="toc-text">查找操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">2.4.</span> <span class="toc-text">应用场景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8"><span class="toc-number">3.</span> <span class="toc-text">布隆过滤器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8-1"><span class="toc-number">3.1.</span> <span class="toc-text">布隆过滤器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF-1"><span class="toc-number">3.2.</span> <span class="toc-text">应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">3.3.</span> <span class="toc-text">实现原理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="toc-number">4.</span> <span class="toc-text">一致性哈希算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">4.1.</span> <span class="toc-text">问题背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="toc-number">4.2.</span> <span class="toc-text">算法原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%A0%E5%B0%84%E6%96%B9%E6%A1%88"><span class="toc-number">4.2.1.</span> <span class="toc-text">映射方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="toc-number">4.2.2.</span> <span class="toc-text">删除节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A2%9E%E5%8A%A0%E8%8A%82%E7%82%B9"><span class="toc-number">4.2.3.</span> <span class="toc-text">增加节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E8%8A%82%E7%82%B9"><span class="toc-number">4.2.4.</span> <span class="toc-text">虚拟节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E6%BC%94%E7%A4%BA"><span class="toc-number">4.3.</span> <span class="toc-text">案例演示</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B2%9B%E9%97%AE%E9%A2%98"><span class="toc-number">5.</span> <span class="toc-text">岛问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%8E%AF%E5%A2%83"><span class="toc-number">5.1.</span> <span class="toc-text">单线程环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%8E%AF%E5%A2%83"><span class="toc-number">5.2.</span> <span class="toc-text">多线程环境</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="toc-number">6.</span> <span class="toc-text">并查集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86%E6%93%8D%E4%BD%9C"><span class="toc-number">6.1.</span> <span class="toc-text">并查集操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">6.2.</span> <span class="toc-text">并查集的初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E7%88%B6%E4%BA%B2%E8%8A%82%E7%82%B9"><span class="toc-number">6.3.</span> <span class="toc-text">查找父亲节点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="toc-number">6.4.</span> <span class="toc-text">路径压缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E6%93%8D%E4%BD%9C"><span class="toc-number">6.5.</span> <span class="toc-text">合并操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E5%AE%9E%E7%8E%B0"><span class="toc-number">6.6.</span> <span class="toc-text">算法实现</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅱ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ">锦囊妙计-系统-面试题 Ⅱ</a><time datetime="2024-05-03T12:29:50.000Z" title="Created 2024-05-03 20:29:50">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅰ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ">锦囊妙计-系统-面试题 Ⅰ</a><time datetime="2024-05-03T12:29:41.000Z" title="Created 2024-05-03 20:29:41">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-阻塞原因"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因">锦囊妙计-Redis-阻塞原因</a><time datetime="2024-05-03T12:29:29.000Z" title="Created 2024-05-03 20:29:29">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-性能优化"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化">锦囊妙计-Redis-性能优化</a><time datetime="2024-05-03T12:29:19.000Z" title="Created 2024-05-03 20:29:19">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-事务"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务">锦囊妙计-Redis-事务</a><time datetime="2024-05-03T12:29:09.000Z" title="Created 2024-05-03 20:29:09">2024-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By Cyan Chau</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container').forEach(node => {
+            if (node.hasAttribute('display')) {
+              btf.wrap(node, 'div', { class: 'mathjax-overflow' })
+            } else {
+              btf.wrap(node, 'span', { class: 'mathjax-overflow' })
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz',
+      appKey: 'mJGX4iHKsi4Cg4wFWtW59koH',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/forbidden.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="30" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start --> <script data-pjax>if(document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    var parent = document.getElementById('recent-posts');
+    var child = '<div class="recent-post-item" style="width:100%;height:auto"><div id="catalog_magnet"><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Language/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">❤ 编程语言 (60)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Technology/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">🧡 技术架构 (135)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Interview/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💛 锦囊妙计 (72)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Algorithm/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💚 编程算法 (36)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><a class="magnet_link_more"  href="https://Cyanzzy.github.io/categories" style="flex:1;text-align: center;margin-bottom: 10px;">查看更多...</a></div></div>';
+    console.log('已挂载magnet')
+    parent.insertAdjacentHTML("afterbegin",child)}
+     </script><style>#catalog_magnet{flex-wrap: wrap;display: flex;width:100%;justify-content:space-between;padding: 10px 10px 0 10px;align-content: flex-start;}.magnet_item{flex-basis: calc(50% - 5px);background: #F2F2F2;margin-bottom: 10px;border-radius: 8px;transition: all 0.2s ease-in-out;}.magnet_item:hover{background: #3ecdf1}.magnet_link_more{color:#555}.magnet_link{color:black}.magnet_link:hover{color:white}@media screen and (max-width: 600px) {.magnet_item {flex-basis: 100%;}}.magnet_link_context{display:flex;padding: 10px;font-size:16px;transition: all 0.2s ease-in-out;}.magnet_link_context:hover{padding: 10px 20px;}</style>
+    <style></style><script data-pjax>
+    function butterfly_categories_card_injector_config(){
+      var parent_div_git = document.getElementById('recent-posts');
+      var item_html = '<style>li.categoryBar-list-item{width:24%;}.categoryBar-list{max-height: 190px;overflow:auto;}.categoryBar-list::-webkit-scrollbar{width:0!important}@media screen and (max-width: 650px){.categoryBar-list{max-height: 160px;}}</style><div class="recent-post-item" style="height:auto;width:100%;padding:0px;"><div id="categoryBar"><ul class="categoryBar-list"><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png);"> <a class="categoryBar-list-link" href="categories/Language/">Language</a><span class="categoryBar-list-count">60</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png);"> <a class="categoryBar-list-link" href="categories/Algorithm/">Algorithm</a><span class="categoryBar-list-count">36</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png);"> <a class="categoryBar-list-link" href="categories/Technology/">Technology</a><span class="categoryBar-list-count">135</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png);"> <a class="categoryBar-list-link" href="categories/Interview/">Interview</a><span class="categoryBar-list-count">72</span><span class="categoryBar-list-descr"></span></li></ul></div></div>';
+      console.log('已挂载butterfly_categories_card')
+      parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+      }
+    if( document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    butterfly_categories_card_injector_config()
+    }
+  </script><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v6.2.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.orgl" style="margin-inline:5px" data-title="主题版本Butterfly_v4.3.1" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a><a class="github-badge" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style="margin-inline:5px" data-title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" title=""><img src="https://img.shields.io/badge/Copyright-BY--NC--SA8%204.0-d42328?style=flat&amp;logo=Claris" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/runtime.js"></script><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/13/Content/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-13</span><a class="blog-slider__title" href="2023/02/13/Content/" alt="">Content</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/13/Content/" alt="">详情   </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/12/搭建博客教程/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-12</span><a class="blog-slider__title" href="2023/02/12/搭建博客教程/" alt="">Tutorials of Blog Based on Hexo Butterfly</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/12/搭建博客教程/" alt="">详情   </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":null,"use":"live2d-widget-model-koharu","display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/"});</script></body></html>

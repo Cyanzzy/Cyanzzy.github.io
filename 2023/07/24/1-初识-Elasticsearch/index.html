@@ -1,0 +1,605 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>1 初识 Elasticsearch | NetTree</title><meta name="author" content="Cyan Chau"><meta name="copyright" content="Cyan Chau"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="ES elasticsearch 的作用  elasticsearch是一款非常强大的开源搜索引擎，具备非常多强大功能，可以帮助我们从海量数据中快速找到需要的内容  在GitHub搜索代码  在电商网站搜索商品  在百度搜索答案  在打车软件搜索附近的车    ELK技术栈  elasticsearch结合kibana、Logstash、Beats，也就是elastic stack（ELK）。被广">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1 初识 Elasticsearch">
+<meta property="og:url" content="https://cyanzzy.github.io/2023/07/24/1-%E5%88%9D%E8%AF%86-Elasticsearch/index.html">
+<meta property="og:site_name" content="NetTree">
+<meta property="og:description" content="ES elasticsearch 的作用  elasticsearch是一款非常强大的开源搜索引擎，具备非常多强大功能，可以帮助我们从海量数据中快速找到需要的内容  在GitHub搜索代码  在电商网站搜索商品  在百度搜索答案  在打车软件搜索附近的车    ELK技术栈  elasticsearch结合kibana、Logstash、Beats，也就是elastic stack（ELK）。被广">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg">
+<meta property="article:published_time" content="2023-07-24T09:01:21.000Z">
+<meta property="article:modified_time" content="2024-05-20T14:40:24.352Z">
+<meta property="article:author" content="Cyan Chau">
+<meta property="article:tag" content="Elasticsearch">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg"><link rel="shortcut icon" href="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png"><link rel="canonical" href="https://cyanzzy.github.io/2023/07/24/1-%E5%88%9D%E8%AF%86-Elasticsearch/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":230},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-right"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '1 初识 Elasticsearch',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-20 22:40:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css"/>
+<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\A";
+  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+<link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css"><link rel="stylesheet" href="/css/runtime.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="NetTree"><span class="site-name">NetTree</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">1 初识 Elasticsearch</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-07-24T09:01:21.000Z" title="Created 2023-07-24 17:01:21">2023-07-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-05-20T14:40:24.352Z" title="Updated 2024-05-20 22:40:24">2024-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Technology/">Technology</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">2.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>9min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="1 初识 Elasticsearch"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="ES"><a href="#ES" class="headerlink" title="ES"></a>ES</h1><blockquote>
+<p>elasticsearch 的作用</p>
+</blockquote>
+<p>elasticsearch是一款非常强大的开源搜索引擎，具备非常多强大功能，可以帮助我们从海量数据中快速找到需要的内容</p>
+<ul>
+<li><p>在GitHub搜索代码</p>
+</li>
+<li><p>在电商网站搜索商品</p>
+</li>
+<li><p>在百度搜索答案</p>
+</li>
+<li><p>在打车软件搜索附近的车</p>
+</li>
+</ul>
+<blockquote>
+<p>ELK技术栈</p>
+</blockquote>
+<p>elasticsearch结合kibana、Logstash、Beats，也就是elastic stack（ELK）。被广泛应用在日志数据分析、实时监控等领域：</p>
+<p>而elasticsearch是elastic stack的核心，负责存储、搜索、分析数据。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-01.png" alt=""></p>
+<blockquote>
+<p>elasticsearch和lucene</p>
+</blockquote>
+<p>elasticsearch底层是基于<strong>lucene</strong>来实现的。</p>
+<p><strong>Lucene</strong>是一个Java语言的搜索引擎类库，是Apache公司的顶级项目，由DougCutting于1999年研发。官网地址：<a target="_blank" rel="noopener" href="https://lucene.apache.org/">https://lucene.apache.org/</a> 。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-02.png" alt=""></p>
+<p><strong>elasticsearch</strong>的发展历史：</p>
+<ul>
+<li>2004年Shay Banon基于Lucene开发了Compass</li>
+<li>2010年Shay Banon 重写了Compass，取名为Elasticsearch。</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-03.png" alt=""></p>
+<blockquote>
+<p>总结</p>
+</blockquote>
+<p>什么是<strong>elasticsearch</strong>？</p>
+<ul>
+<li>一个开源的分布式搜索引擎，可以用来实现搜索、日志统计、分析、系统监控等功能</li>
+</ul>
+<p>什么是<strong>elastic stack（ELK）</strong>？</p>
+<ul>
+<li>是以elasticsearch为核心的技术栈，包括beats、Logstash、kibana、elasticsearch</li>
+</ul>
+<p>什么是<strong>Lucene</strong>？</p>
+<ul>
+<li>是Apache的开源搜索引擎类库，提供了搜索引擎的核心API</li>
+</ul>
+<h1 id="倒排索引"><a href="#倒排索引" class="headerlink" title="倒排索引"></a>倒排索引</h1><p>倒排索引的概念是基于MySQL这样的正向索引而言的。</p>
+<blockquote>
+<p>正向索引</p>
+</blockquote>
+<p>那么什么是正向索引呢？例如给下表（tb_goods）中的id创建索引：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-04.png" alt=""></p>
+<p>如果是根据id查询，那么直接走索引，查询速度非常快。</p>
+<p>但如果是基于title做模糊查询，只能是逐行扫描数据，流程如下：</p>
+<p>1）用户搜索数据，条件是title符合<code>&quot;%手机%&quot;</code></p>
+<p>2）逐行获取数据，比如id为1的数据</p>
+<p>3）判断数据中的title是否符合用户搜索条件</p>
+<p>4）如果符合则放入结果集，不符合则丢弃。回到步骤1</p>
+<p>逐行扫描，也就是全表扫描，随着数据量增加，其查询效率也会越来越低。当数据量达到数百万时，就是一场灾难。</p>
+<blockquote>
+<p>倒排索引</p>
+</blockquote>
+<ul>
+<li><strong>文档</strong>（<code>Document</code>）：用来搜索的数据，其中的每一条数据就是一个文档。例如一个网页、一个商品信息</li>
+<li><strong>词条</strong>（<code>Term</code>）：对文档数据或用户搜索数据，利用某种算法分词，得到的具备含义的词语就是词条。例如：我是中国人，就可以分为：我、是、中国人、中国、国人这样的几个词条</li>
+</ul>
+<p><strong>创建倒排索引</strong>是对正向索引的一种特殊处理，流程如下：</p>
+<ul>
+<li>将每一个文档的数据利用算法分词，得到一个个词条</li>
+<li>创建表，每行数据包括词条、词条所在文档id、位置等信息</li>
+<li>因为词条唯一性，可以给词条创建索引，例如hash表结构索引</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-05.png" alt=""></p>
+<p>倒排索引的<strong>搜索流程</strong>如下（以搜索”华为手机”为例）：</p>
+<p>1）用户输入条件<code>&quot;华为手机&quot;</code>进行搜索。</p>
+<p>2）对用户输入内容<strong>分词</strong>，得到词条：<code>华为</code>、<code>手机</code>。</p>
+<p>3）拿着词条在倒排索引中查找，可以得到包含词条的文档id：1、2、3。</p>
+<p>4）拿着文档id到正向索引中查找具体文档。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-06.png" alt=""></p>
+<p>虽然要先查询倒排索引，再查询倒排索引，但是无论是词条、还是文档id都建立了索引，查询速度非常快！无需全表扫描。</p>
+<blockquote>
+<p>正向和倒排</p>
+</blockquote>
+<p>那么为什么一个叫做正向索引，一个叫做倒排索引呢？</p>
+<ul>
+<li><p><strong>正向索引</strong>是最传统的，根据id索引的方式。但根据词条查询时，必须先逐条获取每个文档，然后判断文档中是否包含所需要的词条，是<strong>根据文档找词条的过程</strong>。</p>
+</li>
+<li><p>而<strong>倒排索引</strong>则相反，是先找到用户要搜索的词条，根据词条得到保护词条的文档的id，然后根据id获取文档。是<strong>根据词条找文档的过程</strong>。</p>
+</li>
+</ul>
+<blockquote>
+<p>两者方式的优缺点 </p>
+</blockquote>
+<p><strong>正向索引</strong>：</p>
+<p>优点：</p>
+<ul>
+<li>可以给多个字段创建索引</li>
+<li>根据索引字段搜索、排序速度非常快</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>根据非索引字段，或者索引字段中的部分词条查找时，只能全表扫描。</li>
+</ul>
+<p><strong>倒排索引</strong>：</p>
+<p>优点：</p>
+<ul>
+<li>根据词条搜索、模糊搜索时，速度非常快</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>只能给词条创建索引，而不是字段</li>
+<li>无法根据字段做排序</li>
+</ul>
+<h1 id="相关术语"><a href="#相关术语" class="headerlink" title="相关术语"></a>相关术语</h1><blockquote>
+<p>文档和字段</p>
+</blockquote>
+<p>elasticsearch是面向<strong>文档（Document）</strong>存储的，可以是数据库中的一条商品数据，一个订单信息。文档数据会被序列化为json格式后存储在elasticsearch中：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-07.png" alt=""></p>
+<p>而Json文档中往往包含很多的<strong>字段（Field）</strong>，类似于数据库中的列。</p>
+<blockquote>
+<p>索引和映射</p>
+</blockquote>
+<p><strong>索引（Index）</strong>，就是相同类型的文档的集合。</p>
+<ul>
+<li>所有用户文档，就可以组织在一起，称为用户的索引；</li>
+<li>所有商品的文档，可以组织在一起，称为商品的索引；</li>
+<li>所有订单的文档，可以组织在一起，称为订单的索引；</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-08.png" alt=""></p>
+<p>因此，我们可以把索引当做是数据库中的表。</p>
+<p>数据库的表会有约束信息，用来定义表的结构、字段的名称、类型等信息。因此，索引库中就有<strong>映射（mapping）</strong>，是索引中文档的字段约束信息，类似表的结构约束。</p>
+<blockquote>
+<p>mysql与elasticsearch</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th><strong>MySQL</strong></th>
+<th><strong>Elasticsearch</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table</td>
+<td>Index</td>
+<td>索引(index)，就是文档的集合，类似数据库的表(table)</td>
+</tr>
+<tr>
+<td>Row</td>
+<td>Document</td>
+<td>文档（Document），就是一条条的数据，类似数据库中的行（Row），文档都是JSON格式</td>
+</tr>
+<tr>
+<td>Column</td>
+<td>Field</td>
+<td>字段（Field），就是JSON文档中的字段，类似数据库中的列（Column）</td>
+</tr>
+<tr>
+<td>Schema</td>
+<td>Mapping</td>
+<td>Mapping（映射）是索引中文档的约束，例如字段类型约束。类似数据库的表结构（Schema）</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>DSL</td>
+<td>DSL是elasticsearch提供的JSON风格的请求语句，用来操作elasticsearch，实现CRUD</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li><p><strong>Mysql</strong>：擅长事务类型操作，可以确保数据的安全和一致性</p>
+</li>
+<li><p><strong>Elasticsearch</strong>：擅长海量数据的搜索、分析、计算</p>
+</li>
+</ul>
+<p>因此在企业中，往往是两者结合使用：</p>
+<ul>
+<li>对安全性要求较高的写操作，使用mysql实现</li>
+<li>对查询性能要求较高的搜索需求，使用elasticsearch实现</li>
+<li>两者再基于某种方式，实现数据的同步，保证一致性</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/04-es-20230706-09.png" alt=""></p>
+<h1 id="安装es、kibana"><a href="#安装es、kibana" class="headerlink" title="安装es、kibana"></a>安装es、kibana</h1><h2 id="部署单点ES"><a href="#部署单点ES" class="headerlink" title="部署单点ES"></a>部署单点ES</h2><blockquote>
+<p>创建网络</p>
+</blockquote>
+<p>因为我们还需要部署kibana容器，因此需要让es和kibana容器互联。这里先创建一个网络</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker network create es-net</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>加载镜像</p>
+</blockquote>
+<p>将es.tar镜像tar包传入服务器，运行加载命令，kibana.tar同样如此</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导入数据</span></span><br><span class="line">docker load -i es.tar</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>运行</p>
+</blockquote>
+<p>运行docker命令，部署单点es</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">	--name es \</span><br><span class="line">    -e <span class="string">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span> \</span><br><span class="line">    -e <span class="string">&quot;discovery.type=single-node&quot;</span> \</span><br><span class="line">    -v es-data:/usr/share/elasticsearch/data \</span><br><span class="line">    -v es-plugins:/usr/share/elasticsearch/plugins \</span><br><span class="line">    --privileged \</span><br><span class="line">    --network es-net \</span><br><span class="line">    -p 9200:9200 \</span><br><span class="line">    -p 9300:9300 \</span><br><span class="line">elasticsearch:7.12.1</span><br></pre></td></tr></table></figure>
+<p>命令解释：</p>
+<ul>
+<li><code>-e &quot;cluster.name=es-docker-cluster&quot;</code>：设置集群名称</li>
+<li><code>-e &quot;http.host=0.0.0.0&quot;</code>：监听的地址，可以外网访问</li>
+<li><code>-e &quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</code>：内存大小</li>
+<li><code>-e &quot;discovery.type=single-node&quot;</code>：非集群模式</li>
+<li><code>-v es-data:/usr/share/elasticsearch/data</code>：挂载逻辑卷，绑定es的数据目录</li>
+<li><code>-v es-logs:/usr/share/elasticsearch/logs</code>：挂载逻辑卷，绑定es的日志目录</li>
+<li><code>-v es-plugins:/usr/share/elasticsearch/plugins</code>：挂载逻辑卷，绑定es的插件目录</li>
+<li><code>--privileged</code>：授予逻辑卷访问权</li>
+<li><code>--network es-net</code> ：加入一个名为es-net的网络中</li>
+<li><code>-p 9200:9200</code>：端口映射配置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps </span><br></pre></td></tr></table></figure>
+<p>在浏览器中输入：<a target="_blank" rel="noopener" href="http://192.168.150.101:9200">http://192.168.150.101:9200</a> 即可看到elasticsearch的响应结果</p>
+<h2 id="部署Kibana"><a href="#部署Kibana" class="headerlink" title="部署Kibana"></a>部署Kibana</h2><blockquote>
+<p>部署</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run -d \</span><br><span class="line">--name kibana \</span><br><span class="line">-e ELASTICSEARCH_HOSTS=http://es:9200 \</span><br><span class="line">--network=es-net \</span><br><span class="line">-p 5601:5601  \</span><br><span class="line">kibana:7.12.1</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>--network es-net</code> ：加入一个名为es-net的网络中，与elasticsearch在同一个网络中</li>
+<li><code>-e ELASTICSEARCH_HOSTS=http://es:9200&quot;</code>：设置elasticsearch的地址，因为kibana已经与elasticsearch在一个网络，因此可以用容器名直接访问elasticsearch</li>
+<li><code>-p 5601:5601</code>：端口映射配置</li>
+</ul>
+<p>kibana启动一般比较慢，需要多等待一会，可以通过命令查看运行日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f kibana</span><br></pre></td></tr></table></figure>
+<p>此时，在浏览器输入地址访问：<a href="http://192.168.150.101:5601，即可看到结果">http://192.168.150.101:5601，即可看到结果</a></p>
+<h2 id="安装IK分词器"><a href="#安装IK分词器" class="headerlink" title="安装IK分词器"></a>安装IK分词器</h2><p>es在创建倒排索引时需要对文档分词;在搜索时，需要对用户输入内容分词。但默认的分词规则对中文处理并不友好。</p>
+<blockquote>
+<p> 在线安装</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入容器内部</span></span><br><span class="line">docker <span class="built_in">exec</span> -it elasticsearch /bin/bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线下载并安装</span></span><br><span class="line">./bin/elasticsearch-plugin  install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v7.12.1/elasticsearch-analysis-ik-7.12.1.zip</span><br><span class="line"></span><br><span class="line"><span class="comment">#退出</span></span><br><span class="line"><span class="built_in">exit</span></span><br><span class="line"><span class="comment">#重启容器</span></span><br><span class="line">docker restart elasticsearch</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>离线安装</p>
+</blockquote>
+<p><strong>查看数据卷目录</strong></p>
+<p>安装插件需要知道elasticsearch的plugins目录位置，而我们用了数据卷挂载，因此需要查看elasticsearch的数据卷目录，通过下面命令查看:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume inspect es-plugins</span><br></pre></td></tr></table></figure>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;CreatedAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2023-07-16T17:31:26+08:00&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Driver&quot;</span><span class="punctuation">:</span> <span class="string">&quot;local&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Labels&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Mountpoint&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/var/lib/docker/volumes/es-plugins/_data&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;es-plugins&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Options&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;Scope&quot;</span><span class="punctuation">:</span> <span class="string">&quot;local&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+<p>说明plugins目录被挂载到了：<code>/var/lib/docker/volumes/es-plugins/_data</code>这个目录中。</p>
+<p><strong>上传本地ik分词器到es容器的插件数据卷中</strong></p>
+<p><strong>重启docker</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 重启容器</span></span><br><span class="line">docker restart es</span><br><span class="line"><span class="comment"># 查看es日志</span></span><br><span class="line">docker logs -f es</span><br></pre></td></tr></table></figure>
+<p><strong>测试：</strong></p>
+<p>IK分词器包含两种模式：</p>
+<ul>
+<li><p><code>ik_smart</code>：最少切分</p>
+</li>
+<li><p><code>ik_max_word</code>：最细切分</p>
+</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 测试分词器</span><br><span class="line">POST /_analyze</span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;阿里程序员学习Java太棒了&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;analyzer&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ik_smart&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><blockquote>
+<p>分词器作用</p>
+</blockquote>
+<ul>
+<li>创建倒排索引时对文档分词</li>
+<li>用户搜索时，对输入的内容分词</li>
+</ul>
+<blockquote>
+<p>IK分词器模式</p>
+</blockquote>
+<ul>
+<li>ik_smart：智能切分，粗粒度</li>
+<li>ik_max_word：最细切分，细粒度</li>
+</ul>
+<blockquote>
+<p>IK分词器拓展词库</p>
+</blockquote>
+<p>要拓展ik分词器的词库，只需要修改一个ik分词器目录中的config目录中的IkAnalyzer.cfg.xml文件：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">properties</span> <span class="keyword">SYSTEM</span> <span class="string">&quot;http://java.sun.com/dtd/properties.dtd&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">comment</span>&gt;</span>IK Analyzer 扩展配置<span class="tag">&lt;/<span class="name">comment</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--用户可以在这里配置自己的扩展字典 *** 添加扩展词典--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">&quot;ext_dict&quot;</span>&gt;</span>ext.dic<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在名为ext.dic的文件中，添加想要拓展的词语即可 </p>
+<blockquote>
+<p>IK分词器停用词库</p>
+</blockquote>
+<p>要禁用某些敏感词条，只需要修改一个ik分词器目录中的config目录中的IkAnalyzer.cfg.xml文件  </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">properties</span> <span class="keyword">SYSTEM</span> <span class="string">&quot;http://java.sun.com/dtd/properties.dtd&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">comment</span>&gt;</span>IK Analyzer 扩展配置<span class="tag">&lt;/<span class="name">comment</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--用户可以在这里配置自己的扩展字典--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">&quot;ext_dict&quot;</span>&gt;</span>ext.dic<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">         <span class="comment">&lt;!--用户可以在这里配置自己的扩展停止词字典  *** 添加停用词词典--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">entry</span> <span class="attr">key</span>=<span class="string">&quot;ext_stopwords&quot;</span>&gt;</span>stopword.dic<span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在名为stopword.dic的文件中，添加想要拓展的词语即可  </p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://Cyanzzy.github.io">Cyan Chau</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://cyanzzy.github.io/2023/07/24/1-%E5%88%9D%E8%AF%86-Elasticsearch/">https://cyanzzy.github.io/2023/07/24/1-%E5%88%9D%E8%AF%86-Elasticsearch/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Elasticsearch/">Elasticsearch</a></div><div class="post_share"><div class="social-share" data-image="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover14.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/07/24/2-%E7%B4%A2%E5%BC%95%E5%BA%93%E6%93%8D%E4%BD%9C/" title="2 索引库操作"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">2 索引库操作</div></div></a></div><div class="next-post pull-right"><a href="/2023/07/23/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-22-%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F/" title="设计模式-22-责任链模式"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover25.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">设计模式-22-责任链模式</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/07/16/%E4%BC%81%E4%B8%9A%E5%BC%80%E5%8F%91%E8%BF%9B%E9%98%B6-6-Elasticsearch/" title="企业开发进阶-6-Elasticsearch"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover23.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-16</div><div class="title">企业开发进阶-6-Elasticsearch</div></div></a></div><div><a href="/2023/07/24/13-ES%E9%9B%86%E7%BE%A4/" title="13 ES集群"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover23.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">13 ES集群</div></div></a></div><div><a href="/2023/07/24/11-%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8/" title="11 自动补全"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover22.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">11 自动补全</div></div></a></div><div><a href="/2023/07/24/10-%E6%95%B0%E6%8D%AE%E8%81%9A%E5%90%88/" title="10 数据聚合"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover10.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">10 数据聚合</div></div></a></div><div><a href="/2023/07/24/12-%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" title="12 数据同步"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">12 数据同步</div></div></a></div><div><a href="/2023/07/24/2-%E7%B4%A2%E5%BC%95%E5%BA%93%E6%93%8D%E4%BD%9C/" title="2 索引库操作"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-07-24</div><div class="title">2 索引库操作</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Cyan Chau</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/cyanzzy"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/cyanzzy" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2445645059@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to NetTree, articles are here~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ES"><span class="toc-number">1.</span> <span class="toc-text">ES</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%80%92%E6%8E%92%E7%B4%A2%E5%BC%95"><span class="toc-number">2.</span> <span class="toc-text">倒排索引</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E6%9C%AF%E8%AF%AD"><span class="toc-number">3.</span> <span class="toc-text">相关术语</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%89%E8%A3%85es%E3%80%81kibana"><span class="toc-number">4.</span> <span class="toc-text">安装es、kibana</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E5%8D%95%E7%82%B9ES"><span class="toc-number">4.1.</span> <span class="toc-text">部署单点ES</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2Kibana"><span class="toc-number">4.2.</span> <span class="toc-text">部署Kibana</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85IK%E5%88%86%E8%AF%8D%E5%99%A8"><span class="toc-number">4.3.</span> <span class="toc-text">安装IK分词器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅱ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ">锦囊妙计-系统-面试题 Ⅱ</a><time datetime="2024-05-03T12:29:50.000Z" title="Created 2024-05-03 20:29:50">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅰ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ">锦囊妙计-系统-面试题 Ⅰ</a><time datetime="2024-05-03T12:29:41.000Z" title="Created 2024-05-03 20:29:41">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-阻塞原因"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因">锦囊妙计-Redis-阻塞原因</a><time datetime="2024-05-03T12:29:29.000Z" title="Created 2024-05-03 20:29:29">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-性能优化"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化">锦囊妙计-Redis-性能优化</a><time datetime="2024-05-03T12:29:19.000Z" title="Created 2024-05-03 20:29:19">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-事务"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务">锦囊妙计-Redis-事务</a><time datetime="2024-05-03T12:29:09.000Z" title="Created 2024-05-03 20:29:09">2024-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By Cyan Chau</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container').forEach(node => {
+            if (node.hasAttribute('display')) {
+              btf.wrap(node, 'div', { class: 'mathjax-overflow' })
+            } else {
+              btf.wrap(node, 'span', { class: 'mathjax-overflow' })
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz',
+      appKey: 'mJGX4iHKsi4Cg4wFWtW59koH',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/forbidden.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="30" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start --> <script data-pjax>if(document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    var parent = document.getElementById('recent-posts');
+    var child = '<div class="recent-post-item" style="width:100%;height:auto"><div id="catalog_magnet"><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Language/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">❤ 编程语言 (60)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Technology/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">🧡 技术架构 (135)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Interview/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💛 锦囊妙计 (72)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Algorithm/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💚 编程算法 (36)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><a class="magnet_link_more"  href="https://Cyanzzy.github.io/categories" style="flex:1;text-align: center;margin-bottom: 10px;">查看更多...</a></div></div>';
+    console.log('已挂载magnet')
+    parent.insertAdjacentHTML("afterbegin",child)}
+     </script><style>#catalog_magnet{flex-wrap: wrap;display: flex;width:100%;justify-content:space-between;padding: 10px 10px 0 10px;align-content: flex-start;}.magnet_item{flex-basis: calc(50% - 5px);background: #F2F2F2;margin-bottom: 10px;border-radius: 8px;transition: all 0.2s ease-in-out;}.magnet_item:hover{background: #3ecdf1}.magnet_link_more{color:#555}.magnet_link{color:black}.magnet_link:hover{color:white}@media screen and (max-width: 600px) {.magnet_item {flex-basis: 100%;}}.magnet_link_context{display:flex;padding: 10px;font-size:16px;transition: all 0.2s ease-in-out;}.magnet_link_context:hover{padding: 10px 20px;}</style>
+    <style></style><script data-pjax>
+    function butterfly_categories_card_injector_config(){
+      var parent_div_git = document.getElementById('recent-posts');
+      var item_html = '<style>li.categoryBar-list-item{width:24%;}.categoryBar-list{max-height: 190px;overflow:auto;}.categoryBar-list::-webkit-scrollbar{width:0!important}@media screen and (max-width: 650px){.categoryBar-list{max-height: 160px;}}</style><div class="recent-post-item" style="height:auto;width:100%;padding:0px;"><div id="categoryBar"><ul class="categoryBar-list"><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png);"> <a class="categoryBar-list-link" href="categories/Language/">Language</a><span class="categoryBar-list-count">60</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png);"> <a class="categoryBar-list-link" href="categories/Algorithm/">Algorithm</a><span class="categoryBar-list-count">36</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png);"> <a class="categoryBar-list-link" href="categories/Technology/">Technology</a><span class="categoryBar-list-count">135</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png);"> <a class="categoryBar-list-link" href="categories/Interview/">Interview</a><span class="categoryBar-list-count">72</span><span class="categoryBar-list-descr"></span></li></ul></div></div>';
+      console.log('已挂载butterfly_categories_card')
+      parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+      }
+    if( document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    butterfly_categories_card_injector_config()
+    }
+  </script><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v6.2.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.orgl" style="margin-inline:5px" data-title="主题版本Butterfly_v4.3.1" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a><a class="github-badge" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style="margin-inline:5px" data-title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" title=""><img src="https://img.shields.io/badge/Copyright-BY--NC--SA8%204.0-d42328?style=flat&amp;logo=Claris" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/runtime.js"></script><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/13/Content/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-13</span><a class="blog-slider__title" href="2023/02/13/Content/" alt="">Content</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/13/Content/" alt="">详情   </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/12/搭建博客教程/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-12</span><a class="blog-slider__title" href="2023/02/12/搭建博客教程/" alt="">Tutorials of Blog Based on Hexo Butterfly</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/12/搭建博客教程/" alt="">详情   </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":null,"use":"live2d-widget-model-koharu","display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/"});</script></body></html>

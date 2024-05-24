@@ -1,0 +1,673 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>Java8-4-Stream API | NetTree</title><meta name="author" content="Cyan Chau"><meta name="copyright" content="Cyan Chau"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="Stream API 提供了一种高效且易于使用的处理数据的方式， Java 8 的 Stream 使用函数式编程模式，可以用来对集合或数组进行链状流式的操作   概述 Stream  Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列。    Stream 自己 不会存储元素。  Stream 不会改变源对象。相反，他们会返回一个持有结果的新 Stream  Stream 操">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java8-4-Stream API">
+<meta property="og:url" content="https://cyanzzy.github.io/2023/03/17/Java8-4-Stream-API/index.html">
+<meta property="og:site_name" content="NetTree">
+<meta property="og:description" content="Stream API 提供了一种高效且易于使用的处理数据的方式， Java 8 的 Stream 使用函数式编程模式，可以用来对集合或数组进行链状流式的操作   概述 Stream  Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列。    Stream 自己 不会存储元素。  Stream 不会改变源对象。相反，他们会返回一个持有结果的新 Stream  Stream 操">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover9.png">
+<meta property="article:published_time" content="2023-03-17T13:14:32.000Z">
+<meta property="article:modified_time" content="2024-05-20T14:40:24.332Z">
+<meta property="article:author" content="Cyan Chau">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover9.png"><link rel="shortcut icon" href="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png"><link rel="canonical" href="https://cyanzzy.github.io/2023/03/17/Java8-4-Stream-API/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":230},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-right"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java8-4-Stream API',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-20 22:40:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css"/>
+<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\A";
+  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+<link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css"><link rel="stylesheet" href="/css/runtime.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover9.png')"><nav id="nav"><span id="blog-info"><a href="/" title="NetTree"><span class="site-name">NetTree</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Java8-4-Stream API</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-03-17T13:14:32.000Z" title="Created 2023-03-17 21:14:32">2023-03-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-05-20T14:40:24.332Z" title="Updated 2024-05-20 22:40:24">2024-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Language/">Language</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">3.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>13min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Java8-4-Stream API"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>Stream API 提供了一种高效且易于使用的处理数据的方式， Java 8 的 Stream 使用函数式编程模式，可以用来对集合或数组进行链状流式的操作  </p>
+<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><blockquote>
+<p>Stream</p>
+</blockquote>
+<p>Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列。  </p>
+<ul>
+<li>Stream 自己 <strong>不会存储元素</strong>。 </li>
+<li>Stream <strong>不会改变源对象</strong>。相反，他们会返回一个持有结果的新 Stream </li>
+<li>Stream 操作是延迟执行的。这意味着他们会等到需要结果的时候才执行 </li>
+</ul>
+<h1 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h1><h2 id="创建操作"><a href="#创建操作" class="headerlink" title="创建操作"></a>创建操作</h2><p>一个数据源（如：集合、数组），获取一个流  </p>
+<blockquote>
+<p>获取流</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default Stream stream()</code></td>
+<td>返回一个顺序流</td>
+</tr>
+<tr>
+<td><code>default Stream parallelStream()</code></td>
+<td>返回一个并行流</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>数组创建流</p>
+</blockquote>
+<p> Java8 中的 Arrays 的静态方法 stream() 可以获取数组流 </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>static&lt;T&gt;  Stream&lt;T&gt; stream(T[] array)</code></td>
+<td>返回一个流</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p> 数组：<code>Arrays.stream(数组)</code> 或使用 <code>Stream.of()</code> 创建 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Integer[] arr = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">Stream&lt;Integer&gt; stream = Arrays.stream(arr);</span><br><span class="line">Stream&lt;Integer&gt; stream2 = Stream.of(arr);</span><br></pre></td></tr></table></figure>
+<p> 单列集合：<code>集合对象.stream()</code> </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">List&lt;Author&gt; authors = getAuthors();</span><br><span class="line">Stream&lt;Author&gt;stream = authors.stream();</span><br></pre></td></tr></table></figure>
+<p> 双列集合：转换成单列集合再创建 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Map&lt;String, Integer&gt; map = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">map.put(<span class="string">&quot;Cyan&quot;</span>, <span class="number">100</span>);</span><br><span class="line">map.put(<span class="string">&quot;Jack&quot;</span>, <span class="number">200</span>);</span><br><span class="line"></span><br><span class="line">Stream&lt;Map.Entry&lt;String, Integer&gt;&gt; stream = map.entrySet().stream();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p> 值创建流 </p>
+</blockquote>
+<p> 使用静态方法 Stream.of()，通过显示值创建一个流。它可以接收任意数量的参数。 </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>public static&lt;T&gt; Stream&lt;T&gt; of(T... values)</code></td>
+<td>返回一个流</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p> 函数创建流</p>
+</blockquote>
+<p> 使用静态方法 Stream.iterate() 和 Stream.generate()，创建无限流 </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>public static&lt;T&gt; Stream&lt;T&gt; iterate(final T seed, final UnaryOperator f)</code></td>
+<td>迭代</td>
+</tr>
+<tr>
+<td><code>public static&lt;T&gt; Stream&lt;T&gt; generate(Supplier&lt;T&gt; s)</code></td>
+<td>生成</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="中间操作"><a href="#中间操作" class="headerlink" title="中间操作"></a>中间操作</h2><p> 一个中间操作链，对数据源的数据进行处理。多个中间操作可以连接起来形成一个流水线，除非流水线上触发终止操作，否则中间操作不会执行任何的处理！而在终止操作时一次性全部处理，称为“惰性求值” </p>
+<blockquote>
+<p>筛选与切片 </p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filter(Predicate p)</code></td>
+<td>接收 Lambda ， 从流中<strong>排除</strong>某些元素。</td>
+</tr>
+<tr>
+<td><code>distinct()</code></td>
+<td>筛选，通过流所生成元素的 hashCode() 和 equals() <strong>去除重复</strong>元素</td>
+</tr>
+<tr>
+<td><code>limit(long maxSize)</code></td>
+<td><strong>截断</strong>流，使其元素不超过给定数量。</td>
+</tr>
+<tr>
+<td><code>skip(long n)</code></td>
+<td><strong>跳过</strong>元素，返回一个扔掉了前 n 个元素的流。若流中元素不足 n 个，则返回一个空流。与 limit(n) 互补</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="filter"><a href="#filter" class="headerlink" title="filter"></a>filter</h3><p> 对流中的元素进行条件过滤，符合过滤条件的才能继续留在流中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 匿名内部类写法</span></span><br><span class="line">authors.stream().</span><br><span class="line">       .filter(<span class="keyword">new</span> <span class="title class_">Predicate</span>&lt;Author&gt; &#123;</span><br><span class="line">            <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">test</span><span class="params">(Author author)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> author.getName().length() &gt; <span class="number">1</span>;&#125;</span><br><span class="line">        &#125;)</span><br><span class="line">       .forEach(<span class="keyword">new</span> <span class="title class_">Consumer</span>&lt;Author&gt;() &#123;</span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">accept</span><span class="params">(Author author)</span> &#123;</span><br><span class="line">                System.out.println(author.getName());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// lambda表达式写法</span></span><br><span class="line">authors.stream()</span><br><span class="line">     .filter(author-&gt;author.getName().length&gt;<span class="number">1</span>)</span><br><span class="line">     .forEach(author-&gt;System.out.println(author.getName()));</span><br></pre></td></tr></table></figure>
+<h3 id="distinct"><a href="#distinct" class="headerlink" title="distinct"></a>distinct</h3><p> 流中去重 <code>[distinct是依赖Object的equals方法判断是否是相同对象的，要重写equals方法，lombok中使用@EqualsAndHashCode注解重写]</code> </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .forEach(author-&gt;System.out.println(author.getName()));</span><br></pre></td></tr></table></figure>
+<h3 id="limit"><a href="#limit" class="headerlink" title="limit"></a>limit</h3><p> 设置流的最大长度，超出的部分将被抛弃 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .sorted()</span><br><span class="line">       .limit(<span class="number">2</span>)</span><br><span class="line">       .forEach(author-&gt;System.out.println(author.getName()));</span><br></pre></td></tr></table></figure>
+<h3 id="skip"><a href="#skip" class="headerlink" title="skip"></a>skip</h3><p> 跳过流中前 n 个元素，返回剩下的元素 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .sorted.skip(<span class="number">1</span>)</span><br><span class="line">       .forEach(author-&gt;System.out.println(author.getName()));</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>映射</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>map(Function f)</code></td>
+<td><strong>接收一个函数</strong>作为参数，该函数会被应用到每个元素上，并将其映射成一个新的元素。</td>
+</tr>
+<tr>
+<td><code>mapToDouble(ToDoubleFunction f)</code></td>
+<td>接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 DoubleStream。</td>
+</tr>
+<tr>
+<td><code>mapToInt(ToIntFunction f)</code></td>
+<td>接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 IntStream。</td>
+</tr>
+<tr>
+<td><code>mapToLong(ToLongFunction f)</code></td>
+<td>接收一个函数作为参数，该函数会被应用到每个元素上，产生一个新的 LongStream。</td>
+</tr>
+<tr>
+<td><code>flatMap(Function f)</code></td>
+<td>接收一个函数作为参数，<strong>将流中的每个值都换成另一个流，然后把所有流连接成一个流</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>注意：map 适用于一对一的转换操作，而 flatMap 适用于一对多的转换操作，并且用于展开嵌套集合结构。</p>
+<h3 id="map"><a href="#map" class="headerlink" title="map"></a>map</h3><p>map 方法用于对每个元素执行函数操作，将每个输入元素转换为另一个对象。它保留了每个输入元素对应一个输出元素的关系，即一对一的关系</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 匿名内部类写法</span></span><br><span class="line">authors.stream().</span><br><span class="line">       .map(<span class="keyword">new</span> <span class="title class_">Function</span>&lt;Author,String&gt;() &#123;</span><br><span class="line">           <span class="keyword">public</span> String <span class="title function_">apply</span><span class="params">(Author author)</span> &#123;</span><br><span class="line">               <span class="keyword">return</span> author.getName();</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;)</span><br><span class="line">       .forEach(<span class="keyword">new</span> <span class="title class_">Consumer</span>&lt;String&gt;() &#123;</span><br><span class="line">           <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">accept</span><span class="params">(String s)</span> &#123;</span><br><span class="line">               System.out.println(s);</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// lambda表达式写法</span></span><br><span class="line">authors.stream()</span><br><span class="line">       .map(author-&gt;author.getName())</span><br><span class="line">       .forEach(s-&gt;System.out.println(s));</span><br></pre></td></tr></table></figure>
+<h3 id="flatMap"><a href="#flatMap" class="headerlink" title="flatMap"></a>flatMap</h3><p> <code>map</code> 只能只能把一个对象转换成另一个对象来作为流中的元素，而 <code>flatMap</code> 用于将每个输入元素转换为一个流，然后将这些流的元素连接起来形成一个新的流。它的作用是扁平化多个流为一个流。这对于处理嵌套的集合结构特别有用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Author</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Author&gt; &#123;</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> Integer age;</span><br><span class="line">    <span class="keyword">private</span> String intro;</span><br><span class="line">    <span class="keyword">private</span> List&lt;Book&gt; books;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Author o)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getAge() - o.getAge();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">authors.stream()</span><br><span class="line">       .flatMap(<span class="keyword">new</span> <span class="title class_">Function</span>&lt;Author, Stream&lt;Book&gt;&gt;() &#123;</span><br><span class="line">           <span class="keyword">public</span> Stream&lt;?&gt; apply(Author author) &#123;</span><br><span class="line">               <span class="keyword">return</span> author.getBooks().stream();</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;) </span><br><span class="line">       .distinct()</span><br><span class="line">       .forEach(<span class="keyword">new</span> <span class="title class_">Consumer</span>&lt;Book&gt;() &#123;</span><br><span class="line">           <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">accept</span><span class="params">(Book book)</span> &#123;</span><br><span class="line">               System.out.println(book.getName());</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br><span class="line"></span><br><span class="line">authors.stream()</span><br><span class="line">       .flatMap(author-&gt;author.getBooks().stream())</span><br><span class="line">       .distinct()</span><br><span class="line">       .forEach(book-&gt;System.out.println(book.getName()));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//  打印所有数据的分类，对分类进行去重</span></span><br><span class="line">authors.stream()</span><br><span class="line">       .flatMap(author-&gt;author.getName().stream())</span><br><span class="line">       .distinct()</span><br><span class="line">       .flatMap(book-&gt;Arrays.stream(book.getCategory().split(<span class="string">&quot;,&quot;</span>)))</span><br><span class="line">       .distinct()</span><br><span class="line">       .forEach(category-&gt;System.out.println(category));</span><br></pre></td></tr></table></figure>
+<h3 id="map-和-flatMap-区别"><a href="#map-和-flatMap-区别" class="headerlink" title="map 和 flatMap 区别"></a>map 和 flatMap 区别</h3><p>map 方法将一个元素映射为另一个元素，而 flatMap 方法将一个元素映射为多个元素，然后将这些元素扁平化为一个流。<br>具体来说，map 方法返回的是一个包含映射结果的新流，而 flatMap 方法返回的是一个包含多个流的新流，这些流被扁平化为一个流。<br>因此，flatMap 方法常用于将多个流合并为一个流的场景，而 map 方法则常用于对流中的元素进行转换的场景。</p>
+<p>假设有一个字符串列表，我们想要将其中的每个字符串按照空格分隔后转换为一个单词列表，那么可以使用 map 方法实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; words = Arrays.asList(<span class="string">&quot;Hello World&quot;</span>, <span class="string">&quot;Stream API&quot;</span>);</span><br><span class="line">List&lt;List&lt;String&gt;&gt; wordList = words.stream()</span><br><span class="line">                                   .map(str -&gt; Arrays.asList(str.split(<span class="string">&quot; &quot;</span>)))</span><br><span class="line">                                   .collect(Collectors.toList());</span><br></pre></td></tr></table></figure>
+<p>而如果我们想要将其中的每个字符串按照空格分隔后扁平化为一个单词流，那么可以使用 flatMap 方法实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">List&lt;String&gt; words = Arrays.asList(<span class="string">&quot;Hello World&quot;</span>, <span class="string">&quot;Stream API&quot;</span>);</span><br><span class="line">List&lt;String&gt; wordList = words.stream()</span><br><span class="line">        .flatMap(str -&gt; Arrays.stream(str.split(<span class="string">&quot; &quot;</span>)))</span><br><span class="line">        .collect(Collectors.toList());</span><br></pre></td></tr></table></figure>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-13.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-14.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-15.jpg" alt=""></p>
+<blockquote>
+<p>排序</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sorted()</code></td>
+<td>产生一个新流，其中按自然顺序排序</td>
+</tr>
+<tr>
+<td><code>sorted(Comparator comp)</code></td>
+<td>产生一个新流，其中按比较器顺序排序</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="sorted"><a href="#sorted" class="headerlink" title="sorted"></a>sorted</h3><p> 1.调用无参 <code>sorted</code> 方法 ，调用空参的 <code>sorted()</code> 方法，需要流中元素实现 <code>Comparable</code> 接口 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重写Comparable接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Author</span> <span class="keyword">implements</span> <span class="title class_">Comparable</span>&lt;Author&gt; &#123;</span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(Author o)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getAge() - o.getAge();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .sort()</span><br><span class="line">       .forEach(author-&gt;System.out.println(author.getAge()));</span><br></pre></td></tr></table></figure>
+<p> 2.调用有参 <code>sorted</code> 方法 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .sort((o1,o2)-&gt;o1.getAge()-o2.getAge())</span><br><span class="line">       .forEach(author-&gt;System.out.println(author.getAge()));</span><br></pre></td></tr></table></figure>
+<h2 id="终止操作"><a href="#终止操作" class="headerlink" title="终止操作"></a>终止操作</h2><p> 一个终止操作，执行中间操作链，并产生结果， 终端操作会从流的流水线生成结果。其结果可以是任何不是流的值，例如：List、Integer，甚至是 void 。  </p>
+<blockquote>
+<p>查找与匹配</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>allMatch(Predicate p)</code></td>
+<td>检查是否匹配所有元素</td>
+</tr>
+<tr>
+<td><code>anyMatch(Predicate p)</code></td>
+<td>检查是否至少匹配一个元素</td>
+</tr>
+<tr>
+<td><code>noneMatch(Predicate p)</code></td>
+<td>检查是否没有匹配所有元素</td>
+</tr>
+<tr>
+<td><code>findFirst()</code></td>
+<td>返回第一个元素</td>
+</tr>
+<tr>
+<td><code>findAny()</code></td>
+<td>返回当前流中的任意元素</td>
+</tr>
+<tr>
+<td><code>count()</code></td>
+<td>返回流中元素总数</td>
+</tr>
+<tr>
+<td><code>max(Comparator c)</code></td>
+<td>返回流中最大值</td>
+</tr>
+<tr>
+<td><code>min(Comparator c)</code></td>
+<td>返回流中最小值</td>
+</tr>
+<tr>
+<td><code>forEach(Consumer c)</code></td>
+<td>内部迭代（使用 Collection 接口需要用户去做迭代，称为外部迭代。相反，Stream API 使用内部 迭代——它帮你把迭代做了）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="forEach"><a href="#forEach" class="headerlink" title="forEach"></a>forEach</h3><p> 对流中的元素进行遍历操作，通过传入的参数去指定对遍历到的元素进行具体操作 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .map(author-&gt;author.getName())</span><br><span class="line">       .distinct()</span><br><span class="line">       .forEach(name-&gt;System.out.print(name));</span><br></pre></td></tr></table></figure>
+<h3 id="count"><a href="#count" class="headerlink" title="count"></a>count</h3><p> 可以获取当前流中元素的个数 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="variable">cnt</span> <span class="operator">=</span> authors.stream()</span><br><span class="line">                  .flatMap(author-&gt;getBooks().stream())</span><br><span class="line">                  .distinct()</span><br><span class="line">                  .count();</span><br></pre></td></tr></table></figure>
+<h3 id="max-amp-min"><a href="#max-amp-min" class="headerlink" title="max&amp;min"></a>max&amp;min</h3><p> 统计流中的最值 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Optional&lt;Integer&gt; max=authors.stream()</span><br><span class="line">                             .flatMap(author-&gt;author.Books())</span><br><span class="line">                             .map(book-&gt;book.getScore())</span><br><span class="line">                             .max((score1-score2)-&gt;score1-score2);</span><br><span class="line"></span><br><span class="line">Optional&lt;Integer&gt; min=authors.stream()</span><br><span class="line">                             .flatMap(author-&gt;author.Books())</span><br><span class="line">                             .map(book-&gt;book.getScore())</span><br><span class="line">                             .min((score1-score2)-&gt;score1-score2);</span><br></pre></td></tr></table></figure>
+<h3 id="AnyMatch"><a href="#AnyMatch" class="headerlink" title="AnyMatch"></a>AnyMatch</h3><p>判断是否有任意符合匹配条件的元素，结果为 boolean 类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .AnyMatch(author-&gt;author.getAge()&gt;<span class="number">29</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="allMatch"><a href="#allMatch" class="headerlink" title="allMatch"></a>allMatch</h3><p>判断是否都符合匹配条件，结果为 boolean 类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .allMatch(author-&gt;author.getAge()&gt;<span class="number">29</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="noneMatch"><a href="#noneMatch" class="headerlink" title="noneMatch"></a>noneMatch</h3><p>判断留着元素都不符合匹配条件的，结果为 boolean 类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .noneMatch(author-&gt;author.getAge()&gt;<span class="number">29</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="findAny"><a href="#findAny" class="headerlink" title="findAny"></a>findAny</h3><p> 获取流中任意一个元素[保证不了是否为第一个元素] </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Optional&lt;Author&gt; author = authors.stream()</span><br><span class="line">                                 .filter(author-&gt;author.getAge()&gt;<span class="number">52</span>)</span><br><span class="line">                                 .findAny();</span><br><span class="line">author.ifPresent(author-&gt;System.out.print(author.getName()));</span><br></pre></td></tr></table></figure>
+<h3 id="findFirst"><a href="#findFirst" class="headerlink" title="findFirst"></a>findFirst</h3><p>获取流中第一个元素</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Optional&lt;Author&gt; first = authors.stream()</span><br><span class="line">                                .sorted((o1,o2)-&gt;o1.getAge()-o2.getAge())</span><br><span class="line">                                .findFirst();</span><br><span class="line">first.ifPresent(author-&gt;System.out.print(author.getName()));</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>规约</p>
+</blockquote>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>reduce(T iden, BinaryOperator b)</td>
+<td>可以将流中元素反复结合起来，得到一个值。 返回 T</td>
+</tr>
+<tr>
+<td>reduce(BinaryOperator b)</td>
+<td>可以将流中元素反复结合起来，得到一个值。 返回 Optional<T></td>
+</tr>
+<tr>
+<td>collect(Collector c)</td>
+<td>将流转换为其他形式。接收一个 Collector接口的实现，用于给Stream中元素做汇总的方法</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Collector 接口中方法的实现决定了如何对流执行收集操作(如收 集到 List、Set、Map)。但是 Collectors 实用类提供了很多静态方法，可以方便地创建常见收集器实例</p>
+<h3 id="reduce-归并"><a href="#reduce-归并" class="headerlink" title="reduce 归并"></a>reduce 归并</h3><p>对流中的数据按照你制定的计算方式计算出一个结果，即 <strong>把 stream 中的元素组合起来，传入一个初始值，按照计算方式依次拿流中的元素和在初始化值的基础上进行计算，计算结果再和后面元素计算</strong></p>
+<blockquote>
+<p><strong>reduce 单个参数的重载形式内部计算逻辑</strong> </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">boolean</span> <span class="variable">foundAny</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"><span class="type">T</span> <span class="variable">result</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">for</span> (T element : <span class="built_in">this</span> stream) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!foundAny) &#123;</span><br><span class="line">        foundAny = <span class="literal">true</span>;</span><br><span class="line">        result = element;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">        result = accumulator.apply(result, element);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> foundAny ? Optional.of(result) : Optional.empty();</span><br></pre></td></tr></table></figure>
+<p> 将流中第一个元素作为变量初始化值 </p>
+<blockquote>
+<p><strong>reduce 两个参数的重载形式内部计算逻辑</strong> </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 给定初始值</span></span><br><span class="line"><span class="type">T</span> <span class="variable">result</span> <span class="operator">=</span> identity;</span><br><span class="line"><span class="keyword">for</span> (T element : <span class="built_in">this</span> stream)</span><br><span class="line">    result = accumulator.apply(result, element)</span><br><span class="line"><span class="keyword">return</span> result;    </span><br></pre></td></tr></table></figure>
+<p>其中，identity 是通过方法参数传入的初始值，accumulator 的 apply 具体进行什么计算也是通过方法参数确定的</p>
+<p><strong>使用 reduce 求和</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 双参数</span></span><br><span class="line">List&lt;Integer&gt; list = Arrays.asList(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>);</span><br><span class="line">list.stream().reduce(<span class="number">0</span>, (x1, x2) -&gt; x1 + x2);</span><br><span class="line">list.stream().reduce(<span class="number">0</span>, (x1, x2) -&gt; Integer.sum(x1, x2));</span><br><span class="line">list.stream().reduce(<span class="number">0</span>,Integer::sum);</span><br></pre></td></tr></table></figure>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/01-java-basic-20230311-16.jpg" alt=""></p>
+<p><strong>使用 reduce 员工工资求和</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 单参数</span></span><br><span class="line">data.stream()</span><br><span class="line">    .map(emp-&gt;emp.getSalary())</span><br><span class="line">    .reduce((salary1, salary2)-&gt; salary1 + salary2);</span><br></pre></td></tr></table></figure>
+<p><strong>使用 reduce 对年龄求和</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">authors.stream()</span><br><span class="line">       .map(author-&gt;author.getAge())</span><br><span class="line">       .reduce(<span class="number">0</span>, <span class="keyword">new</span> <span class="title class_">BinaryOperator</span>&lt;Integer&gt;()&#123;</span><br><span class="line">           <span class="keyword">public</span> Integer <span class="title function_">apply</span><span class="params">(Integer result, Integer element)</span> &#123;</span><br><span class="line">               <span class="keyword">return</span> result + element;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;);</span><br><span class="line"></span><br><span class="line"><span class="type">Integer</span> <span class="variable">sum</span> <span class="operator">=</span> authors.stream()</span><br><span class="line">                     .map(author-&gt;author</span><br><span class="line">                     .getAge())</span><br><span class="line">                     .reduce((result,element) -&gt;result + element); </span><br></pre></td></tr></table></figure>
+<p><strong>使用 reduce 求年龄最大值</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">authors.stream().map(author-&gt;author.getAge())</span><br><span class="line">                .reduce(Integer.MIN_VALUE, <span class="keyword">new</span> <span class="title class_">BinaryOperator</span>&lt;Integer&gt;()&#123;</span><br><span class="line">                    <span class="keyword">public</span> Integer <span class="title function_">apply</span><span class="params">(Integer result, Integer element)</span> &#123;</span><br><span class="line">                        <span class="keyword">return</span> result &lt; element ? element : result;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;)</span><br><span class="line"></span><br><span class="line"><span class="type">Integer</span> <span class="variable">max</span> <span class="operator">=</span> authors.stream()</span><br><span class="line">                     .map(author-&gt;author.getAge())</span><br><span class="line">                     .reduce(Integer.MIN_VALUE,(result,element)-&gt;result &lt; element ? element : result);</span><br></pre></td></tr></table></figure>
+<p> <strong>使用 reduce 求年龄最小值</strong> </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 两个参数的重载实现</span></span><br><span class="line">authors.stream().map(author-&gt;author.getAge())</span><br><span class="line">                .reduce(Integer.MAX_VALUE, <span class="keyword">new</span> <span class="title class_">BinaryOperator</span>&lt;Integer&gt;() &#123;</span><br><span class="line">                    <span class="keyword">public</span> Integer <span class="title function_">apply</span><span class="params">(Integer result, Integer element)</span> &#123;</span><br><span class="line">                        <span class="keyword">return</span> result &gt; element ? element : result;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;)</span><br><span class="line"></span><br><span class="line">authors.stream()</span><br><span class="line">       .map(author-&gt;author.getAge())</span><br><span class="line">       .reduce(Integer.MAX_VALUE,(result, element)-&gt;result &gt; element ? element : result);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 单个参数的重载实现</span></span><br><span class="line">Optional&lt;Integer&gt; min = authors.stream()</span><br><span class="line">                               .map(author-&gt;author.getAge())</span><br><span class="line">                               .reduce(<span class="keyword">new</span> <span class="title class_">BinaryOperator</span>&lt;Integer&gt;() &#123;</span><br><span class="line">                                    <span class="keyword">public</span> Integer <span class="title function_">apply</span><span class="params">(Integer result, Integer element)</span> &#123;</span><br><span class="line">                                        <span class="keyword">return</span> result &gt; element ? element : result;</span><br><span class="line">                                    &#125;</span><br><span class="line">                               &#125;);</span><br><span class="line">min.ifPresent(age-&gt;System.out.println(age))</span><br></pre></td></tr></table></figure>
+<h3 id="collect"><a href="#collect" class="headerlink" title="collect"></a>collect</h3><p>将流转换成集合</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// List</span></span><br><span class="line">List&lt;String&gt; list = authors.stream()</span><br><span class="line">                           .map(author-&gt;author.getName())</span><br><span class="line">                           .collect(Collectors.toList());</span><br><span class="line"></span><br><span class="line"><span class="comment">// Set</span></span><br><span class="line">Set&lt;Book&gt; books = authors.stream()</span><br><span class="line">                         .flatMap(author-&gt;author.getBooks.stream())</span><br><span class="line">                         .collect(Collectors.toSet());</span><br><span class="line"></span><br><span class="line"><span class="comment">// Map</span></span><br><span class="line">authors.stream()</span><br><span class="line">       .collect(Collectors.toMap(<span class="keyword">new</span> <span class="title class_">Function</span>&lt;Author,String&gt;()&#123;</span><br><span class="line">           <span class="keyword">public</span> String <span class="title function_">apply</span><span class="params">(Author author)</span> &#123;</span><br><span class="line">               <span class="keyword">return</span> author.getName();</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;, <span class="keyword">new</span> <span class="title class_">Function</span>&lt;Author,List&lt;Book&gt;&gt;()&#123;</span><br><span class="line">           <span class="keyword">public</span> List&lt;Book&gt; <span class="title function_">apply</span><span class="params">(Author author)</span> &#123;</span><br><span class="line">               <span class="keyword">return</span> author.getBooks();</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;));</span><br><span class="line"></span><br><span class="line">authors.stream()</span><br><span class="line">       .distinct()</span><br><span class="line">       .collect(Collectors.toMap(author-&gt;author.getName(),author.getBooks()));	</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意事项</p>
+</blockquote>
+<ul>
+<li>没有终结操作，中间操作是不会执行的</li>
+<li>一旦一个流对象经过终结操作后，该流不能再被使用</li>
+<li>在流中对数据进行操作，但不能影响到原来集合的元素</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://Cyanzzy.github.io">Cyan Chau</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://cyanzzy.github.io/2023/03/17/Java8-4-Stream-API/">https://cyanzzy.github.io/2023/03/17/Java8-4-Stream-API/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a></div><div class="post_share"><div class="social-share" data-image="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover9.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/03/17/Java8-5-Optional/" title="Java8-5-Optional"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover25.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Java8-5-Optional</div></div></a></div><div class="next-post pull-right"><a href="/2023/03/17/Java8-3-%E6%96%B9%E6%B3%95%E5%BC%95%E7%94%A8%E4%B8%8E%E6%9E%84%E9%80%A0%E5%99%A8%E5%BC%95%E7%94%A8/" title="Java8-3-方法引用与构造器引用"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Java8-3-方法引用与构造器引用</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/03/16/JavaBasic-1-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9/" title="JavaBasic-1-基础内容"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-1-基础内容</div></div></a></div><div><a href="/2023/03/16/JavaBasic-2-Lambada%E8%A1%A8%E8%BE%BE%E5%92%8CStream%E6%B5%81/" title="JavaBasic-2-Lambada表达式和Stream流"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-2-Lambada表达式和Stream流</div></div></a></div><div><a href="/2023/03/16/JavaBasic-10-%E5%8F%8D%E5%B0%84/" title="JavaBasic-10-反射"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover30.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-10-反射</div></div></a></div><div><a href="/2023/03/16/JavaBasic-3-%E5%B8%B8%E7%94%A8%E7%B1%BB/" title="JavaBasic-3-常用类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover19.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-3-常用类</div></div></a></div><div><a href="/2023/03/16/JavaBasic-11-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="JavaBasic-11-网络编程"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-11-网络编程</div></div></a></div><div><a href="/2023/03/16/JavaBasic-4-%E9%9B%86%E5%90%88%E7%B1%BB/" title="JavaBasic-4--集合类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-4--集合类</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Cyan Chau</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/cyanzzy"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/cyanzzy" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2445645059@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to NetTree, articles are here~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%93%8D%E4%BD%9C"><span class="toc-number">2.1.</span> <span class="toc-text">创建操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E9%97%B4%E6%93%8D%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">中间操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#filter"><span class="toc-number">2.2.1.</span> <span class="toc-text">filter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#distinct"><span class="toc-number">2.2.2.</span> <span class="toc-text">distinct</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#limit"><span class="toc-number">2.2.3.</span> <span class="toc-text">limit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skip"><span class="toc-number">2.2.4.</span> <span class="toc-text">skip</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#map"><span class="toc-number">2.2.5.</span> <span class="toc-text">map</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#flatMap"><span class="toc-number">2.2.6.</span> <span class="toc-text">flatMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#map-%E5%92%8C-flatMap-%E5%8C%BA%E5%88%AB"><span class="toc-number">2.2.7.</span> <span class="toc-text">map 和 flatMap 区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sorted"><span class="toc-number">2.2.8.</span> <span class="toc-text">sorted</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%88%E6%AD%A2%E6%93%8D%E4%BD%9C"><span class="toc-number">2.3.</span> <span class="toc-text">终止操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#forEach"><span class="toc-number">2.3.1.</span> <span class="toc-text">forEach</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#count"><span class="toc-number">2.3.2.</span> <span class="toc-text">count</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#max-amp-min"><span class="toc-number">2.3.3.</span> <span class="toc-text">max&amp;min</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AnyMatch"><span class="toc-number">2.3.4.</span> <span class="toc-text">AnyMatch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#allMatch"><span class="toc-number">2.3.5.</span> <span class="toc-text">allMatch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#noneMatch"><span class="toc-number">2.3.6.</span> <span class="toc-text">noneMatch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#findAny"><span class="toc-number">2.3.7.</span> <span class="toc-text">findAny</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#findFirst"><span class="toc-number">2.3.8.</span> <span class="toc-text">findFirst</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reduce-%E5%BD%92%E5%B9%B6"><span class="toc-number">2.3.9.</span> <span class="toc-text">reduce 归并</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#collect"><span class="toc-number">2.3.10.</span> <span class="toc-text">collect</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅱ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ">锦囊妙计-系统-面试题 Ⅱ</a><time datetime="2024-05-03T12:29:50.000Z" title="Created 2024-05-03 20:29:50">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅰ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ">锦囊妙计-系统-面试题 Ⅰ</a><time datetime="2024-05-03T12:29:41.000Z" title="Created 2024-05-03 20:29:41">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-阻塞原因"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因">锦囊妙计-Redis-阻塞原因</a><time datetime="2024-05-03T12:29:29.000Z" title="Created 2024-05-03 20:29:29">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-性能优化"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化">锦囊妙计-Redis-性能优化</a><time datetime="2024-05-03T12:29:19.000Z" title="Created 2024-05-03 20:29:19">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-事务"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务">锦囊妙计-Redis-事务</a><time datetime="2024-05-03T12:29:09.000Z" title="Created 2024-05-03 20:29:09">2024-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By Cyan Chau</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container').forEach(node => {
+            if (node.hasAttribute('display')) {
+              btf.wrap(node, 'div', { class: 'mathjax-overflow' })
+            } else {
+              btf.wrap(node, 'span', { class: 'mathjax-overflow' })
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz',
+      appKey: 'mJGX4iHKsi4Cg4wFWtW59koH',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/forbidden.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="30" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start --> <script data-pjax>if(document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    var parent = document.getElementById('recent-posts');
+    var child = '<div class="recent-post-item" style="width:100%;height:auto"><div id="catalog_magnet"><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Language/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">❤ 编程语言 (60)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Technology/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">🧡 技术架构 (135)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Interview/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💛 锦囊妙计 (72)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Algorithm/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💚 编程算法 (36)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><a class="magnet_link_more"  href="https://Cyanzzy.github.io/categories" style="flex:1;text-align: center;margin-bottom: 10px;">查看更多...</a></div></div>';
+    console.log('已挂载magnet')
+    parent.insertAdjacentHTML("afterbegin",child)}
+     </script><style>#catalog_magnet{flex-wrap: wrap;display: flex;width:100%;justify-content:space-between;padding: 10px 10px 0 10px;align-content: flex-start;}.magnet_item{flex-basis: calc(50% - 5px);background: #F2F2F2;margin-bottom: 10px;border-radius: 8px;transition: all 0.2s ease-in-out;}.magnet_item:hover{background: #3ecdf1}.magnet_link_more{color:#555}.magnet_link{color:black}.magnet_link:hover{color:white}@media screen and (max-width: 600px) {.magnet_item {flex-basis: 100%;}}.magnet_link_context{display:flex;padding: 10px;font-size:16px;transition: all 0.2s ease-in-out;}.magnet_link_context:hover{padding: 10px 20px;}</style>
+    <style></style><script data-pjax>
+    function butterfly_categories_card_injector_config(){
+      var parent_div_git = document.getElementById('recent-posts');
+      var item_html = '<style>li.categoryBar-list-item{width:24%;}.categoryBar-list{max-height: 190px;overflow:auto;}.categoryBar-list::-webkit-scrollbar{width:0!important}@media screen and (max-width: 650px){.categoryBar-list{max-height: 160px;}}</style><div class="recent-post-item" style="height:auto;width:100%;padding:0px;"><div id="categoryBar"><ul class="categoryBar-list"><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png);"> <a class="categoryBar-list-link" href="categories/Language/">Language</a><span class="categoryBar-list-count">60</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png);"> <a class="categoryBar-list-link" href="categories/Algorithm/">Algorithm</a><span class="categoryBar-list-count">36</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png);"> <a class="categoryBar-list-link" href="categories/Technology/">Technology</a><span class="categoryBar-list-count">135</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png);"> <a class="categoryBar-list-link" href="categories/Interview/">Interview</a><span class="categoryBar-list-count">72</span><span class="categoryBar-list-descr"></span></li></ul></div></div>';
+      console.log('已挂载butterfly_categories_card')
+      parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+      }
+    if( document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    butterfly_categories_card_injector_config()
+    }
+  </script><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v6.2.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.orgl" style="margin-inline:5px" data-title="主题版本Butterfly_v4.3.1" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a><a class="github-badge" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style="margin-inline:5px" data-title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" title=""><img src="https://img.shields.io/badge/Copyright-BY--NC--SA8%204.0-d42328?style=flat&amp;logo=Claris" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/runtime.js"></script><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/13/Content/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-13</span><a class="blog-slider__title" href="2023/02/13/Content/" alt="">Content</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/13/Content/" alt="">详情   </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/12/搭建博客教程/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-12</span><a class="blog-slider__title" href="2023/02/12/搭建博客教程/" alt="">Tutorials of Blog Based on Hexo Butterfly</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/12/搭建博客教程/" alt="">详情   </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":null,"use":"live2d-widget-model-koharu","display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/"});</script></body></html>

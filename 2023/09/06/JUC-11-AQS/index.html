@@ -1,0 +1,620 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>JUC-11-AQS | NetTree</title><meta name="author" content="Cyan Chau"><meta name="copyright" content="Cyan Chau"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="AQS 理论介绍 源码    AQS  AQS（AbstractQueuedSynchronizer）是Java中的一个抽象基类，用于实现同步器（Synchronizer）。它是Java并发包中一些重要的同步工具的基础，如ReentrantLock、Semaphore、CountDownLatch等。AQS提供了一种底层机制，帮助开发者实现自定义的同步器，从而能够更灵活地管理多线程之间的竞争和协作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JUC-11-AQS">
+<meta property="og:url" content="https://cyanzzy.github.io/2023/09/06/JUC-11-AQS/index.html">
+<meta property="og:site_name" content="NetTree">
+<meta property="og:description" content="AQS 理论介绍 源码    AQS  AQS（AbstractQueuedSynchronizer）是Java中的一个抽象基类，用于实现同步器（Synchronizer）。它是Java并发包中一些重要的同步工具的基础，如ReentrantLock、Semaphore、CountDownLatch等。AQS提供了一种底层机制，帮助开发者实现自定义的同步器，从而能够更灵活地管理多线程之间的竞争和协作">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover27.png">
+<meta property="article:published_time" content="2023-09-06T06:01:51.000Z">
+<meta property="article:modified_time" content="2024-05-20T14:40:24.362Z">
+<meta property="article:author" content="Cyan Chau">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover27.png"><link rel="shortcut icon" href="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/favicon2.png"><link rel="canonical" href="https://cyanzzy.github.io/2023/09/06/JUC-11-AQS/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"We didn't find any results for the search: ${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":230},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: true,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"Traditional Chinese Activated Manually","cht_to_chs":"Simplified Chinese Activated Manually","day_to_night":"Dark Mode Activated Manually","night_to_day":"Light Mode Activated Manually","bgLight":"#49b1f5","bgDark":"#1f1f1f","position":"top-right"},
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JUC-11-AQS',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-20 22:40:24'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = url => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      link.onload = () => resolve()
+      link.onerror = () => reject()
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><link rel="stylesheet" href="/css/custom.css"><!-- hexo injector head_end start --><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Zfour/Butterfly-double-row-display@1.00/cardlistpost.min.css"/>
+<style>#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags:before {content:"\A";
+  white-space: pre;}#recent-posts > .recent-post-item >.recent-post-info > .article-meta-wrap > .tags > .article-meta__separator{display:none}</style>
+<link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-categories-card@1.0.0/lib/categorybar.css"><link rel="stylesheet" href="/css/runtime.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiperstyle.css" media="print" onload="this.media='all'"><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover27.png')"><nav id="nav"><span id="blog-info"><a href="/" title="NetTree"><span class="site-name">NetTree</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/comments/"><i class="fa-fw fas fa-envelope-open"></i><span> Comments</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">JUC-11-AQS</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-09-06T06:01:51.000Z" title="Created 2023-09-06 14:01:51">2023-09-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2024-05-20T14:40:24.362Z" title="Updated 2024-05-20 22:40:24">2024-05-20</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Language/">Language</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">5.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>16min</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="JUC-11-AQS"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">Post View:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="AQS-理论介绍"><a href="#AQS-理论介绍" class="headerlink" title="AQS 理论介绍"></a>AQS 理论介绍</h1><blockquote>
+<p>源码</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-131.jpg" alt=""></p>
+<blockquote>
+<p>AQS</p>
+</blockquote>
+<p>AQS（AbstractQueuedSynchronizer）是Java中的一个抽象基类，用于实现同步器（Synchronizer）。它是Java并发包中一些重要的同步工具的基础，如ReentrantLock、Semaphore、CountDownLatch等。AQS提供了一种底层机制，帮助开发者实现自定义的同步器，从而能够更灵活地管理多线程之间的竞争和协作。</p>
+<p><strong>同步器的概念</strong>：</p>
+<p>同步器是一种用于控制多线程访问共享资源的机制，它通常包含两个重要的方法：<code>acquire</code>（获取锁）和<code>release</code>（释放锁）。这两个方法分别用于在多线程之间协调资源的访问，确保线程安全。</p>
+<p><strong>AQS的基本结构</strong>：</p>
+<p>AQS的核心思想是维护一个等待队列（Wait Queue）和一个状态变量（State）。等待队列中的线程按照先进先出（FIFO）的顺序等待获取锁或资源。状态变量表示同步器的状态，不同的同步器可以定义不同的状态语义。</p>
+<p><strong>AQS的主要方法</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>acquire(int arg)</code></td>
+<td>用于获取锁或资源，如果无法获取，则将当前线程加入等待队列，然后自旋等待或阻塞，直到获取到锁或资源</td>
+</tr>
+<tr>
+<td><code>release(int arg)</code></td>
+<td>用于释放锁或资源，同时通知等待队列中的某个线程可以继续尝试获取锁或资源</td>
+</tr>
+<tr>
+<td><code>tryAcquire</code></td>
+<td>这独占方式获取锁。尝试获取资源，成功则返回true，失败则返回false</td>
+</tr>
+<tr>
+<td><code>tryRelease</code></td>
+<td>独占方式释放锁。尝试释放资源，成功则返回true，失败则返回false</td>
+</tr>
+<tr>
+<td><code>getState</code></td>
+<td>获取锁的标志state值</td>
+</tr>
+<tr>
+<td><code>setState</code></td>
+<td>设置锁的标志state值</td>
+</tr>
+<tr>
+<td><code>hasQueuedThreads</code></td>
+<td>检查是否有线程在等待队列中等待获取锁或资源</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>AQS的实现原理</strong>：</p>
+<p>AQS通过使用CAS（Compare-And-Swap）操作来实现对状态变量的原子操作，从而保证线程安全。等待队列则是使用链表数据结构来管理等待线程。</p>
+<p><code>AQS</code>中 维护了一个<code>volatile int state</code>（代表共享资源）和一个<code>FIFO</code>线程等待队列（多线程争用资源被阻塞时会进入此队列）。</p>
+<blockquote>
+<p>整体就一个抽象的FIFO队列完成资源获取线程的排队工作，并通过int类变量，表示持有锁的状态</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-132.jpg" alt=""></p>
+<p>CLH: Craig、Landin and Hagersten队列，是一个单向链表，AQS中的队列是CLH变体的虚拟双向队列FIFO</p>
+<blockquote>
+<p><strong>AQS的应用</strong>：</p>
+</blockquote>
+<ul>
+<li><strong>ReentrantLock</strong>：Java中可重入锁的实现就是基于AQS的，它允许同一个线程多次获取同一个锁。</li>
+<li><strong>Semaphore</strong>：Semaphore也是基于AQS的，它用于控制同时访问某个资源的线程数量。</li>
+<li><strong>CountDownLatch</strong>：CountDownLatch是用于线程之间的协调，它允许一个或多个线程等待一组操作完成。</li>
+<li><strong>CyclicBarrier</strong>：CyclicBarrier也是用于线程之间的协调，它允许一组线程互相等待达到某个同步点后再继续执行。</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-133.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-134.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-135.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-136.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-137.jpg" alt=""></p>
+<blockquote>
+<p>锁和同步器关系</p>
+</blockquote>
+<p>锁：面向锁使用者，定义程序员和锁交互的API，屏蔽实现细节</p>
+<p>同步器：统一规范简化锁的实现，将其抽象出来，屏蔽了同步状态管理、同步队列的管理和维护、阻塞线程排队和通知、唤醒机制等，它是一切锁和同步组件实现的公共基础部分。</p>
+<blockquote>
+<p>AQS解释说明</p>
+</blockquote>
+<p>抢到资源的线程直接使用处理业务，抢不到资源的必然涉及一种排队等候机制。抢占资源失败的线程继续去等待，但等候线程仍然保留获取锁的可能且获取锁流程仍在继续。</p>
+<p>如果共享资源被占用，就需要一定的阻塞等待唤醒机制来保证锁分配，该机制主要用的是CLH队列的变体实现的，将暂时获取不到锁的线程加入到队列中。它将要请求共享资源的线程及自身的等待状态封装成队列的结点对象（Node），通过CAS、自旋以及LockSupport.park()的方式，维护state变量的状态，使并发达到同步的效果。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-138.jpg" alt=""></p>
+<p>AQS使用<code>volatle</code>的int类型的成员变量来表示同步状态，通过内置的FIFO队列来完成资源获取的排队工作，将每条要去抢占资源的线程封装成一个Node节点来实现锁的分配，通过CAS完成对State值的修改。</p>
+<p><strong>同步队列结构</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-139.jpg" alt=""></p>
+<p>CLH: Craig、Landin and Hagersten队列，是一个单向链表，AQS中的队列是CLH变体的虚拟双向队列FIFO</p>
+<h1 id="AQS源码分析"><a href="#AQS源码分析" class="headerlink" title="AQS源码分析"></a>AQS源码分析</h1><h2 id="AQS内部体系架构"><a href="#AQS内部体系架构" class="headerlink" title="AQS内部体系架构"></a>AQS内部体系架构</h2><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-140.jpg" alt=""></p>
+<blockquote>
+<p>AQS的int变量</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-141.jpg" alt=""></p>
+<blockquote>
+<p>AQS的CLH队列</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-142.jpg" alt=""></p>
+<blockquote>
+<p>AQS内部类Node</p>
+</blockquote>
+<p><strong>内部结构</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-143.jpg" alt=""></p>
+<p><strong>属性说明</strong></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-144.jpg" alt=""></p>
+<h2 id="以ReentrantLock说明"><a href="#以ReentrantLock说明" class="headerlink" title="以ReentrantLock说明"></a>以ReentrantLock说明</h2><p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-145.jpg" alt=""></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-146.jpg" alt=""></p>
+<p>可以明显看出公平锁与非公平锁的<code>lock()</code>唯一区别在于公平锁在获取同步状态时多一个限制条件<code>hasQueuedPredecessors()</code>，该方法是公平锁加锁时判断等待队列中否存在有效节点</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-147.jpg" alt=""></p>
+<p>对比公平锁和非公平锁的<code>tryAcquire()</code>方法的实现代码，其实差别就在于非公平锁获取锁时比公平锁中少了一个判断<code>hasQueuedPredecessors()</code>，它判断是否需要排队，导致公平锁和非公平锁的差异如下：</p>
+<ul>
+<li>公平锁：公平锁讲究先来先到，线程在获取锁时，如果这个锁的等待队列中已经有线程在等待，那么当前线程就会进入等待队列</li>
+<li>非公平锁：不管是否有等待队列，如果可以获取锁，则立刻占有锁对象</li>
+</ul>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-148.jpg" alt=""></p>
+<blockquote>
+<p>lock()</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-149.jpg" alt=""></p>
+<blockquote>
+<p>acquire()</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-150.jpg" alt=""></p>
+<h2 id="多线程场景模拟说明"><a href="#多线程场景模拟说明" class="headerlink" title="多线程场景模拟说明"></a>多线程场景模拟说明</h2><h3 id="非公平锁实现原理"><a href="#非公平锁实现原理" class="headerlink" title="非公平锁实现原理"></a>非公平锁实现原理</h3><p> <strong>三个线程(线程一、线程二、线程三)同时来加锁/释放锁</strong> </p>
+<blockquote>
+<p>线程一加锁成功</p>
+</blockquote>
+<p> 如果同时有<strong>三个线程</strong>并发抢占锁，此时<strong>线程一</strong>抢占锁成功，<strong>线程二</strong>和<strong>线程三</strong>抢占锁失败，具体执行流程如下： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-155.jpg" alt=""></p>
+<p> 此时<code>AQS</code>内部数据为： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-156.jpg" alt=""></p>
+<p> <strong>线程二</strong>、<strong>线程三</strong>加锁失败： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-157.jpg" alt=""></p>
+<p> 由图可以看出，等待队列中的节点<code>Node</code>是一个双向链表，这里<code>SIGNAL</code>是<code>Node</code>中<code>waitStatus</code>属性，<code>Node</code>中还有一个<code>nextWaiter</code>属性，这个并未在图中画出来，这个到后面<code>Condition</code>会具体讲解的。 </p>
+<p> 具体看下抢占锁代码实现 </p>
+<p><code>java.util.concurrent.locks.ReentrantLock .NonfairSync</code></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-158.jpg" alt=""></p>
+<p> 这里使用的<strong>ReentrantLock非公平锁</strong>，线程进来直接利用<code>CAS</code>尝试抢占锁，如果抢占成功<code>state</code>值回被改为1，且设置对象独占锁线程为当前线程。 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-159.jpg" alt=""></p>
+<blockquote>
+<p>线程二抢占锁失败</p>
+</blockquote>
+<p> <strong>线程一</strong>抢占锁成功后，<code>state</code>变为1，<strong>线程二</strong>通过<code>CAS</code>修改<code>state</code>变量必然会失败。此时<code>AQS</code>中<code>FIFO</code>队列中数据如图所示： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-160.jpg" alt=""></p>
+<p> 将<strong>线程二</strong>执行的逻辑一步步拆解来看： </p>
+<p> <code>java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire()</code>: </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-161.jpg" alt=""></p>
+<p> 先看看<code>tryAcquire()</code>的具体实现： </p>
+<p><code>java.util.concurrent.locks.ReentrantLock .nonfairTryAcquire()</code>: </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-162.jpg" alt=""></p>
+<p> <code>nonfairTryAcquire()</code>方法中首先会获取<code>state</code>的值：</p>
+<ul>
+<li>如果不为0则说明当前对象的锁已经被其他线程所占有，接着判断占有锁的线程是否为当前线程，如果是则累加<code>state</code>值，这就是可重入锁的具体实现，累加<code>state</code>值，释放锁的时候也要依次递减<code>state</code>值</li>
+<li>如果<code>state</code>为0，则执行<code>CAS</code>操作，尝试更新<code>state</code>值为1，如果更新成功则代表当前线程加锁成功。</li>
+</ul>
+<p>以<strong>线程二</strong>为例，因为<strong>线程一</strong>已经将<code>state</code>修改为1，所以<strong>线程二</strong>通过<code>CAS</code>修改<code>state</code>的值不会成功。加锁失败。</p>
+<p> <strong>线程二</strong>执行<code>tryAcquire()</code>后会返回false，接着执行<code>addWaiter(Node.EXCLUSIVE)</code>逻辑，将自己加入到一个<code>FIFO</code>等待队列中，代码实现如下 ：</p>
+<p> <code>java.util.concurrent.locks.AbstractQueuedSynchronizer.addWaiter()</code>: </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-163.jpg" alt=""></p>
+<p> 这段代码首先会创建一个和当前线程绑定的<code>Node</code>节点，<code>Node</code>为双向链表。此时等待对内中的<code>tail</code>指针为空，直接调用<code>enq(node)</code>方法将当前线程加入等待队列尾部 ：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-164.jpg" alt=""></p>
+<p> 第一遍循环时<code>tail</code>指针为空，进入if逻辑，使用<code>CAS</code>操作设置<code>head</code>指针，将<code>head</code>指向一个新创建的<code>Node</code>节点。此时<code>AQS</code>中数据： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-165.jpg" alt=""></p>
+<p> 执行完成之后，<code>head</code>、<code>tail</code>、<code>t</code>都指向第一个<code>Node</code>元素。 </p>
+<p> 接着执行第二遍循环，进入<code>else</code>逻辑，此时已经有了<code>head</code>节点，这里要操作的就是将<strong>线程二</strong>对应的<code>Node</code>节点挂到<code>head</code>节点后面。此时队列中就有了两个<code>Node</code>节点： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-166.jpg" alt=""></p>
+<p> <code>addWaiter()</code>方法执行完后，会返回当前线程创建的节点信息。继续往后执行<code>acquireQueued(addWaiter(Node.EXCLUSIVE), arg)</code> 逻辑，此时传入的参数为<strong>线程二</strong>对应的<code>Node</code>节点信息： </p>
+<p> <code>java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireQueued()</code>: </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-167.jpg" alt=""></p>
+<p><code>acquireQueued()</code>这个方法会先判断当前传入的<code>Node</code>对应的前置节点是否为<code>head</code>，如果是则尝试加锁。加锁成功过则将当前节点设置为<code>head</code>节点，然后空置之前的<code>head</code>节点，方便后续被垃圾回收掉。</p>
+<p>如果加锁失败或者<code>Node</code>的前置节点不是<code>head</code>节点，就会通过<code>shouldParkAfterFailedAcquire</code>方法 将<code>head</code>节点的<code>waitStatus</code>变为了<code>SIGNAL=-1</code>，最后执行<code>parkAndChecknIterrupt</code>方法，调用<code>LockSupport.park()</code>挂起当前线程。</p>
+<p> 此时<code>AQS</code>中的数据如下图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-168.jpg" alt=""></p>
+<p> 此时<strong>线程二</strong>就静静的待在<code>AQS</code>的等待队列里面了，等着其他线程释放锁来唤醒它。 </p>
+<blockquote>
+<p>线程三抢占锁失败</p>
+</blockquote>
+<p> 看完了<strong>线程二</strong>抢占锁失败的分析，那么再来分析<strong>线程三</strong>抢占锁失败就很简单了，先看看<code>addWaiter(Node mode)</code>方法： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-163.jpg" alt=""></p>
+<p> 此时等待队列的<code>tail</code>节点指向<strong>线程二</strong>，进入<code>if</code>逻辑后，通过<code>CAS</code>指令将<code>tail</code>节点重新指向<strong>线程三</strong>。接着<strong>线程三</strong>调用<code>enq()</code>方法执行入队操作，和上面<strong>线程二</strong>执行方式是一致的，入队后会修改<strong>线程二</strong>对应的<code>Node</code>中的<code>waitStatus=SIGNAL</code>。最后<strong>线程三</strong>也会被挂起。此时等待队列的数据如图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-169.jpg" alt=""></p>
+<blockquote>
+<p>线程一释放锁</p>
+</blockquote>
+<p> 现在来分析下释放锁的过程，首先是<strong>线程一</strong>释放锁，释放锁后会唤醒<code>head</code>节点的后置节点，也就是我们现在的<strong>线程二</strong>，具体操作流程如下：</p>
+<p> <img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-170.jpg" alt=""></p>
+<p> 执行完后等待队列数据如下： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-171.jpg" alt=""></p>
+<p> 此时<strong>线程二</strong>已经被唤醒，继续尝试获取锁，如果获取锁失败，则会继续被挂起。如果获取锁成功，则<code>AQS</code>中数据如图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-172.jpg" alt=""></p>
+<p> 接着还是一步步拆解来看，先看看<strong>线程一</strong>释放锁的代码： </p>
+<p> <code>java.util.concurrent.locks.AbstractQueuedSynchronizer.release()</code></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-173.jpg" alt=""></p>
+<p> 这里首先会执行<code>tryRelease()</code>方法，这个方法具体实现在<code>ReentrantLock</code>中，如果<code>tryRelease</code>执行成功，则继续判断<code>head</code>节点的<code>waitStatus</code>是否为0，前面我们已经看到过，<code>head</code>的<code>waitStatue</code>为<code>SIGNAL(-1)</code>，这里就会执行<code>unparkSuccessor()</code>方法来唤醒<code>head</code>的后置节点，也就是我们上面图中<strong>线程二</strong>对应的<code>Node</code>节点。 </p>
+<p> 此时看<code>ReentrantLock.tryRelease()</code>中的具体实现： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-174.jpg" alt=""></p>
+<p> 执行完<code>ReentrantLock.tryRelease()</code>后，<code>state</code>被设置成0，Lock对象的独占锁被设置为null。此时看下<code>AQS</code>中的数据： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-175.jpg" alt=""></p>
+<p> 接着执行<code>java.util.concurrent.locks.AbstractQueuedSynchronizer.unparkSuccessor()</code>方法，唤醒<code>head</code>的后置节点：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-176.jpg" alt=""></p>
+<p>这里主要是将<code>head</code>节点的<code>waitStatus</code>设置为0，然后解除<code>head</code>节点<code>next</code>的指向，使<code>head</code>节点空置，等待着被垃圾回收。</p>
+<p>此时重新将<code>head</code>指针指向<strong>线程二</strong>对应的<code>Node</code>节点，且使用<code>LockSupport.unpark</code>方法来唤醒<strong>线程二</strong>。</p>
+<p>被唤醒的<strong>线程二</strong>会接着尝试获取锁，用<code>CAS</code>指令修改<code>state</code>数据。 </p>
+<p>执行完成后可以查看<code>AQS</code>中数据：    </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-177.jpg" alt=""></p>
+<p> 此时<strong>线程二</strong>被唤醒，<strong>线程二</strong>接着之前被<code>park</code>的地方继续执行，继续执行<code>acquireQueued()</code>方法。 </p>
+<blockquote>
+<p>线程二唤醒继续加锁</p>
+</blockquote>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-178.jpg" alt=""></p>
+<p> 此时<strong>线程二</strong>被唤醒，继续执行<code>for</code>循环，判断<strong>线程二</strong>的前置节点是否为<code>head</code>，如果是则继续使用<code>tryAcquire()</code>方法来尝试获取锁，其实就是使用<code>CAS</code>操作来修改<code>state</code>值，如果修改成功则代表获取锁成功。接着将<strong>线程二</strong>设置为<code>head</code>节点，然后空置之前的<code>head</code>节点数据，被空置的节点数据等着被<strong>垃圾回收</strong>。 </p>
+<p> 此时线程三获取锁成功，<code>AQS</code>中队列数据如下： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-179.jpg" alt=""></p>
+<p> 等待队列中的数据都等待着被垃圾回收。 </p>
+<blockquote>
+<p>线程二释放锁/线程三加锁</p>
+</blockquote>
+<p>当<strong>线程二</strong>释放锁时，会唤醒被挂起的<strong>线程三</strong>，流程和上面大致相同，被唤醒的<strong>线程三</strong>会再次尝试加锁，具体代码可以参考上面内容。具体流程图如下：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-180.jpg" alt=""></p>
+<p> 此时<code>AQS</code>中队列数据如图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-181.jpg" alt=""></p>
+<h3 id="公平锁实现原理"><a href="#公平锁实现原理" class="headerlink" title="公平锁实现原理"></a>公平锁实现原理</h3><p> 上面所有的加锁场景都是基于<strong>非公平锁</strong>来实现的，<strong>非公平锁</strong>是<code>ReentrantLock</code>的默认实现，那我们接着来看一下<strong>公平锁</strong>的实现原理，这里先用一张图来解释<strong>公平锁</strong>和<strong>非公平锁</strong>的区别： </p>
+<p><strong>非公平锁</strong>执行流程：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-182.jpg" alt=""></p>
+<p> 这里我们还是用之前的线程模型来举例子，当<strong>线程二</strong>释放锁的时候，唤醒被挂起的<strong>线程三</strong>，<strong>线程三</strong>执行<code>tryAcquire()</code>方法使用<code>CAS</code>操作来尝试修改<code>state</code>值，如果此时又来了一个<strong>线程四</strong>也来执行加锁操作，同样会执行<code>tryAcquire()</code>方法。 </p>
+<p> 这种情况就会出现竞争，<strong>线程四</strong>如果获取锁成功，<strong>线程三</strong>仍然需要待在等待队列中被挂起。这就是所谓的<strong>非公平锁</strong>，<strong>线程三</strong>辛辛苦苦排队等到自己获取锁，却眼巴巴的看到<strong>线程四</strong>插队获取到了锁。 </p>
+<p> <strong>公平锁</strong>执行流程： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-183.jpg" alt=""></p>
+<p>公平锁在加锁的时候，会先判断<code>AQS</code>等待队列中是存在节点，如果存在节点则会直接入队等待，具体代码如下.</p>
+<p>公平锁在获取锁是也是首先会执行<code>acquire()</code>方法，只不过公平锁单独实现了<code>tryAcquire()</code>方法：</p>
+<p> <code>#java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire()</code>: </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-161.jpg" alt=""></p>
+<p>这里会执行<code>ReentrantLock</code>中公平锁的<code>tryAcquire()</code>方法</p>
+<p><code>#java.util.concurrent.locks.ReentrantLock.FairSync.tryAcquire()</code></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-184.jpg" alt=""></p>
+<p>这里会先判断<code>state</code>值，如果不为0且获取锁的线程不是当前线程，直接返回false代表获取锁失败，被加入等待队列。如果是当前线程则可重入获取锁。</p>
+<p>如果<code>state=0</code>则代表此时没有线程持有锁，执行<code>hasQueuedPredecessors()</code>判断<code>AQS</code>等待队列中是否有元素存在，如果存在其他等待线程，那么自己也会加入到等待队列尾部，做到真正的先来后到，有序加锁。具体代码如下：</p>
+<p><code>#java.util.concurrent.locks.AbstractQueuedSynchronizer.hasQueuedPredecessors()</code></p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-185.jpg" alt=""></p>
+<p> 这段代码返回<code>false</code>代表队列中没有节点或者仅有一个节点是当前线程创建的节点。返回<code>true</code>则代表队列中存在等待节点，当前线程需要入队等待。 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-186.jpg" alt=""></p>
+<p> 先判断<code>head</code>是否等于<code>tail</code>，如果队列中只有一个<code>Node</code>节点，那么<code>head</code>会等于<code>tail</code>，接着判断<code>head</code>的后置节点，这里肯定会是<code>null</code>，如果此<code>Node</code>节点对应的线程和当前的线程是同一个线程，那么则会返回<code>false</code>，代表没有等待节点或者等待节点就是当前线程创建的<code>Node</code>节点。此时当前线程会尝试获取锁。 </p>
+<p> 如果<code>head</code>和<code>tail</code>不相等，说明队列中有等待线程创建的节点，此时直接返回<code>true</code>，如果只有一个节点，而此节点的线程和当前线程不一致，也会返回<code>true</code> </p>
+<blockquote>
+<p><strong>非公平锁</strong>和<strong>公平锁</strong>的区别： </p>
+</blockquote>
+<ul>
+<li><p><strong>非公平锁</strong>性能高于<strong>公平锁</strong>性能。<strong>非公平锁</strong>可以减少<code>CPU</code>唤醒线程的开销，整体的吞吐效率会高点，<code>CPU</code>也不必取唤醒所有线程，会减少唤起线程的数量</p>
+</li>
+<li><p><strong>非公平锁</strong>性能虽然优于<strong>公平锁</strong>，但是会存在导致<strong>线程饥饿</strong>的情况。在最坏的情况下，可能存在某个线程<strong>一直获取不到锁</strong>。不过相比性能而言，饥饿问题可以暂时忽略，这可能就是<code>ReentrantLock</code>默认创建非公平锁的原因之一了。</p>
+</li>
+</ul>
+<h1 id="Condition实现原理"><a href="#Condition实现原理" class="headerlink" title="Condition实现原理"></a>Condition实现原理</h1><h2 id="Condition简介"><a href="#Condition简介" class="headerlink" title="Condition简介"></a>Condition简介</h2><p> <code>Condition</code>是在java 1.5中才出现的，它用来替代传统的<code>Object</code>的<code>wait()</code>、<code>notify()</code>实现线程间的协作，相比使用<code>Object</code>的<code>wait()</code>、<code>notify()</code>，使用<code>Condition</code>中的<code>await()</code>、<code>signal()</code>这种方式实现线程间协作更加安全和高效。因此通常来说比较推荐使用<code>Condition</code> 。</p>
+<p> 其中<code>AbstractQueueSynchronizer</code>中实现了<code>Condition</code>中的方法，主要对外提供<code>awaite(Object.wait())</code>和<code>signal(Object.notify())</code>调用。 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ReentrantLockDemo</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="type">ReentrantLock</span> <span class="variable">lock</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ReentrantLock</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Condition</span> <span class="variable">condition</span> <span class="operator">=</span> lock.newCondition();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            lock.lock();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;线程一加锁成功&quot;</span>);</span><br><span class="line">                System.out.println(<span class="string">&quot;线程一执行await被挂起&quot;</span>);</span><br><span class="line">                condition.await();</span><br><span class="line">                System.out.println(<span class="string">&quot;线程一被唤醒成功&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                lock.unlock();</span><br><span class="line">                System.out.println(<span class="string">&quot;线程一释放锁成功&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">            lock.lock();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;线程二加锁成功&quot;</span>);</span><br><span class="line">                condition.signal();</span><br><span class="line">                System.out.println(<span class="string">&quot;线程二唤醒线程一&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                lock.unlock();</span><br><span class="line">                System.out.println(<span class="string">&quot;线程二释放锁成功&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">线程一加锁成功</span><br><span class="line">线程一执行await被挂起</span><br><span class="line">线程二加锁成功</span><br><span class="line">线程二唤醒线程一</span><br><span class="line">线程二释放锁成功</span><br><span class="line">线程一被唤醒成功</span><br><span class="line">线程一释放锁成功</span><br></pre></td></tr></table></figure>
+<p> 这里<strong>线程一</strong>先获取锁，然后使用<code>await()</code>方法挂起当前线程并<strong>释放锁</strong>，<strong>线程二</strong>获取锁后使用<code>signal</code>唤醒<strong>线程一</strong>。 </p>
+<h2 id="Condition实现原理-1"><a href="#Condition实现原理-1" class="headerlink" title="Condition实现原理"></a>Condition实现原理</h2><p> 我们还是用上面的<code>demo</code>作为实例，执行的流程如下： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-187.jpg" alt=""></p>
+<p> <strong>线程一</strong>执行<code>await()</code>方法： </p>
+<p> 先看下具体的代码实现，<code>#java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject.await()</code>： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-188.jpg" alt=""></p>
+<p><code>await()</code>方法中首先调用<code>addConditionWaiter()</code>将当前线程加入到<code>Condition</code>队列中。</p>
+<p>执行完后我们可以看下<code>Condition</code>队列中的数据</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-189.jpg" alt=""></p>
+<p> 具体实现代码为： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-190.jpg" alt=""></p>
+<p>这里会用当前线程创建一个<code>Node</code>节点，<code>waitStatus</code>为<code>CONDITION</code>。接着会释放该节点的锁，调用之前解析过的<code>release()</code>方法，释放锁后此时会唤醒被挂起的<strong>线程二</strong>，<strong>线程二</strong>会继续尝试获取锁。</p>
+<p>接着调用<code>isOnSyncQueue()</code>方法判断当前节点是否为<code>Condition</code>队列中的头部节点，如果是则调用<code>LockSupport.park(this)</code>挂起<code>Condition</code>中当前线程。此时<strong>线程一</strong>被挂起，<strong>线程二</strong>获取锁成功。</p>
+<p> 具体流程如下图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-191.jpg" alt=""></p>
+<p><strong>线程二</strong>执行<code>signal()</code>方法：</p>
+<p>首先我们考虑下<strong>线程二</strong>已经获取到锁，此时<code>AQS</code>等待队列中已经没有了数据。</p>
+<p>接着就来看看<strong>线程二</strong>唤醒<strong>线程一</strong>的具体执行流程：</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-192.jpg" alt=""></p>
+<p> 先判断当前线程是否为获取锁的线程，如果不是则直接抛出异常。 </p>
+<p>接着调用<code>doSignal()</code>方法来唤醒线程。 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-193.jpg" alt=""></p>
+<p> 这里先从<code>transferForSignal()</code>方法来看，通过上面的分析我们知道<code>Condition</code>队列中只有线程一创建的一个<code>Node</code>节点，且<code>waitStatue</code>为<code>CONDITION</code>，先通过<code>CAS</code>修改当前节点<code>waitStatus</code>为0，然后执行<code>enq()</code>方法将当前线程加入到等待队列中，并返回当前线程的前置节点。 </p>
+<p> 加入等待队列的代码在上面也已经分析过，此时等待队列中数据如下图： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-194.jpg" alt=""></p>
+<p> 接着开始通过<code>CAS</code>修改当前节点的前置节点<code>waitStatus</code>为<code>SIGNAL</code>，并且唤醒当前线程。此时<code>AQS</code>中等待队列数据为： </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-195.jpg" alt=""></p>
+<p> <strong>线程一</strong>被唤醒后，继续执行<code>await()</code>方法中的while循环 </p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-188.jpg" alt=""></p>
+<p>因为此时线程一的<code>waitStatus</code>已经被修改为0，所以执行<code>isOnSyncQueue()</code>方法会返回<code>false</code>。跳出<code>while</code>循环。</p>
+<p>接着执行<code>acquireQueued()</code>方法，这里之前也有讲过，尝试重新获取锁，如果获取锁失败继续会被挂起。直到另外线程释放锁才被唤醒。</p>
+<p><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/06-juc-20230402-178.jpg" alt=""></p>
+<p> 此时<strong>线程一</strong>的流程都已经分析完了，等<strong>线程二</strong>释放锁后，<strong>线程一</strong>会继续重试获取锁，流程到此终结。 </p>
+<h2 id="Condition总结"><a href="#Condition总结" class="headerlink" title="Condition总结"></a>Condition总结</h2><ul>
+<li>Condition可以精准的对多个不同条件进行控制，wait/notify只能和synchronized关键字一起使用，并且只能唤醒一个或者全部的等待队列； </li>
+<li>Condition需要使用Lock进行控制，使用的时候要注意lock()后及时的unlock()，Condition有类似于await的机制，因此不会产生加锁方式而产生的死锁出现，同时底层实现的是park/unpark的机制，因此也不会产生先唤醒再挂起的死锁，一句话就是不会产生死锁，但是wait/notify会产生先唤醒再挂起的死锁。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1624354">参考资料</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">Author: </span><span class="post-copyright-info"><a href="https://Cyanzzy.github.io">Cyan Chau</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">Link: </span><span class="post-copyright-info"><a href="https://cyanzzy.github.io/2023/09/06/JUC-11-AQS/">https://cyanzzy.github.io/2023/09/06/JUC-11-AQS/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">Copyright Notice: </span><span class="post-copyright-info">All articles in this blog are licensed under <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> unless stating additionally.</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Java/">Java</a></div><div class="post_share"><div class="social-share" data-image="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover27.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/09/06/JUC-12-StampedLock/" title="JUC-12-StampedLock"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover10.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">JUC-12-StampedLock</div></div></a></div><div class="next-post pull-right"><a href="/2023/09/06/JUC-10-Synchronized%E4%B8%8E%E9%94%81%E5%8D%87%E7%BA%A7/" title="JUC-10-Synchronized与锁升级"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">JUC-10-Synchronized与锁升级</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/2023/03/16/JavaBasic-1-%E5%9F%BA%E7%A1%80%E5%86%85%E5%AE%B9/" title="JavaBasic-1-基础内容"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-1-基础内容</div></div></a></div><div><a href="/2023/03/16/JavaBasic-2-Lambada%E8%A1%A8%E8%BE%BE%E5%92%8CStream%E6%B5%81/" title="JavaBasic-2-Lambada表达式和Stream流"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-2-Lambada表达式和Stream流</div></div></a></div><div><a href="/2023/03/16/JavaBasic-10-%E5%8F%8D%E5%B0%84/" title="JavaBasic-10-反射"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover30.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-10-反射</div></div></a></div><div><a href="/2023/03/16/JavaBasic-3-%E5%B8%B8%E7%94%A8%E7%B1%BB/" title="JavaBasic-3-常用类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover19.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-3-常用类</div></div></a></div><div><a href="/2023/03/16/JavaBasic-11-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" title="JavaBasic-11-网络编程"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover18.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-11-网络编程</div></div></a></div><div><a href="/2023/03/16/JavaBasic-4-%E9%9B%86%E5%90%88%E7%B1%BB/" title="JavaBasic-4--集合类"><img class="cover" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-03-16</div><div class="title">JavaBasic-4--集合类</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/new_head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Cyan Chau</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">306</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/cyanzzy"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/cyanzzy" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:2445645059@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">Welcome to NetTree, articles are here~</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AQS-%E7%90%86%E8%AE%BA%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">AQS 理论介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#AQS%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">AQS源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#AQS%E5%86%85%E9%83%A8%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">AQS内部体系架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A5ReentrantLock%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.</span> <span class="toc-text">以ReentrantLock说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%9C%BA%E6%99%AF%E6%A8%A1%E6%8B%9F%E8%AF%B4%E6%98%8E"><span class="toc-number">2.3.</span> <span class="toc-text">多线程场景模拟说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">2.3.1.</span> <span class="toc-text">非公平锁实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">2.3.2.</span> <span class="toc-text">公平锁实现原理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Condition%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">Condition实现原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Condition%E7%AE%80%E4%BB%8B"><span class="toc-number">3.1.</span> <span class="toc-text">Condition简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Condition%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86-1"><span class="toc-number">3.2.</span> <span class="toc-text">Condition实现原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Condition%E6%80%BB%E7%BB%93"><span class="toc-number">3.3.</span> <span class="toc-text">Condition总结</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Post</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅱ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A1/" title="锦囊妙计-系统-面试题 Ⅱ">锦囊妙计-系统-面试题 Ⅱ</a><time datetime="2024-05-03T12:29:50.000Z" title="Created 2024-05-03 20:29:50">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-系统-面试题 Ⅰ"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-%E7%B3%BB%E7%BB%9F-%E9%9D%A2%E8%AF%95%E9%A2%98-%E2%85%A0/" title="锦囊妙计-系统-面试题 Ⅰ">锦囊妙计-系统-面试题 Ⅰ</a><time datetime="2024-05-03T12:29:41.000Z" title="Created 2024-05-03 20:29:41">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover20.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-阻塞原因"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0/" title="锦囊妙计-Redis-阻塞原因">锦囊妙计-Redis-阻塞原因</a><time datetime="2024-05-03T12:29:29.000Z" title="Created 2024-05-03 20:29:29">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover8.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-性能优化"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="锦囊妙计-Redis-性能优化">锦囊妙计-Redis-性能优化</a><time datetime="2024-05-03T12:29:19.000Z" title="Created 2024-05-03 20:29:19">2024-05-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务"><img src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover29.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="锦囊妙计-Redis-事务"/></a><div class="content"><a class="title" href="/2024/05/03/%E9%94%A6%E5%9B%8A%E5%A6%99%E8%AE%A1-Redis-%E4%BA%8B%E5%8A%A1/" title="锦囊妙计-Redis-事务">锦囊妙计-Redis-事务</a><time datetime="2024-05-03T12:29:09.000Z" title="Created 2024-05-03 20:29:09">2024-05-03</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By Cyan Chau</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"]],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, ''],
+        insertScript: [200, () => {
+          document.querySelectorAll('mjx-container').forEach(node => {
+            if (node.hasAttribute('display')) {
+              btf.wrap(node, 'div', { class: 'mathjax-overflow' })
+            } else {
+              btf.wrap(node, 'span', { class: 'mathjax-overflow' })
+            }
+          });
+        }, '', false]
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typeset()
+}</script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '0B1wKIyu9ytA8A81aWkvvk3s-gzGzoHsz',
+      appKey: 'mJGX4iHKsi4Cg4wFWtW59koH',
+      avatar: 'monsterid',
+      serverURLs: '',
+      emojiMaps: "",
+      path: window.location.pathname,
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="/js/forbidden.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="30" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="false"></script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/metingjs/dist/Meting.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><!-- hexo injector body_end start --> <script data-pjax>if(document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    var parent = document.getElementById('recent-posts');
+    var child = '<div class="recent-post-item" style="width:100%;height:auto"><div id="catalog_magnet"><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Language/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">❤ 编程语言 (60)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Technology/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">🧡 技术架构 (135)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Interview/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💛 锦囊妙计 (72)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><div class="magnet_item"><a class="magnet_link" href="https://Cyanzzy.github.io/categories/Algorithm/"><div class="magnet_link_context" style=""><span style="font-weight:500;flex:1">💚 编程算法 (36)</span><span style="padding:0px 4px;border-radius: 8px;"><i class="fas fa-arrow-circle-right"></i></span></div></a></div><a class="magnet_link_more"  href="https://Cyanzzy.github.io/categories" style="flex:1;text-align: center;margin-bottom: 10px;">查看更多...</a></div></div>';
+    console.log('已挂载magnet')
+    parent.insertAdjacentHTML("afterbegin",child)}
+     </script><style>#catalog_magnet{flex-wrap: wrap;display: flex;width:100%;justify-content:space-between;padding: 10px 10px 0 10px;align-content: flex-start;}.magnet_item{flex-basis: calc(50% - 5px);background: #F2F2F2;margin-bottom: 10px;border-radius: 8px;transition: all 0.2s ease-in-out;}.magnet_item:hover{background: #3ecdf1}.magnet_link_more{color:#555}.magnet_link{color:black}.magnet_link:hover{color:white}@media screen and (max-width: 600px) {.magnet_item {flex-basis: 100%;}}.magnet_link_context{display:flex;padding: 10px;font-size:16px;transition: all 0.2s ease-in-out;}.magnet_link_context:hover{padding: 10px 20px;}</style>
+    <style></style><script data-pjax>
+    function butterfly_categories_card_injector_config(){
+      var parent_div_git = document.getElementById('recent-posts');
+      var item_html = '<style>li.categoryBar-list-item{width:24%;}.categoryBar-list{max-height: 190px;overflow:auto;}.categoryBar-list::-webkit-scrollbar{width:0!important}@media screen and (max-width: 650px){.categoryBar-list{max-height: 160px;}}</style><div class="recent-post-item" style="height:auto;width:100%;padding:0px;"><div id="categoryBar"><ul class="categoryBar-list"><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover1.png);"> <a class="categoryBar-list-link" href="categories/Language/">Language</a><span class="categoryBar-list-count">60</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover2.png);"> <a class="categoryBar-list-link" href="categories/Algorithm/">Algorithm</a><span class="categoryBar-list-count">36</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover3.png);"> <a class="categoryBar-list-link" href="categories/Technology/">Technology</a><span class="categoryBar-list-count">135</span><span class="categoryBar-list-descr"></span></li><li class="categoryBar-list-item" style="background:url(https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/categoryBar-cover4.png);"> <a class="categoryBar-list-link" href="categories/Interview/">Interview</a><span class="categoryBar-list-count">72</span><span class="categoryBar-list-descr"></span></li></ul></div></div>';
+      console.log('已挂载butterfly_categories_card')
+      parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+      }
+    if( document.getElementById('recent-posts') && (location.pathname ==='/'|| '/' ==='all')){
+    butterfly_categories_card_injector_config()
+    }
+  </script><script data-pjax>
+  function butterfly_footer_beautify_injector_config(){
+    var parent_div_git = document.getElementById('footer-wrap');
+    var item_html = '<div id="workboard"></div><p id="ghbdages"><a class="github-badge" target="_blank" href="https://hexo.io/" style="margin-inline:5px" data-title="博客框架为Hexo_v6.2.0" title=""><img src="https://img.shields.io/badge/Frame-Hexo-blue?style=flat&amp;logo=hexo" alt=""/></a><a class="github-badge" target="_blank" href="https://butterfly.js.orgl" style="margin-inline:5px" data-title="主题版本Butterfly_v4.3.1" title=""><img src="https://img.shields.io/badge/Theme-Butterfly-6513df?style=flat&amp;logo=bitdefender" alt=""/></a><a class="github-badge" target="_blank" href="https://github.com/" style="margin-inline:5px" data-title="本站项目由Github托管" title=""><img src="https://img.shields.io/badge/Source-Github-d021d6?style=flat&amp;logo=GitHub" alt=""/></a><a class="github-badge" target="_blank" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" style="margin-inline:5px" data-title="本站采用知识共享署名-非商业性使用-相同方式共享4.0国际许可协议进行许可" title=""><img src="https://img.shields.io/badge/Copyright-BY--NC--SA8%204.0-d42328?style=flat&amp;logo=Claris" alt=""/></a></p>';
+    console.log('已挂载butterfly_footer_beautify')
+    parent_div_git.insertAdjacentHTML("beforeend",item_html)
+    }
+  var elist = 'null'.split(',');
+  var cpage = location.pathname;
+  var epage = 'all';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_footer_beautify_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_footer_beautify_injector_config();
+  }
+  </script><script async src="/js/runtime.js"></script><script data-pjax>
+  function butterfly_swiper_injector_config(){
+    var parent_div_git = document.getElementById('recent-posts');
+    var item_html = '<div class="recent-post-item" style="height: auto;width: 100%"><div class="blog-slider swiper-container-fade swiper-container-horizontal" id="swiper_container"><div class="blog-slider__wrp swiper-wrapper" style="transition-duration: 0ms;"><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/13/Content/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover15.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-13</span><a class="blog-slider__title" href="2023/02/13/Content/" alt="">Content</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/13/Content/" alt="">详情   </a></div></div><div class="blog-slider__item swiper-slide" style="width: 750px; opacity: 1; transform: translate3d(0px, 0px, 0px); transition-duration: 0ms;"><a class="blog-slider__img" href="2023/02/12/搭建博客教程/" alt=""><img width="48" height="48" src="https://cyan-images.oss-cn-shanghai.aliyuncs.com/images/default-cover16.jpg" alt="" onerror="this.src=https://unpkg.zhimg.com/akilar-candyassets/image/loading.gif; this.onerror = null;"/></a><div class="blog-slider__content"><span class="blog-slider__code">2023-02-12</span><a class="blog-slider__title" href="2023/02/12/搭建博客教程/" alt="">Tutorials of Blog Based on Hexo Butterfly</a><div class="blog-slider__text">Articles</div><a class="blog-slider__button" href="2023/02/12/搭建博客教程/" alt="">详情   </a></div></div></div><div class="blog-slider__pagination swiper-pagination-clickable swiper-pagination-bullets"></div></div></div>';
+    console.log('已挂载butterfly_swiper')
+    parent_div_git.insertAdjacentHTML("afterbegin",item_html)
+    }
+  var elist = 'undefined'.split(',');
+  var cpage = location.pathname;
+  var epage = '/';
+  var flag = 0;
+
+  for (var i=0;i<elist.length;i++){
+    if (cpage.includes(elist[i])){
+      flag++;
+    }
+  }
+
+  if ((epage ==='all')&&(flag == 0)){
+    butterfly_swiper_injector_config();
+  }
+  else if (epage === cpage){
+    butterfly_swiper_injector_config();
+  }
+  </script><script defer src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper.min.js"></script><script defer data-pjax src="https://npm.elemecdn.com/hexo-butterfly-swiper/lib/swiper_init.js"></script><!-- hexo injector body_end end --><script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":null,"use":"live2d-widget-model-koharu","display":{"position":"left","width":150,"height":300},"mobile":{"show":false},"log":false,"pluginJsPath":"lib/"});</script></body></html>
